@@ -42,12 +42,12 @@ gen_valley(struct level *lev) {
     { /* features */
         REGION(temple, R(3, 7, 7, 15));
         LIGHT_REGION(temple);
-        PLACE_ALTAR(UNALIGNED, C(5, 11));
+        PLACE_ALTAR(UNALIGNED, C(6, 11));
         MAKE_TEMPLE(temple);
 
-        PLACE_DOOR(LOCKED, C(4, 1));
-        PLACE_DOOR(LOCKED, C(8, 4));
-        PLACE_DOOR(LOCKED, C(6, 6));
+        PLACE_DOOR(LOCKED, C(6, 2));
+        PLACE_DOOR(LOCKED, C(10, 5));
+        PLACE_DOOR(LOCKED, C(8, 7));
 
         REGION_ARRAY(morgues, R(21, 2, 26, 9), R(11, 15, 18, 19),
                               R(39, 10, 45, 15));
@@ -194,8 +194,8 @@ gen_juiblex(struct level *lev) {
     PLACE_JUSTIFIED(RIGHT, TOP, upisland);
 
     { /* stairs / teleports */
-        REGION(downstair, R(1, 0, 11, 20));
-        REGION(upstair, R(69, 0, 79, 20));
+        REGION(downstair, R(0, 0, 10, 20));
+        REGION(upstair, R(68, 0, 78, 20));
 
         TELEPORT_REGION(UP, downstair);
         TELEPORT_REGION(DOWN, upstair);
@@ -307,7 +307,7 @@ gen_orcus(struct level *lev) {
     MAKE_ROOM(MR(intown));
 
     { /* stairs / teleports */
-        REGION(leftside, R(1, 0, 12, 20));
+        REGION(leftside, R(0, 0, 11, 20));
 
         TELEPORT_REGION(BOTH, leftside);
 
