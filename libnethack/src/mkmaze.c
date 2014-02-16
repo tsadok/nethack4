@@ -7,6 +7,8 @@
 #include "sp_lev.h"
 #include "lev.h"        /* save & restore info */
 
+#include "gehennom_gen.h" /* FIXME: temporary! */
+
 static boolean iswall(struct level *lev, int x, int y);
 static boolean iswall_or_stone(struct level *lev, int x, int y);
 static boolean is_solid(struct level *lev, int x, int y);
@@ -122,7 +124,7 @@ wallification(struct level *lev, int x1, int y1, int x2, int y2)
     int bits;
     int locale[3][3];   /* rock or wall status surrounding positions */
 
-    /* 
+    /*
      * Value 0 represents a free-standing wall.  It could be anything,
      * so even though this table says VWALL, we actually leave whatever
      * typ was there alone.
@@ -152,7 +154,7 @@ wallification(struct level *lev, int x1, int y1, int x2, int y2)
             }
         }
 
-    /* 
+    /*
      * Step 2: set the correct wall type.  We can't combine steps
      * 1 and 2 into a single sweep because we depend on knowing if
      * the surrounding positions are stone.
@@ -237,7 +239,7 @@ place_lregion(struct level *lev, xchar lx, xchar ly, xchar hx, xchar hy,
     xchar x, y;
 
     if (lx == COLNO) {  /* default to whole level */
-        /* 
+        /*
          * if there are rooms and this a branch, let place_branch choose
          * the branch location (to avoid putting branches in corridors).
          */
@@ -352,10 +354,21 @@ makemaz(struct level *lev, const char *s)
         strcpy(protofile, "");
 
     if (*protofile) {
+        if (!strcmp(protofile, "orcus")) {
+            gen_orcus(lev);
+            return;
+        } else if (!strcmp(protofile, "valley")) {
+            gen_valley(lev);
+            return;
+        } else if (!strcmp(protofile, "juiblex")) {
+            gen_juiblex(lev);
+            return;
+        }
+
         strcat(protofile, LEV_EXT);
         if (load_special(lev, protofile)) {
             fixup_special(lev);
-            /* some levels can end up with monsters on dead mon list, including 
+            /* some levels can end up with monsters on dead mon list, including
                light source monsters */
             dmonsfree(lev);
             return;     /* no mazification right now */
@@ -383,7 +396,7 @@ makemaz(struct level *lev, const char *s)
     } else {    /* choose "vibrating square" location */
 #define x_maze_min 2
 #define y_maze_min 2
-        /* 
+        /*
          * Pick a position where the stairs down to Moloch's Sanctum
          * level will ultimately be created.  At that time, an area
          * will be altered:  walls removed, moat and traps generated,
@@ -702,7 +715,7 @@ movebubbles(void)
     if (Punished)
         unplacebc();
 
-    /* 
+    /*
      * Pick up everything inside of a bubble then fill all bubble
      * locations.
      */
@@ -791,7 +804,7 @@ movebubbles(void)
                 }
     }
 
-    /* 
+    /*
      * Every second time traverse down.  This is because otherwise
      * all the junk that changes owners when bubbles overlap
      * would eventually end up in the last bubble in the chain.
@@ -1058,7 +1071,7 @@ mv_bubble(struct level *lev, struct bubble *b, int dx, int dy, boolean ini)
         dy = sgn(dy);
     }
 
-    /* 
+    /*
      * collision with level borders?
      *      1 = horizontal border, 2 = vertical, 3 = corner
      */
@@ -1187,4 +1200,3 @@ mv_bubble(struct level *lev, struct bubble *b, int dx, int dy, boolean ini)
 }
 
 /*mkmaze.c*/
-
