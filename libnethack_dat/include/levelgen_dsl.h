@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-02-16 */
+/* Last modified by Sean Hunt, 2014-02-17 */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -68,13 +68,13 @@ enum cardinal_dir {
 
 #define REGION_ARRAY(name, ...) \
     struct area name[] = { __VA_ARGS__ }; \
-    levgen_shuffle_array(name, sizeof name / sizeof *name, sizeof *name)
+    lg_shuffle_array(name, sizeof name / sizeof *name, sizeof *name)
 #define COORD_ARRAY(name, ...) \
     struct coord name[] = { __VA_ARGS__ }; \
-    levgen_shuffle_array(name, sizeof name / sizeof *name, sizeof *name)
+    lg_shuffle_array(name, sizeof name / sizeof *name, sizeof *name)
 #define CHAR_ARRAY(name, ...) \
     char name[] = { __ VA_ARGS__ }; \
-    levgen_shuffle_array(name, sizeof name / sizeof *name, sizeof *name)
+    lg_shuffle_array(name, sizeof name / sizeof *name, sizeof *name)
 
 #define RETURN_LEV(...) TODO
 #define REPEAT(n) \
@@ -85,7 +85,7 @@ enum cardinal_dir {
  */
 
 #define FILL_MAP(c) \
-    do { levgen_fill_map(lev_, c, __LINE__, __FILE__); } while (0)
+    do { lg_fill_map(lev_, c, __LINE__, __FILE__); } while (0)
 
 #define MAKE_MAP(...) TODO
 
@@ -212,7 +212,7 @@ enum cardinal_dir {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-prototypes"
 char
-levgen_what_map_char(char c) {
+lg_what_map_char(char c) {
     switch (c) {
     case ' ':
         return STONE;
@@ -261,8 +261,8 @@ levgen_what_map_char(char c) {
 }
 
 void
-levgen_fill_map(struct level *lev, char c, int line, const char * file) {
-    int val = levgen_what_map_char(c);
+lg_fill_map(struct level *lev, char c, int line, const char * file) {
+    int val = lg_what_map_char(c);
 
     if (val == INVALID_TYPE) {
         impossible("Invalid fill character at line %d of %s", line, file);
@@ -276,7 +276,7 @@ levgen_fill_map(struct level *lev, char c, int line, const char * file) {
 }
 
 void
-levgen_shuffle_array(void *ptr, size_t num, size_t size) {
+lg_shuffle_array(void *ptr, size_t num, size_t size) {
     char tmp[size];
     int i, j;
 
