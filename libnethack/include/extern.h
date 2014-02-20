@@ -1572,7 +1572,8 @@ extern void costly_damage_obj(struct obj *);
 
 /* ### shknam.c ### */
 
-extern void stock_room(int shp_indx, struct level *lev, struct mkroom *sroom);
+extern void stock_room(int shp_indx, struct level *lev, struct mkroom *sroom,
+                       boolean make_shk);
 extern boolean saleable(struct monst *, struct obj *);
 extern int get_shop_item(int);
 

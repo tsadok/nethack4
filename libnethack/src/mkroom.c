@@ -139,7 +139,7 @@ mkshop(struct level *lev)
     topologize(lev, sroom);
 
     /* stock the room with a shopkeeper and artifacts */
-    stock_room(styp, lev, sroom);
+    stock_room(styp, lev, sroom, TRUE);
 }
 
 
@@ -440,7 +440,7 @@ mktemple(struct level *lev)
 
     /* set up Priest and shrine */
     sroom->rtype = TEMPLE;
-    /* 
+    /*
      * In temples, shrines are blessed altars
      * located in the center of the room
      */

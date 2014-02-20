@@ -389,7 +389,7 @@ create_room(struct level * lev, xchar x, xchar y, xchar w, xchar h, xchar xal,
     if (rlit == -1)
         rlit = (rnd(1 + abs(depth(&lev->z))) < 11 && rn2(77)) ? TRUE : FALSE;
 
-    /* 
+    /*
      * Here we will try to create a room. If some parameters are
      * random we are willing to make several try before we give
      * it up.
@@ -788,7 +788,7 @@ create_monster(struct level *lev, monster * m, struct mkroom *croom)
         } else {
             pm = mkclass(&lev->z, class,
                          ((class == S_KOP) || (class == S_EEL)) ? G_NOGEN : 0);
-            /* if we can't get a specific monster type (pm == 0) then the class 
+            /* if we can't get a specific monster type (pm == 0) then the class
                has been genocided, so settle for a random monster */
         }
         if (In_mines(&lev->z) && pm && your_race(pm) &&
@@ -823,7 +823,7 @@ create_monster(struct level *lev, monster * m, struct mkroom *croom)
             if (m->name.str)
                 mtmp = christen_monst(mtmp, m->name.str);
 
-            /* 
+            /*
              * This is currently hardwired for mimics only.  It should
              * eventually be expanded.
              */
@@ -924,7 +924,7 @@ create_object(struct level *lev, object * o, struct mkroom *croom)
         else if (o->id != -1)
             otmp = mksobj_at(o->id, lev, x, y, TRUE, !named);
         else {
-            /* 
+            /*
              * The special levels are compiled with the default "text" object
              * class characters.  We must convert them to the internal format.
              */
@@ -1490,7 +1490,7 @@ fill_room(struct level *lev, struct mkroom *croom, boolean prefilled)
         case BEEHIVE:
         case MORGUE:
         case BARRACKS:
-            fill_zoo(lev, croom);
+            fill_zoo(lev, croom, TRUE);
             break;
         }
     }
@@ -1633,7 +1633,7 @@ build_room(struct level *lev, room * r, room * pr)
 
         topologize(lev, aroom); /* set roomno */
         /* MRS - 07/04/91 - This is temporary but should result in proper
-           filling of shops, etc. DLC - this can fail if corridors are added to 
+           filling of shops, etc. DLC - this can fail if corridors are added to
            this room at a later point.  Currently no good way to fix this. */
         if (aroom->rtype != OROOM && r->filled)
             fill_room(lev, aroom, FALSE);
@@ -1996,7 +1996,7 @@ load_rooms(struct level *lev, dlb * fd)
                 }
         }
 
-    /* 
+    /*
      * Create the rooms now...
      */
 
@@ -2165,7 +2165,7 @@ load_maze(struct level *lev, dlb * fd)
                 panic("reading special level with ysize too large");
         }
 
-        /* 
+        /*
          * If any CROSSWALLs are found, must change to ROOM after REGION's
          * are laid out.  CROSSWALLS are used to specify "invisible"
          * boundaries where DOOR syms look bad or aren't desirable.
@@ -2189,14 +2189,14 @@ load_maze(struct level *lev, dlb * fd)
                     lev->locations[x][y].horizontal = 0;
                     lev->locations[x][y].roomno = 0;
                     lev->locations[x][y].edge = 0;
-                    /* 
+                    /*
                      * Note: Even though lev->locations[x][y].typ is type schar,
                      *   lev_comp.y saves it as type char. Since schar != char
                      *   all the time we must make this exception or hack
                      *   through lev_comp.y to fix.
                      */
 
-                    /* 
+                    /*
                      *  Set secret doors to closed (why not trapped too?).  Set
                      *  the horizontal bit.
                      */
@@ -2204,7 +2204,7 @@ load_maze(struct level *lev, dlb * fd)
                         IS_DOOR(lev->locations[x][y].typ)) {
                         if (lev->locations[x][y].typ == SDOOR)
                             lev->locations[x][y].doormask = D_CLOSED;
-                        /* 
+                        /*
                          *  If there is a wall to the left that connects to a
                          *  (secret) door, then it is horizontal.  This does
                          *  not allow (secret) doors to be corners of rooms.
@@ -2566,7 +2566,7 @@ load_maze(struct level *lev, dlb * fd)
             lev->locations[x][y].flags = 0;
         }
 
-        /* 
+        /*
          * We must be sure that the parity of the coordinates for
          * walkfrom() is odd.  But we must also take into account
          * what direction was chosen.
@@ -2593,7 +2593,7 @@ load_maze(struct level *lev, dlb * fd)
     }
     wallification(lev, 0, 0, COLNO - 1, ROWNO - 1);
 
-    /* 
+    /*
      * If there's a significant portion of maze unused by the special level,
      * we don't want it empty.
      *

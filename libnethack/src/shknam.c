@@ -371,7 +371,8 @@ shkinit(const struct shclass *shp, struct level *lev, struct mkroom *sroom)
 
 /* stock a newly-created room with objects */
 void
-stock_room(int shp_indx, struct level *lev, struct mkroom *sroom)
+stock_room(int shp_indx, struct level *lev, struct mkroom *sroom,
+           boolean make_shk)
 {
     /* 
      * Someday soon we'll dispatch on the shdist field of shclass to do

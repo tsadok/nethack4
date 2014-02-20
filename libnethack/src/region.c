@@ -354,13 +354,12 @@ in_out_region(struct level *lev, xchar x, xchar y)
     /* First check if we can do the move */
     for (i = 0; i < lev->n_regions; i++) {
         if (inside_region(lev->regions[i], x, y)
-            && !hero_inside(lev->regions[i]) && !lev->regions[i]->attach_2_u) {
+            && !hero_inside(lev->regions[i])) {
             if ((f_indx = lev->regions[i]->can_enter_f) != NO_CALLBACK)
                 if (!(*callbacks[f_indx]) (lev->regions[i], 0))
                     return FALSE;
         } else if (hero_inside(lev->regions[i])
-                   && !inside_region(lev->regions[i], x, y)
-                   && !lev->regions[i]->attach_2_u) {
+                   && !inside_region(lev->regions[i], x, y)) {
             if ((f_indx = lev->regions[i]->can_leave_f) != NO_CALLBACK)
                 if (!(*callbacks[f_indx]) (lev->regions[i], 0))
                     return FALSE;
@@ -369,7 +368,7 @@ in_out_region(struct level *lev, xchar x, xchar y)
 
     /* Callbacks for the regions we do leave */
     for (i = 0; i < lev->n_regions; i++)
-        if (hero_inside(lev->regions[i]) && !lev->regions[i]->attach_2_u &&
+        if (hero_inside(lev->regions[i]) &&
             !inside_region(lev->regions[i], x, y)) {
             clear_hero_inside(lev->regions[i]);
             if (lev->regions[i]->leave_msg != NULL)
@@ -380,7 +379,7 @@ in_out_region(struct level *lev, xchar x, xchar y)
 
     /* Callbacks for the regions we do enter */
     for (i = 0; i < lev->n_regions; i++)
-        if (!hero_inside(lev->regions[i]) && !lev->regions[i]->attach_2_u &&
+        if (!hero_inside(lev->regions[i]) &&
             inside_region(lev->regions[i], x, y)) {
             set_hero_inside(lev->regions[i]);
             if (lev->regions[i]->enter_msg != NULL)
@@ -402,14 +401,12 @@ m_in_out_region(struct monst * mon, xchar x, xchar y)
     /* First check if we can do the move */
     for (i = 0; i < mon->dlevel->n_regions; i++) {
         if (inside_region(mon->dlevel->regions[i], x, y) &&
-            !mon_in_region(mon->dlevel->regions[i], mon) &&
-            mon->dlevel->regions[i]->attach_2_m != mon->m_id) {
+            !mon_in_region(mon->dlevel->regions[i], mon)) {
             if ((f_indx = mon->dlevel->regions[i]->can_enter_f) != NO_CALLBACK)
                 if (!(*callbacks[f_indx]) (mon->dlevel->regions[i], mon))
                     return FALSE;
         } else if (mon_in_region(mon->dlevel->regions[i], mon) &&
-                   !inside_region(mon->dlevel->regions[i], x, y) &&
-                   mon->dlevel->regions[i]->attach_2_m != mon->m_id) {
+                   !inside_region(mon->dlevel->regions[i], x, y)) {
             if ((f_indx = mon->dlevel->regions[i]->can_leave_f) != NO_CALLBACK)
                 if (!(*callbacks[f_indx]) (mon->dlevel->regions[i], mon))
                     return FALSE;
@@ -419,7 +416,6 @@ m_in_out_region(struct monst * mon, xchar x, xchar y)
     /* Callbacks for the regions we do leave */
     for (i = 0; i < mon->dlevel->n_regions; i++)
         if (mon_in_region(mon->dlevel->regions[i], mon) &&
-            mon->dlevel->regions[i]->attach_2_m != mon->m_id &&
             !inside_region(mon->dlevel->regions[i], x, y)) {
             remove_mon_from_reg(mon->dlevel->regions[i], mon);
             if ((f_indx = mon->dlevel->regions[i]->leave_f) != NO_CALLBACK)
@@ -429,7 +425,6 @@ m_in_out_region(struct monst * mon, xchar x, xchar y)
     /* Callbacks for the regions we do enter */
     for (i = 0; i < mon->dlevel->n_regions; i++)
         if (!hero_inside(mon->dlevel->regions[i]) &&
-            !mon->dlevel->regions[i]->attach_2_u &&
             inside_region(mon->dlevel->regions[i], x, y)) {
             add_mon_to_reg(mon->dlevel->regions[i], mon);
             if ((f_indx = mon->dlevel->regions[i]->enter_f) != NO_CALLBACK)
@@ -447,8 +442,7 @@ update_player_regions(struct level *lev)
     int i;
 
     for (i = 0; i < lev->n_regions; i++)
-        if (!lev->regions[i]->attach_2_u &&
-            inside_region(lev->regions[i], u.ux, u.uy))
+        if (inside_region(lev->regions[i], u.ux, u.uy))
             set_hero_inside(lev->regions[i]);
         else
             clear_hero_inside(lev->regions[i]);
@@ -524,7 +518,6 @@ save_regions(struct memfile *mf, struct level *lev)
         r = lev->regions[i];
 
         save_rect(mf, r->bounding_box);
-        mwrite32(mf, r->attach_2_m);
         mwrite32(mf, r->effect_id);
         mwrite32(mf, r->arg);
         mwrite16(mf, r->nrects);
@@ -539,7 +532,6 @@ save_regions(struct memfile *mf, struct level *lev)
         mwrite16(mf, r->inside_f);
         mwrite16(mf, r->n_monst);
         mwrite8(mf, r->player_flags);
-        mwrite8(mf, r->attach_2_u);
         mwrite8(mf, r->visible);
 
         for (j = 0; j < r->n_monst; j++)
@@ -599,7 +591,6 @@ rest_regions(struct memfile *mf, struct level *lev, boolean ghostly)
         r->lev = lev;
 
         restore_rect(mf, &r->bounding_box);
-        r->attach_2_m = mread32(mf);
         r->effect_id = mread32(mf);
         r->arg = mread32(mf);
         r->nrects = mread16(mf);
@@ -617,7 +608,6 @@ rest_regions(struct memfile *mf, struct level *lev, boolean ghostly)
         r->n_monst = mread16(mf);
         r->max_monst = r->n_monst;
         r->player_flags = mread8(mf);
-        r->attach_2_u = mread8(mf);
         r->visible = mread8(mf);
 
         if (r->n_monst > 0)
