@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-02-17 */
+/* Last modified by Sean Hunt, 2014-08-25 */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -7,6 +7,7 @@
 #define LEVGEN_DSL_H
 
 #include "hack.h"
+#include "rm.h"
 
 struct coord {
     int x, y;
@@ -52,40 +53,40 @@ enum cardinal_dir {
  * Declaractions and flow control
  */
 #define INIT_MAZE(lev) \
-    struct level *lev_ = lev; \
+    struct level *lev_ = (lev); \
     int i_; \
     lev->flags.is_maze_lev = TRUE \
 
 #define MAP(map) \
-    SUBMAP(map_, C(COLNO - 1, ROWNO - 1), map); \
+    SUBMAP(map_, C(COLNO - 1, ROWNO - 1), (map)); \
     PLACE_AT(map_, C(0, 0))
     
 #define SUBMAP(name, size, map) \
-    struct maparea * name = new_map(size, map)
+    struct maparea * name = lg_new_map((size), (map))
 
 #define REGION(name, reg) \
     struct area name = (reg)
 
 #define REGION_ARRAY(name, ...) \
     struct area name[] = { __VA_ARGS__ }; \
-    lg_shuffle_array(name, sizeof name / sizeof *name, sizeof *name)
+    lg_shuffle_array(name, sizeof (name) / sizeof (*(name)), sizeof (*(name)))
 #define COORD_ARRAY(name, ...) \
     struct coord name[] = { __VA_ARGS__ }; \
-    lg_shuffle_array(name, sizeof name / sizeof *name, sizeof *name)
+    lg_shuffle_array((name), sizeof (name) / sizeof (*(name)), sizeof (*(name)))
 #define CHAR_ARRAY(name, ...) \
     char name[] = { __ VA_ARGS__ }; \
-    lg_shuffle_array(name, sizeof name / sizeof *name, sizeof *name)
+    lg_shuffle_array(name, sizeof (name) / sizeof (*(name)), sizeof (*(name)))
 
 #define RETURN_LEV(...) TODO
 #define REPEAT(n) \
-    for (i_ = 0; i_ < n; ++i_)
+    for (i_ = 0; i_ < (n); ++i_)
 
 /* ====================================================
  * Statements and functions with an effect on the level
  */
 
 #define FILL_MAP(c) \
-    do { lg_fill_map(lev_, c, __LINE__, __FILE__); } while (0)
+    do { lg_fill_map(lev_, (c), __LINE__, __FILE__); } while (0)
 
 #define MAKE_MAP(...) TODO
 
@@ -205,97 +206,9 @@ enum cardinal_dir {
 #define EAST (cd_east)
 #define WEST (cd_west)
 
-/* ==========================================================
- * Real functions that haven't been moved to source files yet
- */
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-prototypes"
-char
-lg_what_map_char(char c) {
-    switch (c) {
-    case ' ':
-        return STONE;
-    case '#':
-        return CORR;
-    case '.':
-        return ROOM;
-    case '-':
-        return HWALL;
-    case '|':
-        return VWALL;
-    case '+':
-        return DOOR;
-    case 'A':
-        return AIR;
-    case 'B':
-        return CROSSWALL;       /* hack: boundary location */
-    case 'C':
-        return CLOUD;
-    case 'S':
-        return SDOOR;
-    case 'H':
-        return SCORR;
-    case '{':
-        return FOUNTAIN;
-    case '\\':
-        return THRONE;
-    case 'K':
-        return SINK;
-    case '}':
-        return MOAT;
-    case 'P':
-        return POOL;
-    case 'L':
-        return LAVAPOOL;
-    case 'I':
-        return ICE;
-    case 'W':
-        return WATER;
-    case 'T':
-        return TREE;
-    case 'F':
-        return IRONBARS;        /* Fe = iron */
-    }
-    return INVALID_TYPE;
-}
-
-void
-lg_fill_map(struct level *lev, char c, int line, const char * file) {
-    int val = lg_what_map_char(c);
-
-    if (val == INVALID_TYPE) {
-        impossible("Invalid fill character at line %d of %s", line, file);
-        val = STONE;
-    }
-
-    int x, y;
-    for (x = 0; x < COLNO; ++x)
-        for (y = 0; y < ROWNO; ++y)
-            lev->locations[x][y].typ = val;
-}
-
-void
-lg_shuffle_array(void *ptr, size_t num, size_t size) {
-    char tmp[size];
-    int i, j;
-
-    for (i = 0; i < num - 1; ++i) {
-        j = rn2(num - i) + i;
-
-        if (j == i)
-            continue;
-
-        memcpy(tmp, (char*)ptr + j * size, size);
-        memcpy((char*)ptr + j * size, (char*)ptr + i * size, size);
-        memcpy((char*)ptr + i * size, tmp, size);
-    }
-}
-
-struct maparea *
-new_map (struct coord size, const char *text) {
-    return 0;
-}
-#pragma clang diagnostic pop
+char lg_what_map_char(char c);
+void lg_fill_map(struct level *lev, char c, int line, const char *file);
+void lg_shuffle_array(void *ptr, size_t num, size_t size);
+struct maparea *lg_new_map(struct coord size, const char *text);
 
 #endif

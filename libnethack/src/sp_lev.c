@@ -1475,7 +1475,7 @@ fill_room(struct level *lev, struct mkroom *croom, boolean prefilled)
 
         /* Shop ? */
         if (croom->rtype >= SHOPBASE) {
-            stock_room(croom->rtype - SHOPBASE, lev, croom);
+            stock_room(croom->rtype - SHOPBASE, lev, croom, TRUE);
             return;
         }
 
@@ -1490,7 +1490,7 @@ fill_room(struct level *lev, struct mkroom *croom, boolean prefilled)
         case BEEHIVE:
         case MORGUE:
         case BARRACKS:
-            fill_zoo(lev, croom, TRUE);
+            fill_zoo(lev, croom);
             break;
         }
     }
