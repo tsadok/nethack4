@@ -1,6 +1,8 @@
-if exists(":RemoveLevgenHighlights")
-  RemoveLevgenHighlights
-endif
+" NetHack4 Levelgen vim highlighting script
+" Last modified by Sean Hunt, 2014-08-25
+" Copyright (c) Sean Hunt, 2014
+" This script may be freely redistributed under the same license as NetHack.
+" See license for details.
 
 let s:declarations = [
   \ "INIT_MAZE",
@@ -9,7 +11,6 @@ let s:declarations = [
   \ "REGION_ARRAY", "COORD_ARRAY", "CHAR_ARRAY",
   \ "RETURN_LEV", "REPEAT"
 \]
-  
 
 let s:statements = [
   \ "FILL_MAP", "MAKE_MAP",
@@ -19,7 +20,7 @@ let s:statements = [
   \ "FILL_IRREGULAR", "LIGHT_REGION", "DARKEN_REGION", "NON_DIGGABLE",
   \ "TELEPORT_REGION", "STAIR_UP", "STAIR_DOWN", "IF_BRANCH_UP", "BRANCH_UP",
   \ "FOR_EACH_COORD", "FOR_EACH_REGION",
-  \ "DOOR", "FOUNTAIN", "ALTAR",
+  \ "PLACE_DOOR", "PLACE_FOUNTAIN", "PLACE_ALTAR",
   \ "MAKE_ROOM", "MAKE_TEMPLE", "MAKE_MORGUE", "MAKE_ABANDONED_SHOP",
   \ "MAKE_SWAMP",
 \]
@@ -45,25 +46,52 @@ let s:constants = [
   \ "NORTH", "SOUTH", "EAST", "WEST",
   \]
 
-let s:matches = [
-  \ matchadd("Special", '\<\(' . join(s:declarations, '\|') . '\)\>', -1),
-  \ matchadd("Statement", '\<\(' . join(s:statements, '\|') . '\)\>', -1),
-  \ matchadd("Macro", '\<\(' . join(s:short_functions, '\|') . '\)\>', -1),
-  \ matchadd("Function", '\<\(' . join(s:functions, '\|') . '\)\>', -1),
-  \ matchadd("Structure", '\<\(' . join(s:constants, '\|') . '\)\>', -1),
-\]
-
-function <SID>delmatches()
-  for l:match in s:matches
-    call matchdelete(l:match)
-  endfor
+function! <SID>addmatches()
+  if exists("b:matches") && !empty(b:matches) 
+    return
+  endif
+  let b:matches = [
+    \ matchadd("Special", '\<\(' . join(s:declarations, '\|') . '\)\>', -1),
+    \ matchadd("Statement", '\<\(' . join(s:statements, '\|') . '\)\>', -1),
+    \ matchadd("Macro", '\<\(' . join(s:short_functions, '\|') . '\)\>', -1),
+    \ matchadd("Function", '\<\(' . join(s:functions, '\|') . '\)\>', -1),
+    \ matchadd("Structure", '\<\(' . join(s:constants, '\|') . '\)\>', -1),
+  \]
 endf
 
-command! -buffer RemoveLevgenHighlights
-  \ call <SID>delmatches() | delf <SID>delmatches |
-  \ delcommand RemoveLevgenHighlights | au! LevgenHighlights
+function! <SID>delmatches()
+  for l:match in b:matches
+    call matchdelete(l:match)
+  endfor
+
+  let b:matches = []
+endf
+
+function! <SID>detect_highlights()
+  if getline(3) =~ "nh4-scripts.*LEVGEN"
+    EnableLevgenHighlights
+  endif
+endf
+
+function! <SID>enable_highlights()
+  call <SID>addmatches()
+  augroup LevgenHighlights
+    au! LevgenHighlights * <buffer>
+    au BufWinLeave <buffer> call <SID>delmatches()
+    au BufWinEnter <buffer> call <SID>addmatches()
+  augroup END
+endf
+
+function! <SID>disable_highlights()
+  call <SID>delmatches()
+  au! LevgenHighlights * <buffer>
+endf
+
+command! EnableLevgenHighlights call <SID>enable_highlights()
+
+command! DisableLevgenHighlights call <SID>disable_highlights()
 
 augroup LevgenHighlights
   au!
-  au BufWinLeave <buffer> RemoveLevgenHighlights
+  au BufReadPost * call <SID>detect_highlights()
 augroup END
