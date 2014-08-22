@@ -7,9 +7,12 @@
 #include "levelgen_dsl.h"
 #include "gehennom_gen.h"
 
+#pragma clang diagnostic ignored "-Wunused"
+
 void
 gen_valley(struct level *lev) {
-    INIT_MAZE(lev);
+    INIT_LEVGEN(lev);
+    MAZE;
     FILL_MAP(' ');
     
     NOTELEPORT;
@@ -46,9 +49,9 @@ gen_valley(struct level *lev) {
         PLACE_ALTAR(UNALIGNED, C(6, 11));
         MAKE_TEMPLE(temple);
 
-        PLACE_DOOR(LOCKED, C(6, 2));
-        PLACE_DOOR(LOCKED, C(10, 5));
-        PLACE_DOOR(LOCKED, C(8, 7));
+        PLACE_SDOOR(LOCKED, C(6, 2));
+        PLACE_SDOOR(LOCKED, C(10, 5));
+        PLACE_SDOOR(LOCKED, C(8, 7));
 
         REGION_ARRAY(morgues, R(21, 2, 26, 9), R(11, 15, 18, 19),
                               R(39, 10, 45, 15));
@@ -144,12 +147,13 @@ gen_valley(struct level *lev) {
         MON(RANDOM_MON_OF('L'), RANDOM_LOC);
     }
 
-    RETURN_LEV;
+    FINISH_LEV;
 }
 
 void
 gen_juiblex(struct level *lev) {
-    INIT_MAZE(lev);
+    INIT_LEVGEN(lev);
+    MAZE;
 
     MAKE_MAP('.', '}', SMOOTHED, JOINED, UNLIT, UNWALLED);
 
@@ -272,12 +276,13 @@ gen_juiblex(struct level *lev) {
         }
     }
 
-  RETURN_LEV;
+  FINISH_LEV;
 }
 
 void
 gen_orcus(struct level *lev) {
-    INIT_MAZE(lev);
+    INIT_LEVGEN(lev);
+    MAZE;
     FILL_MAP(' ');
 
     NOTELEPORT;
@@ -352,8 +357,8 @@ gen_orcus(struct level *lev) {
 
         PLACE_ALTAR(UNALIGNED, REL(MR(intown), C(24, 7)));
 
-        REGION_ARRAY(shops, REL_REGION(MR(intown), R(32, 9, 37, 12)),
-                            REL_REGION(MR(intown), R(12, 0, 15, 4)));
+        REGION_ARRAY(shops, REL_REG(MR(intown), R(32, 9, 37, 12)),
+                            REL_REG(MR(intown), R(12, 0, 15, 4)));
         FOR_EACH_REGION(shop, shops) {
             LIGHT_REGION(shop);
             MAKE_ABANDONED_SHOP(shop);
@@ -404,5 +409,5 @@ gen_orcus(struct level *lev) {
             MON(PM_VAMPIRE_LORD, IN(MR(intown)));
     }
 
-  RETURN_LEV;
+  FINISH_LEV;
 }

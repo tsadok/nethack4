@@ -1,5 +1,5 @@
 About this document:
-Last modified by Sean Hunt, 2014-01-15
+Last modified by Sean Hunt, 2014-08-25
 
 Copyright (C) 2013 Sean Hunt
 
@@ -193,8 +193,6 @@ Things that need to be in the level flags:
  - Whether this is a sokoban level [too many special cases and again no easy
    unifying themes]
  - Whether the floor is diggable
- - Whether altars are high (also affects wrath; make the Amulet sacrificable
-   to Moloch in the Sanctum)
  - Whether scrolls of earth work [can this be merged with something else? Fire
    is the big weird one here, especially as it has a ceiling]
  - Whether the level is open air (currently qhome, Fire?)

@@ -5,11 +5,13 @@
 " See license for details.
 
 let s:declarations = [
-  \ "INIT_MAZE",
+  \ "INIT_LEVGEN", "MAZE",
   \ "MAP", "SUBMAP",
   \ "REGION",
   \ "REGION_ARRAY", "COORD_ARRAY", "CHAR_ARRAY",
-  \ "RETURN_LEV", "REPEAT"
+  \ "FINISH_LEV", "REPEAT",
+  \ "FOR_EACH_COORD", "FOR_EACH_REGION",
+  \ "IF_BRANCH_UP", "IF_BRANCH_DOWN",
 \]
 
 let s:statements = [
@@ -18,8 +20,7 @@ let s:statements = [
   \ "MAZEWALK", "PLACE_JUSTIFIED", "PLACE_AT",
   \ "TRAP", "OBJ", "OBJ_EX", "MON", "MON_EX", "OBJ_EX",
   \ "FILL_IRREGULAR", "LIGHT_REGION", "DARKEN_REGION", "NON_DIGGABLE",
-  \ "TELEPORT_REGION", "STAIR_UP", "STAIR_DOWN", "IF_BRANCH_UP", "BRANCH_UP",
-  \ "FOR_EACH_COORD", "FOR_EACH_REGION",
+  \ "TELEPORT_REGION", "STAIR_UP", "STAIR_DOWN", "BRANCH_UP",
   \ "PLACE_DOOR", "PLACE_FOUNTAIN", "PLACE_ALTAR",
   \ "MAKE_ROOM", "MAKE_TEMPLE", "MAKE_MORGUE", "MAKE_ABANDONED_SHOP",
   \ "MAKE_SWAMP",
