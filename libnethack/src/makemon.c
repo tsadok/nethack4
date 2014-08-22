@@ -9,6 +9,7 @@
 #include "edog.h"
 #include "eshk.h"
 #include "vault.h"
+#include "makemon.h"
 #include <ctype.h>
 
 /* this assumes that a human quest leader or nemesis is an archetype
@@ -19,7 +20,6 @@
                   (mptr->msound == MS_LEADER || mptr->msound == MS_NEMESIS))
 
 static boolean uncommon(const d_level * dlev, int mndx);
-static int align_shift(const d_level * dlev, const struct permonst *);
 static boolean wrong_elem_type(const struct d_level *dlev,
                                const struct permonst *);
 static void m_initgrp(struct monst *, struct level *lev, int, int, int);
@@ -784,7 +784,7 @@ clone_mon(struct monst *mon, xchar x, xchar y)
     m2->minvent = NULL; /* objects don't clone */
     m2->mleashed = FALSE;
     /* Max HP the same, but current HP halved for both.  The caller might want
-       to override this by halving the max HP also. When current HP is odd, the 
+       to override this by halving the max HP also. When current HP is odd, the
        original keeps the extra point. */
     m2->mhpmax = mon->mhpmax;
     m2->mhp = mon->mhp / 2;
@@ -835,8 +835,8 @@ clone_mon(struct monst *mon, xchar x, xchar y)
             replmon(m2, m3);
             m2 = m3;
         } else {
-            /* because m2 is a copy of mon it is tame but not init'ed. however, 
-               tamedog will not re-tame a tame dog, so m2 must be made non-tame 
+            /* because m2 is a copy of mon it is tame but not init'ed. however,
+               tamedog will not re-tame a tame dog, so m2 must be made non-tame
                to get initialized properly. */
             m2->mtame = 0;
             if ((m3 = tamedog(m2, NULL)) != 0) {
@@ -1205,7 +1205,7 @@ create_critters(int cnt, const struct permonst * mptr)
 
     while (cnt--) {
         x = u.ux, y = u.uy;
-        /* if in water, try to encourage an aquatic monster by finding and then 
+        /* if in water, try to encourage an aquatic monster by finding and then
            specifying another wet location */
         if (!mptr && u.uinwater && enexto(&c, level, x, y, &mons[PM_GIANT_EEL]))
             x = c.x, y = c.y;
@@ -1229,35 +1229,6 @@ uncommon(const d_level * dlev, int mndx)
         return mons[mndx].maligntyp > A_NEUTRAL;
     else
         return (mons[mndx].geno & G_HELL) != 0;
-}
-
-/*
- * shift the probability of a monster's generation by
- * comparing the dungeon alignment and monster alignment.
- * return an integer in the range of 0-5.
- */
-static int
-align_shift(const d_level * dlev, const struct permonst *ptr)
-{
-    s_level *lev = Is_special(dlev);
-    int alshift;
-
-    switch ((lev) ? lev->flags.align : dungeons[dlev->dnum].flags.align) {
-    default:   /* just in case */
-    case AM_NONE:
-        alshift = 0;
-        break;
-    case AM_LAWFUL:
-        alshift = (ptr->maligntyp + 20) / (2 * ALIGNWEIGHT);
-        break;
-    case AM_NEUTRAL:
-        alshift = (20 - abs(ptr->maligntyp)) / ALIGNWEIGHT;
-        break;
-    case AM_CHAOTIC:
-        alshift = (-(ptr->maligntyp - 20)) / (2 * ALIGNWEIGHT);
-        break;
-    }
-    return alshift;
 }
 
 static struct rndmonst_state {
@@ -1444,6 +1415,140 @@ mkclass(const d_level * dlev, char class, int spc)
     return &mons[first];
 }
 
+
+int
+pick_monster(const struct level *lev, gen_prob_callback callback, void *dat) {
+    uchar probs[NUMMONS] = {};
+    int sum = 0;
+    int i;
+
+    for (i = LOW_PM; i < NUMMONS; ++i) {
+        if (is_placeholder(&mons[i]))
+            continue;
+        if (mvitals[i].mvflags & G_GENO)
+            continue;
+        if ((mvitals[i].mvflags & G_EXTINCT) & mons[i].geno & G_UNIQ)
+            continue;
+
+        uchar raw = callback(lev, i, dat);
+
+        if ((mvitals[i].mvflags & G_EXTINCT) && !(raw & MP_IGNORE_EXTINCT))
+            continue;
+        if ((mons[i].geno & G_UNIQ) && !(raw & MP_IGNORE_UNIQ))
+            continue;
+        if ((mons[i].geno & G_NOGEN) && !(raw & MP_IGNORE_NOGEN))
+            continue;
+
+        raw &= ~(MP_FLAGS);
+
+        if (sum > INT_MAX - raw) {
+            impossible("cumulative monster probability is way too high!");
+            break;
+        }
+
+        probs[i] = raw;
+        sum += raw;
+    }
+
+    if (sum <= 0)
+        return NON_PM;
+
+    int ct = rnd(sum);
+    i = LOW_PM - 1;
+    while (ct > 0) {
+        ++i;
+        if (i >= NUMMONS) {
+            impossible("random monster index was too big!");
+            return NON_PM;
+        }
+        ct -= probs[i];
+    }
+
+    return i;
+}
+
+
+struct class_filter {
+    char cls;
+    gen_prob_callback callback;
+    void *dat;
+};
+
+static uchar
+class_filter_callback(const struct level *lev, int mndx, void *dat) {
+    struct class_filter *filter = dat;
+    if (mons[mndx].mlet != filter->cls)
+        return 0;
+    else
+        return filter->callback(lev, mndx, filter->dat);
+}
+
+int
+pick_monster_class(const struct level *lev, char cls,
+                   gen_prob_callback callback, void *dat) {
+    if (cls) {
+        struct class_filter filter = { cls, callback, dat };
+        return pick_monster(lev, class_filter_callback, &filter);
+    } else
+        return pick_monster(lev, callback, dat);
+}
+
+
+uchar
+align_shift(const struct d_level * dlvl, int mndx)
+{
+    const struct permonst *ptr = &mons[mndx];
+    int alshift;
+    const s_level *lev = Is_special(dlvl);
+
+    switch ((lev) ? lev->flags.align : dungeons[dlvl->dnum].flags.align) {
+    default:   /* just in case */
+    case AM_NONE:
+        alshift = 0;
+        break;
+    case AM_LAWFUL:
+        alshift = (ptr->maligntyp + 20) / (2 * ALIGNWEIGHT);
+        break;
+    case AM_NEUTRAL:
+        alshift = (20 - abs(ptr->maligntyp)) / ALIGNWEIGHT;
+        break;
+    case AM_CHAOTIC:
+        alshift = (-(ptr->maligntyp - 20)) / (2 * ALIGNWEIGHT);
+        break;
+    }
+    return alshift;
+}
+
+boolean
+out_of_depth(const struct level *lev, int mndx, boolean consider_xlvl) {
+    int dl = level_difficulty(&lev->z);
+    int minlev = dl / 6;
+    int maxlev = consider_xlvl ? (dl + u.ulevel) / 2
+                               : (dl <= 10 ? (dl + 1) / 2 : dl - 5);
+
+    return monstr[mndx] < minlev || monstr[mndx] > maxlev;
+}
+
+uchar
+default_gen_prob(const struct level *lev, int mndx, void *consider_xlvl) {
+    if (mons[mndx].geno & (G_NOGEN | G_UNIQ))
+        return 0;
+    if (In_hell(&lev->z)) {
+        if (mons[mndx].geno & G_NOHELL)
+            return 0;
+    } else {
+        if (mons[mndx].maligntyp > A_NEUTRAL)
+            return 0;
+    }
+    if (mvitals[mndx].mvflags & G_GONE)
+        return 0;
+    if (out_of_depth(lev, mndx, *(boolean*)consider_xlvl))
+        return 0;
+
+    return mons[mndx].geno & G_FREQ + align_shift(&lev->z, mndx);
+}
+
+
 /* adjust strength of monsters based on depth */
 int
 adj_lev(const d_level * dlev, const struct permonst *ptr)
@@ -1451,7 +1556,7 @@ adj_lev(const d_level * dlev, const struct permonst *ptr)
     int tmp, tmp2;
 
     if (ptr == &mons[PM_WIZARD_OF_YENDOR]) {
-        /* does not depend on other strengths, but does get stronger every time 
+        /* does not depend on other strengths, but does get stronger every time
            he is killed */
         tmp = ptr->mlevel + mvitals[PM_WIZARD_OF_YENDOR].died;
         if (tmp > 49)
@@ -1476,7 +1581,7 @@ adj_lev(const d_level * dlev, const struct permonst *ptr)
 
 
 const struct permonst *
-grow_up(struct monst *mtmp,     /* `mtmp' might "grow up" into a bigger version 
+grow_up(struct monst *mtmp,     /* `mtmp' might "grow up" into a bigger version
                                  */
         struct monst *victim)
 {
@@ -1488,7 +1593,7 @@ grow_up(struct monst *mtmp,     /* `mtmp' might "grow up" into a bigger version
     if (mtmp->mhp <= 0)
         return NULL;
 
-    /* note: none of the monsters with special hit point calculations have both 
+    /* note: none of the monsters with special hit point calculations have both
        little and big forms */
     oldtype = monsndx(ptr);
     newtype = little_to_big(oldtype);
@@ -1497,7 +1602,7 @@ grow_up(struct monst *mtmp,     /* `mtmp' might "grow up" into a bigger version
 
     /* growth limits differ depending on method of advancement */
     if (victim) {       /* killed a monster */
-        /* 
+        /*
          * The HP threshold is the maximum number of hit points for the
          * current level; once exceeded, a level will be gained.
          * Possible bug: if somehow the hit points are already higher
@@ -1804,7 +1909,7 @@ set_mimic_sym(struct monst *mtmp, struct level *lev)
         ap_type = M_AP_FURNITURE;
         if (Is_rogue_level(&lev->z))
             appear = S_ndoor;
-        /* 
+        /*
          *  If there is a wall to the left that connects to this
          *  location, then the mimic mimics a horizontal closed door.
          *  This does not allow doors to be in corners of rooms.
@@ -1845,7 +1950,7 @@ set_mimic_sym(struct monst *mtmp, struct level *lev)
     } else if (rt == TEMPLE) {
         ap_type = M_AP_FURNITURE;
         appear = S_altar;
-        /* 
+        /*
          * We won't bother with beehives, morgues, barracks, throne rooms
          * since they shouldn't contain too many mimics anyway...
          */

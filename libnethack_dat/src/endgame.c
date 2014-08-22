@@ -7,6 +7,7 @@
 #include "hack.h"
 #include "rm.h"
 #include "endgame_gen.h"
+#include "makemon.h"
 #include "levelgen_dsl.h"
 
 #pragma clang diagnostic ignored "-Wunused"
@@ -69,16 +70,29 @@ void gen_waterlevel(struct level *lev) {
  * Monster generation functions.
  */
 
+static uchar
+waterlevel_gen_prob(const struct level *lev, int mndx, void *levgen) {
+    uchar prob = default_gen_prob(lev, mndx, levgen);
+    const struct permonst *mdat = &mons[mndx];
+
+    if (is_swimmer(mdat))
+        prob *= 4;
+    if (is_flyer(mdat))
+        prob *= 2;
+    if (mndx == PM_COUATL)
+        prob *= 2;
+    if (mndx == PM_WATER_ELEMENTAL)
+        prob *= 4;
+    if (mndx == PM_GREMLIN)
+        return 0;
+
+    return prob;
+}
+
 short waterlevel_generate_mon(struct level *lev, char class, boolean levgen) {
-    /* FIXME: make this sane */
-    /* There should be a good chance that we generate something aquatic, or
-     * possibly a couatl since they do have drowning attacks. */
-    const struct permonst *pm;
-    if (class)
-        pm = mkclass(&lev->z, class, 0);
-    else
-        pm = rndmonst(&lev->z);
-    return pm ? monsndx(pm) : NON_PM;
+    /* Invert levgen so as to tell default_gen_prob() to ignore xlvl */
+    levgen = !levgen;
+    return pick_monster_class(lev, class, waterlevel_gen_prob, &levgen);
 }
 
 /*=============================================================================
