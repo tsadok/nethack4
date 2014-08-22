@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-04-05 */
+/* Last modified by Sean Hunt, 2014-08-25 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -461,46 +461,184 @@ struct wseg {
     xchar wx, wy;       /* the segment's position */
 };
 
+/* BEGIN new code */
+
+struct memfile;
+struct monst;
+struct obj;
+
+enum migration {
+    migrate_nowhere = -1,
+    migrate_random = 0,
+    migrate_approx_xy,
+    migrate_exact_xy,
+    migrate_stairs_up,
+    migrate_stairs_down,
+    migrate_ladder_up,
+    migrate_ladder_down,
+    migrate_sstairs,
+    migrate_portal,
+    migrate_near_player,
+    migrate_count = migrate_near_player,
+};
+
+/* Determine how a level handles level teleports. It may block teleports to or
+ * from the level, or intecept teleports that would go through.. There are
+ * currently no examples of preventing teleports from a level, but the Valley always
+ * intercepts teleports, and the quest home and invocation levels block
+ * downwards travel until unlocked.
+ */
+enum levelport_perms {
+    lpp_allow_all = 0,
+    lpp_block_to = 1,
+    lpp_block_from = 2,
+    lpp_intercept = 4,
+};
+
+/* The display mode that the level uses. */
+enum level_display {
+    ld_default = 0,
+    ld_hell,
+    ld_quest,
+    ld_mines,
+    ld_sokoban,
+    ld_rogue,
+    ld_knox,
+    ld_count = ld_knox
+};
+
+/* The level manager is a series of callbacks stored on the level structure
+ * and used to manage the level. In general, a level manager must have all of
+ * these callbacks (NULL is not allowed) and they must conform to the
+ * requirements outlined. Uniqueness of functions is not required.
+ */
+struct level_manager {
+    /* Called every turn to allow the level to process turn-by-turn effects.
+     * This should process only turn-by-turn effects unique ito the level; the
+     * game engine will handle all monsters', objects', and tiles' effects. An
+     * example is the moving bubbles on the Plane of Water. */
+    void (*turn_effects)(struct level* lev);
+
+    /* Called whenever a monster is migrating to the level. Exact API is subject
+     * to change, here. */
+    void (*migrate_mon)(struct level *lev, struct monst* mon, enum migration type);
+
+    /* Called whever an object is migrating to the level.  Exact API is subject
+     * to change, here. */
+    void (*migrate_obj)(struct level *lev, struct obj* obj, enum migration type);
+
+    /* Called whenever a monster enters the level. */
+    void (*mon_enter)(struct level *lev);
+
+    /* Called whenever a monster leaves the level. */
+    void (*mon_leave)(struct level *lev);
+
+    /* Get the level's description for the #overview command. Must return a
+     * message. (see messages.c) */
+    const char * (*describe)(struct level *lev);
+
+    /* Get the level's description for the debug #printdungeon command. Must
+     * return a message. (see messages.c) */
+    const char * (*wiz_describe)(struct level *lev);
+
+    /* Generate a new monster type appropriate for the level. If PM_NONE, no
+     * monster is generated. The monster will be actually generated and placed
+     * by the calling code. The levgen parameter is TRUE during level generation
+     * and FALSE otherwise. */
+    struct permonst * (*generate_mon)(struct level *lev, boolean levgen);
+
+    /* Fix up a monster after its generation is complete. */
+    void (*fixup_mon)(struct level* lev, struct monst *mon);
+
+    /* Generate a new object. If NULL no object is generated. The object will be
+     * placed by the calling code. The levgen parameter is TRUE during level
+     * generation and FALSE otherwise. */
+    struct obj * (*generate_obj)(struct level *lev, boolean levgen);
+
+    /* Save any extra data associated with the level. This is called after the
+     * rest of the level has been written to the memfile. */
+    void (*save_extra)(struct level *lev, struct memfile *mf);
+
+    /* Restore any extra data associated with the level. This is called after
+     * the rest of the level has been read from the memfile. */
+    void (*restore_extra)(struct level *lev, struct memfile *mf);
+
+    /* Called when the Wizard attempts to intervene and harass the player. */
+    void (*intervene)(struct level *lev);
+
+    /* Determine if the level blocks level teleporting through/from it. This is
+     * a function, not a flag, because it may change depending on circumstances.
+     * The result should never be cached. */
+    enum levelport_perms (*levelport_perms)(struct level *lev, boolean up); 
+};
+
+/* Fixed level flags; that is, the ones that never change after level
+ * generation. Moving flags from here to variable is fine, but should be
+ * undertaken with caution. */
+#if 0
+struct fixed_level_flags {
+    boolean weightless : 1;          /* Weightlessness. e.g. Air and Water */
+    boolean moist : 1;               /* Moist level. Only affects eels. */
+    /* Display mode, for when multiple colours/whatever are implemented. */
+    boolean rogue : 1 ;              /* Rogue level special cases. */
+    boolean sokoban : 1;             /* Sokoban branch special cases. */
+    boolean high_altars : 1;         /* Makes the altars unconvertible;
+                                        Allows offering the Amulet. */
+    boolean open_air : 1;            /* True if the level has no ceiling. */
+    enum lev_disp_mode display : 3;  /* Display mode. */
+    unsigned align : 3;              /* Alignment, stored as a mask. */
+};
+#endif
 
 struct ls_t;
+
+/* This is the *new* level structure. It replaces the old struct level. It
+ * contains a struct level transparently, so as to allow for a slow but
+ * sure conversion from one to the other. */
 struct level {
-    char levname[64];   /* as given by the player via donamelevel */
-    struct rm locations[COLNO][ROWNO];
-    struct obj *objects[COLNO][ROWNO];
-    struct monst *monsters[COLNO][ROWNO];
-    struct obj *objlist;
-    struct obj *buriedobjlist;
-    struct obj *billobjs;       /* objects not yet paid for */
-    struct monst *monlist;
-    struct damage *damagelist;
-    struct levelflags flags;
+    struct level_manager *mgr;
 
-    timer_element *lev_timers;
-    struct ls_t *lev_lights;
-    struct trap *lev_traps;
-    struct engr *lev_engr;
-    struct region **regions;
+    /* This anonymous structure contains the old level structure data, for
+     * migration. */
+    struct {
+        char levname[64];   /* as given by the player via donamelevel */
+        struct rm locations[COLNO][ROWNO];
+        struct obj *objects[COLNO][ROWNO];
+        struct monst *monsters[COLNO][ROWNO];
+        struct obj *objlist;
+        struct obj *buriedobjlist;
+        struct obj *billobjs;       /* objects not yet paid for */
+        struct monst *monlist;
+        struct damage *damagelist;
+        struct levelflags flags;
 
-    coord doors[DOORMAX];
-    struct mkroom rooms[(MAXNROFROOMS + 1) * 2];
-    struct mkroom *subrooms;
-    struct mkroom *upstairs_room, *dnstairs_room, *sstairs_room;
-    stairway upstair, dnstair;
-    stairway upladder, dnladder;
-    stairway sstairs;
-    dest_area updest;
-    dest_area dndest;
+        timer_element *lev_timers;
+        struct ls_t *lev_lights;
+        struct trap *lev_traps;
+        struct engr *lev_engr;
+        struct region **regions;
 
-    struct wseg *wheads[MAX_NUM_WORMS], *wtails[MAX_NUM_WORMS];
-    int wgrowtime[MAX_NUM_WORMS];
-    int lastmoves;      /* when the level was last visited */
-    int nroom;
-    int nsubroom;
-    int doorindex;
-    int n_regions;
-    int max_regions;
+        coord doors[DOORMAX];
+        struct mkroom rooms[(MAXNROFROOMS + 1) * 2];
+        struct mkroom *subrooms;
+        struct mkroom *upstairs_room, *dnstairs_room, *sstairs_room;
+        stairway upstair, dnstair;
+        stairway upladder, dnladder;
+        stairway sstairs;
+        dest_area updest;
+        dest_area dndest;
 
-    d_level z;
+        struct wseg *wheads[MAX_NUM_WORMS], *wtails[MAX_NUM_WORMS];
+        int wgrowtime[MAX_NUM_WORMS];
+        int lastmoves;      /* when the level was last visited */
+        int nroom;
+        int nsubroom;
+        int doorindex;
+        int n_regions;
+        int max_regions;
+
+        d_level z;
+    };
 };
 
 extern struct level *levels[MAXLINFO];  /* structure describing all levels */

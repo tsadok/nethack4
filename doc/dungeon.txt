@@ -118,7 +118,7 @@ categories:
  1. Properties which may be changed as a result of specific occurrences in the
     game (examples: whether the level was forgotten, whether it's a graveyard)
  2. Properties which are constant and part of the level description (examples:
-    whether the level is notele or undiggable)
+    whether the floor is diggable, whether the level is open-air)
  3. Properties which may be dynamically recalculated but are not otherwise
     subject to change (no examples come to mind at the moment but it's worth
     leaving as a category)
@@ -192,11 +192,9 @@ Things that need to be in the level flags:
    level flag]
  - Whether this is a sokoban level [too many special cases and again no easy
    unifying themes]
- - Whether the floor is diggable
- - Whether scrolls of earth work [can this be merged with something else? Fire
-   is the big weird one here, especially as it has a ceiling]
- - Whether the level is open air (currently qhome, Fire?)
- - Existing dungeon flags (incl. alignment and hellishness)
+ - Whether the floor is diggable [this might be handled by topology?]
+ - Whether the level is open air (currently qhome, Fire, Air)
+ - Alignment (other d_flags are all subsumed in other aspects of code)
  - A pointer to either the bones name of the level, or NULL for no bones.
    [note that this could be changed in the future if the level manager is
     given more control over bones, say to allow bones on branch levels]
