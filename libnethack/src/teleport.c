@@ -116,6 +116,7 @@ enexto_core(coord * cc, struct level *lev, xchar xx, xchar yy,
     fakemon.data = mdat;        /* set up for goodpos */
     good_ptr = good;
     range = 1;
+
     /* 
      * Walk around the border of the square with center (xx,yy) and
      * radius range.  Stop when we find at least one valid position.

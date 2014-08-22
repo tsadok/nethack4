@@ -4,6 +4,7 @@
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "levelgen_dsl.h"
+#include "pm.h"
 
 char
 lg_what_map_char(char c) {
@@ -147,3 +148,57 @@ lg_place_at(struct level *lev, struct maparea *map, struct coord loc) {
         }
     }
 }
+
+/* This attempts to generate a monster of the specified id and place it
+ * near the location specified. It will do its best to meet the requirements,
+ * but will fall back to a random monster if a genocided monster type was
+ * chosen.
+ */
+struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc) {
+    if (id < LOW_PM || id >= NUMMONS || is_placeholder(&mons[id])) {
+        /* NON_PM means it was requested by the level to generate no monster. */
+        if (id != NON_PM)
+            impossible("invalid monster id in monster generation: %d", id);
+        return NULL;
+    }
+
+    const struct permonst *pm = &mons[id];
+    uchar mvf = mvitals[id].mvflags;
+    /* If we wanted a unique, and it's already been generated, ignore it. */
+    if ((pm->geno & G_UNIQ) && (mvf & G_EXTINCT))
+        return NULL;
+    /* We will not respect exinction, but we will respect genocide. Extinction
+     * is not respected because either the id came about as a request for a
+     * specific class in the levelgen function, in which case we should honour
+     * it if possible, or it came from the level manager, which knows better
+     * than we whether to respect extinction. If the monster is genocided, we
+     * will instead attempt to (once) generate a monster under the same rules,
+     * and abort if we fail. */
+    if (mvf & G_GENO) {
+        id = lev->mgr->generate_mon(lev, 0, TRUE);
+        if (id < LOW_PM || id >= NUMMONS || is_placeholder(&mons[id])) {
+            if (id != NON_PM)
+                impossible("level manager gave invalid monster id: %d", id);
+            return NULL;
+        }
+
+        pm = &mons[id];
+        mvf = mvitals[id].mvflags;
+        if (((pm->geno & G_UNIQ) && (mvf & G_EXTINCT)) || (mvf & G_GENO))
+            return NULL;
+    }
+
+    /* FIXME: a) the hardcoded role boundaries are a hack.
+     *        b) this check ought to be elsewhere. Not sure where, but Not Here.
+     * I'm pretty sure this code path is dead anyhow.
+     */
+    struct monst *mtmp = NULL;
+    if (id >= PM_ARCHEOLOGIST && id <= PM_WIZARD)
+        mtmp = mk_mplayer(pm, lev, loc.x, loc.y, FALSE);
+    else
+        mtmp = makemon(pm, lev, loc.x, loc.y, MM_ADJACENTOK);
+
+    return mtmp;
+}
+
+

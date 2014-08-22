@@ -2689,8 +2689,6 @@ err_out:
     return FALSE;
 }
 
-boolean was_waterlevel;  /* ugh... this shouldn't be needed */
-
 /* this is special stuff that the level compiler cannot (yet) handle */
 void
 fixup_special(struct level *lev)
@@ -2701,17 +2699,6 @@ fixup_special(struct level *lev)
     struct mkroom *croom;
     boolean added_branch = FALSE;
 
-    if (was_waterlevel) {
-        was_waterlevel = FALSE;
-        u.uinwater = 0;
-        free_waterlevel();
-    } else if (Is_waterlevel(&lev->z)) {
-        lev->flags.hero_memory = 0;
-        was_waterlevel = TRUE;
-        /* water level is an odd beast - it has to be set up before calling
-           place_lregions etc. */
-        setup_waterlevel(lev);
-    }
     for (x = 0; x < num_lregions; x++, r++) {
         switch (r->rtype) {
         case LR_BRANCH:
@@ -2863,7 +2850,7 @@ fixup_special(struct level *lev)
             if (mtmp->isshk)
                 mongone(mtmp);
         }
-    }
+    } 
 
     if (lev_message) {
         char *str, *nl;

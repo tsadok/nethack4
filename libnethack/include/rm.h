@@ -541,14 +541,17 @@ struct level_manager {
      * return a message. (see messages.c) */
     const char * (*wiz_describe)(struct level *lev);
 
-    /* Generate a new monster type appropriate for the level. If PM_NONE, no
+    /* Select a new random monster type appropriate for the level. If NON_PM, no
      * monster is generated. The monster will be actually generated and placed
-     * by the calling code. The levgen parameter is TRUE during level generation
-     * and FALSE otherwise. */
-    struct permonst * (*generate_mon)(struct level *lev, boolean levgen);
+     * by the calling code. A specific monster class may be requested; the
+     * argument will be 0 if any class can be chosen. The levgen parameter is
+     * TRUE during level generation and FALSE otherwise. */
+    short (*generate_mon)(struct level *lev, char class, boolean levgen);
 
-    /* Fix up a monster after its generation is complete. */
-    void (*fixup_mon)(struct level* lev, struct monst *mon);
+    /* Fix up a monster after its generation is complete. This may be used to
+     * edit the terrain around it, adjust its inventory, or adjust its level,
+     * for instance. */
+    void (*fixup_mon)(struct level* lev, struct monst *mon, boolean levgen);
 
     /* Generate a new object. If NULL no object is generated. The object will be
      * placed by the calling code. The levgen parameter is TRUE during level
@@ -562,6 +565,10 @@ struct level_manager {
     /* Restore any extra data associated with the level. This is called after
      * the rest of the level has been read from the memfile. */
     void (*restore_extra)(struct level *lev, struct memfile *mf);
+
+    /* Free any extra data associated with the level. This is called before the
+     * rest of the level is freed. */
+    void (*free_extra)(struct level *lev);
 
     /* Called when the Wizard attempts to intervene and harass the player. */
     void (*intervene)(struct level *lev);
@@ -597,6 +604,8 @@ struct ls_t;
  * sure conversion from one to the other. */
 struct level {
     struct level_manager *mgr;
+
+    void *extra;
 
     /* This anonymous structure contains the old level structure data, for
      * migration. */

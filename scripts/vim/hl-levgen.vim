@@ -17,11 +17,13 @@ let s:declarations = [
 let s:statements = [
   \ "FILL_MAP", "MAKE_MAP",
   \ "NOTELEPORT", "SHORTSIGHTED", "NOMMAP", "HARDFLOOR", "ARBOREAL",
+  \ "FORGETFUL",
   \ "MAZEWALK", "PLACE_JUSTIFIED", "PLACE_AT",
   \ "TRAP", "OBJ", "OBJ_EX", "MON", "MON_EX", "OBJ_EX",
   \ "FILL_IRREGULAR", "LIGHT_REGION", "DARKEN_REGION", "NON_DIGGABLE",
-  \ "TELEPORT_REGION", "STAIR_UP", "STAIR_DOWN", "BRANCH_UP",
-  \ "PLACE_DOOR", "PLACE_FOUNTAIN", "PLACE_ALTAR",
+  \ "TELEPORT_REGION", "STAIR_UP", "STAIR_DOWN", "BRANCH_UP", "BRANCH_DOWN",
+  \ "PORTAL",
+  \ "PLACE_DOOR", "PLACE_SDOOR", "PLACE_FOUNTAIN", "PLACE_ALTAR",
   \ "MAKE_ROOM", "MAKE_TEMPLE", "MAKE_MORGUE", "MAKE_ABANDONED_SHOP",
   \ "MAKE_SWAMP",
 \]
@@ -89,7 +91,6 @@ function! <SID>disable_highlights()
 endf
 
 command! EnableLevgenHighlights call <SID>enable_highlights()
-
 command! DisableLevgenHighlights call <SID>disable_highlights()
 
 augroup LevgenHighlights

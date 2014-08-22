@@ -976,12 +976,7 @@ extern void mkportal(struct level *lev, xchar x, xchar y, xchar todnum,
                      xchar todlevel);
 extern void place_lregion(struct level *lev, xchar, xchar, xchar, xchar, xchar,
                           xchar, xchar, xchar, xchar, d_level *);
-extern void movebubbles(void);
 extern void water_friction(schar *, schar *);
-extern void setup_waterlevel(struct level *lev);
-extern void free_waterlevel(void);
-extern void save_waterlevel(struct memfile *mf);
-extern void restore_waterlevel(struct memfile *mf, struct level *lev);
 extern const char *a_waterbody(xchar, xchar);
 extern const char *waterbody_name(xchar, xchar);
 

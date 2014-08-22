@@ -1,5 +1,11 @@
 About this document:
+<<<<<<< HEAD
 Last modified by Sean Hunt, 2014-08-25
+||||||| parent of 92d6a6e... Implement most of the plane of water.
+Last modified by Sean Hunt, 2014-08-21
+=======
+Last modified by Sean Hunt, 2014-08-22
+>>>>>>> 92d6a6e... Implement most of the plane of water.
 
 Copyright (C) 2013 Sean Hunt
 
@@ -186,6 +192,7 @@ Things that need to be in the branch information:
 Things that need to be in the level flags:
  - Whether the level is weightless (currently Air, Water?)
  - Whether the level is moist (currently Water) (affects eels)
+ - Whether the hero can remember its layout (currently all but Water)
  - Level display mode
  - Whether something is the rogue level [there are tons of special cases and
    since there is a unifying theme here, it is acceptable to have a rogue

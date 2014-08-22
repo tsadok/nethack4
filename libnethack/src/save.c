@@ -311,7 +311,6 @@ savegamestate(struct memfile *mf)
     mwrite32(mf, current_fruit);
     savefruitchn(mf);
     savenames(mf);
-    save_waterlevel(mf);
 
     mtag(mf, 0, MTAG_RNGSTATE);
     mwrite(mf, flags.rngstate, sizeof flags.rngstate);
@@ -692,6 +691,9 @@ savelev(struct memfile *mf, xchar levnum)
     save_engravings(mf, lev);
     savedamage(mf, lev);
     save_regions(mf, lev);
+
+    if (lev->mgr && lev->mgr->save_extra)
+        lev->mgr->save_extra(lev, mf);
 }
 
 
@@ -971,6 +973,8 @@ freedynamicdata(void)
             continue;
 
         /* level-specific data */
+        if (lev->mgr)
+            lev->mgr->free_extra(lev);
         dmonsfree(lev); /* release dead monsters */
         free_timers(lev);
         free_light_sources(lev);
@@ -997,7 +1001,6 @@ freedynamicdata(void)
     free_oracles();
     freefruitchn();
     freenames();
-    free_waterlevel();
     free_dungeon();
     free_history();
 

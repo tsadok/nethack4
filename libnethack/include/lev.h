@@ -10,27 +10,6 @@
 
 # include "global.h"
 
-/* The following are used in mkmaze.c */
-struct container {
-    struct container *next;
-    xchar x, y;
-    short what;
-    void *list;
-};
-
-# define CONS_OBJ   0
-# define CONS_MON   1
-# define CONS_HERO  2
-# define CONS_TRAP  3
-
-struct bubble {
-    xchar x, y; /* coordinates of the upper left corner */
-    schar dx, dy;       /* the general direction of the bubble's movement */
-    const uchar *bm;    /* pointer to the bubble bit mask */
-    struct bubble *prev, *next; /* need to traverse the list up and down */
-    struct container *cons;
-};
-
 /* used in light.c */
 typedef struct ls_t {
     struct ls_t *next;

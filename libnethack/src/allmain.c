@@ -15,6 +15,9 @@
 #include "dlb.h"
 #include "patchlevel.h"
 
+/* FIXME: Remove */
+#include "endgame_gen.h"
+
 static const char *const copyright_banner[] =
     { COPYRIGHT_BANNER_A, COPYRIGHT_BANNER_B, COPYRIGHT_BANNER_C, NULL };
 
@@ -957,7 +960,7 @@ you_moved(void)
             restore_attrib();
             /* underwater and waterlevel vision are done here */
             if (Is_waterlevel(&u.uz))
-                movebubbles();
+                movebubbles(level);
             else if (Underwater)
                 under_water(0);
             /* vision while buried done here */
@@ -1480,5 +1483,3 @@ newgame(microseconds birthday)
     u.moveamt = NORMAL_SPEED;   /* hero is normal speed on turn 1 */
     post_init_tasks();
 }
-
-/*allmain.c*/

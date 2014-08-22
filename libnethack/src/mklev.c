@@ -523,6 +523,7 @@ alloc_level(d_level * levnum)
     struct level *lev = malloc(sizeof (struct level));
 
     memset(lev, 0, sizeof (struct level));
+    lev->mgr = NULL;
     if (levnum)
         lev->z = *levnum;
     lev->subrooms = &lev->rooms[MAXNROFROOMS + 1];      /* compat */

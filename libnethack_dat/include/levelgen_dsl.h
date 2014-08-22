@@ -10,11 +10,11 @@
 #include "rm.h"
 
 struct coord {
-    int x, y;
+    xchar x, y;
 };
 
 struct area {
-    int tlx, tly, brx, bry;
+    xchar tlx, tly, brx, bry;
 };
 
 struct maparea {
@@ -55,6 +55,8 @@ enum cardinal_dir {
 #define INIT_LEVGEN(lev) \
     struct level *lev_ = (lev); \
     { \
+        if (!lev_->mgr) \
+            impossible("generated level must have a manager"); \
         int x_, y_; \
         for (x_ = 0; x_ < ROWNO; ++x_) { \
             for (y_ = 0; y_ < COLNO; ++y_) { \
@@ -67,6 +69,13 @@ enum cardinal_dir {
                 lev->locations[x_][y_].edge = 0; \
             } \
         } \
+        lev_->flags.noteleport   = FALSE; \
+        lev_->flags.hardfloor    = FALSE; \
+        lev_->flags.nommap       = FALSE; \
+        lev_->flags.shortsighted = FALSE; \
+        lev_->flags.arboreal     = FALSE; \
+        lev_->flags.is_maze_lev  = FALSE; \
+        lev_->flags.hero_memory  = TRUE; \
     } \
     struct maparea *mapchain_ = NULL; \
     int i_
@@ -132,12 +141,13 @@ enum cardinal_dir {
 
 #define MAKE_MAP(...) /* TODO */
 
-#define NOTELEPORT   do { lev_->flags.noteleport   = TRUE; } while (0)
-#define HARDFLOOR    do { lev_->flags.hardfloor    = TRUE; } while (0)
-#define NOMMAP       do { lev_->flags.nommap       = TRUE; } while (0)
-#define SHORTSIGHTED do { lev_->flags.shortsighted = TRUE; } while (0)
-#define ARBOREAL     do { lev_->flags.arboreal     = TRUE; } while (0)
-#define MAZE         do { lev_->flags.is_maze_lev  = TRUE; } while (0)
+#define MAZE         do { lev_->flags.is_maze_lev  = TRUE;  } while (0)
+#define NOTELEPORT   do { lev_->flags.noteleport   = TRUE;  } while (0)
+#define HARDFLOOR    do { lev_->flags.hardfloor    = TRUE;  } while (0)
+#define NOMMAP       do { lev_->flags.nommap       = TRUE;  } while (0)
+#define SHORTSIGHTED do { lev_->flags.shortsighted = TRUE;  } while (0)
+#define ARBOREAL     do { lev_->flags.arboreal     = TRUE;  } while (0)
+#define FORGETFUL    do { lev_->flags.hero_memory  = FALSE; } while (0)
 
 #define MAZEWALK(...) /* TODO */
 #define PLACE_JUSTIFIED(...) /* TODO */
@@ -146,8 +156,11 @@ enum cardinal_dir {
 #define TRAP(...) /* TODO */
 #define OBJ(...) /* TODO */
 #define OBJ_EX(...) /* TODO */
-#define MON(...) /* TODO */
-#define MON_EX(...) /* TODO */
+#define MON(id, loc) do { lg_gen_monster(lev_, (id), (loc)); } while (0)
+#define MON_EX(id, loc, ...) do { \
+        struct monst *mon_ = lg_gen_monster(lev_, (id), (loc)); \
+        __VA_ARGS__; \
+    } while (0)
 
 #define FILL_IRREGULAR(...) /* TODO */
 #define LIGHT_REGION(...) /* TODO */
@@ -157,9 +170,9 @@ enum cardinal_dir {
 #define TELEPORT_REGION(...) /* TODO */
 #define STAIR_UP(...) /* TODO */
 #define STAIR_DOWN(...) /* TODO */
-
 #define BRANCH_UP(...) /* TODO */
 #define BRANCH_DOWN(...) /* TODO */
+#define PORTAL(...) /* TODO */
 
 #define PLACE_DOOR(mask, loc) do { \
         lev_->locations[(loc).x][(loc).y].typ = DOOR; \
@@ -208,8 +221,9 @@ enum cardinal_dir {
  * Functions for use in expressions
  */
 
-#define RANDOM_MON_OF /* TODO */
-#define RANDOM_OBJ_OF /* TODO */
+#define RANDOM_MON_OF(c) \
+    (lev_->mgr->generate_mon(lev_, def_char_to_monclass((c)), TRUE))
+#define RANDOM_OBJ_OF(c) /* TODO */
 
 #define MIMIC /* TODO */
 #define CORPSENM /* TODO */
@@ -235,7 +249,7 @@ enum cardinal_dir {
 
 #define RANDOM_LOC (C(rn2(COLNO), rn2(ROWNO)))
 #define RANDOM_OBJ /* TODO */
-#define RANDOM_MON /* TODO */
+#define RANDOM_MON (lev_->mgr->generate_mon(lev_, 0, TRUE))
 
 #define SMOOTHED (TRUE)
 #define UNSMOOTHED (FALSE)
@@ -263,10 +277,12 @@ enum cardinal_dir {
 #define WEST (cd_west)
 
 char lg_what_map_char(char c);
+char lg_what_mon_char(char c);
 void lg_fill_map(struct level *lev, char c, int line, const char *file);
 void lg_shuffle_array(void *ptr, size_t num, size_t size);
 struct maparea *lg_new_map(struct coord size, const char *text, int line,
                            const char *file, struct maparea **chain);
 void lg_place_at(struct level *lev, struct maparea *map, struct coord loc);
+struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc);
 
 #endif

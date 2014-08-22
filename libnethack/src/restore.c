@@ -7,6 +7,8 @@
 #include "lev.h"
 #include <stdint.h>
 
+#include "endgame_gen.h" /* FIXME: do not include */
+
 static void restore_autopickup_rules(struct memfile *mf,
                                      struct nh_autopickup_rules *r);
 static void restore_utracked(struct memfile *mf, struct you *you);
@@ -61,7 +63,7 @@ find_lev_obj(struct level *lev)
         for (y = 0; y < ROWNO; y++)
             lev->objects[x][y] = NULL;
 
-    /* 
+    /*
      * Reverse the entire lev->objlist chain, which is necessary so that we can
      * place the objects in the proper order.  Make all obj in chain
      * OBJ_FREE so place_object will work correctly.
@@ -468,7 +470,6 @@ restgamestate(struct memfile *mf)
     ffruit = loadfruitchn(mf);
 
     restnames(mf);
-    restore_waterlevel(mf, lev);
 
     mread(mf, flags.rngstate, sizeof flags.rngstate);
 
@@ -1135,6 +1136,10 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
         lev->z.dlevel = mread8(mf);
     }
 
+    /* FIXME: This is a total kludge. Fix. */
+    if (Is_waterlevel(&lev->z))
+        lev->mgr = &waterlevel_manager;
+
     mread(mf, lev->levname, sizeof (lev->levname));
     for (x = 0; x < COLNO; x++)
         for (y = 0; y < ROWNO; y++)
@@ -1195,7 +1200,7 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
     lev->lev_traps = restore_traps(mf);
     restobjchn(mf, lev, ghostly, FALSE, &lev->objlist);
     find_lev_obj(lev);
-    /* restobjchn()'s `frozen' argument probably ought to be a callback routine 
+    /* restobjchn()'s `frozen' argument probably ought to be a callback routine
        so that we can check for objects being buried under ice */
     restobjchn(mf, lev, ghostly, FALSE, &lev->buriedobjlist);
     restobjchn(mf, lev, ghostly, FALSE, &lev->billobjs);
@@ -1208,7 +1213,7 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
     for (mtmp = lev->monlist; mtmp; mtmp = mtmp->nmon) {
         if (mtmp->isshk)
             set_residency(mtmp, FALSE);
-        
+
         /* mtmp->mx == COLNO is a sentinel value. place_monster rejects it to
          * avoid illegal positions popping up accidentally. We don't perform
          * other checks because we would like any other value to cause an
@@ -1287,6 +1292,9 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
 
     if (ghostly)
         clear_id_mapping();
+
+    if (lev->mgr && lev->mgr->restore_extra)
+        lev->mgr->restore_extra(lev, mf);
 
     return lev;
 }

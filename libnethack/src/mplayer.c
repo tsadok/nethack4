@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-04-05 */
+/* Last modified by Sean Hunt, 2014-08-25 */
 /* Copyright (c) Izchak Miller, 1992.                             */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -125,7 +125,7 @@ mk_mplayer(const struct permonst *ptr, struct level *lev, xchar x, xchar y,
     if (!In_endgame(&u.uz))
         special = FALSE;
 
-    if ((mtmp = makemon(ptr, lev, x, y, NO_MM_FLAGS)) != 0) {
+    if ((mtmp = makemon(ptr, lev, x, y, MM_ADJACENTOK)) != 0) {
         short weapon = rn2(2) ? LONG_SWORD : rnd_class(SPEAR, BULLWHIP);
         short armor =
             rnd_class(GRAY_DRAGON_SCALE_MAIL, YELLOW_DRAGON_SCALE_MAIL);

@@ -8,6 +8,8 @@
 #include "hack.h"
 #include "lev.h"
 
+#include "endgame_gen.h" /* FIXME: get rid of this */
+
 static void dosinkring(struct obj *);
 static int drop(struct obj *);
 
@@ -188,7 +190,7 @@ flooreffects(struct obj * obj, int x, int y, const char *verb)
         return fire_damage(obj, FALSE, TRUE, x, y);
     } else if (is_pool(lev, x, y)) {
         /* Reasonably bulky objects (arbitrary) splash when dropped. If you're
-           floating above the water even small things make noise. Stuff dropped 
+           floating above the water even small things make noise. Stuff dropped
            near fountains always misses */
         if ((Blind || (Levitation || Flying)) && canhear() &&
             ((x == u.ux) && (y == u.uy))) {
@@ -687,7 +689,7 @@ dodown(enum u_interaction_mode uim)
             /* end controlled levitation */
             if (controlled_lev & W_MASK(os_invoked)) {
                 struct obj *obj;
-                
+
                 for (obj = invent; obj; obj = obj->nobj) {
                     if (obj->oartifact && artifact_has_invprop(obj, LEVITATION))
                         uninvoke_artifact(obj);
@@ -900,7 +902,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
         done(ESCAPED, NULL);
     }
 
-    /* If you have the amulet and are trying to get out of Gehennom, going up a 
+    /* If you have the amulet and are trying to get out of Gehennom, going up a
        set of stairs sometimes does some very strange things! Biased against
        law and towards chaos, but not nearly as strongly as it used to be
        (prior to 3.2.0). Odds: old new "up" L N C "up" L N C +1 75.0 75.0 75.0
@@ -956,7 +958,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     keepdogs(FALSE);
     if (Engulfed)     /* idem */
         u.uswldtim = Engulfed = 0;
-    /* 
+    /*
      *  We no longer see anything on the level->  Make sure that this
      *  follows Engulfed set to null since it overrides all normal vision.
      */
@@ -1016,7 +1018,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     /* do this prior to level-change pline messages */
     vision_reset();     /* clear old level's line-of-sight */
     /* don't let that reenable vision yet */
-    turnstate.vision_full_recalc = FALSE; 
+    turnstate.vision_full_recalc = FALSE;
     flush_screen_disable();     /* ensure all map flushes are postponed */
 
     if (portal && !In_endgame(&u.uz)) {
@@ -1130,7 +1132,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
         set_obj_level(level, otmp);
     losedogs();
     kill_genocided_monsters();  /* for those wiped out while in limbo */
-    /* 
+    /*
      * Expire all timers that have gone off while away.  Must be
      * after migrating monsters and objects are delivered
      * (losedogs and obj_delivery).
@@ -1170,7 +1172,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
 
     /* initial movement of bubbles just before vision_recalc */
     if (Is_waterlevel(&u.uz))
-        movebubbles();
+        movebubbles(level);
 
     if (level->flags.forgotten) {
         familiar = TRUE;
@@ -1185,7 +1187,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     flush_screen_enable();
     flush_screen();
 
-    /* 
+    /*
      *  Move all plines beyond the screen reset.
      */
 
@@ -1215,7 +1217,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
             "Gee, this %s like uncle Conan's place...",
             0   /* no message */
         };
-        
+
         const char *mesg;
         int which = rn2(4);
 
@@ -1428,7 +1430,7 @@ revive_corpse(struct obj *corpse)
 
     where = corpse->where;
     is_uwep = corpse == uwep;
-    cname = corpse_xname(corpse, TRUE); 
+    cname = corpse_xname(corpse, TRUE);
     mcarry = (where == OBJ_MINVENT) ? corpse->ocarry : 0;
 
     if (where == OBJ_CONTAINED) {
@@ -1436,7 +1438,7 @@ revive_corpse(struct obj *corpse)
 
         container = corpse->ocontainer;
         mtmp2 = get_container_location(container, &container_where, NULL);
-        /* container_where is the outermost container's location even if nested 
+        /* container_where is the outermost container's location even if nested
          */
         if (container_where == OBJ_MINVENT && mtmp2)
             mcarry = mtmp2;
