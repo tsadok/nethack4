@@ -14,7 +14,7 @@ struct coord {
 };
 
 struct area {
-    xchar tlx, tly, brx, bry;
+    xchar lx, ly, hx, hy;
 };
 
 struct maparea {
@@ -167,12 +167,18 @@ enum cardinal_dir {
 #define DARKEN_REGION(...) /* TODO */
 #define NON_DIGGABLE(...) /* TODO */
 
-#define TELEPORT_REGION(...) /* TODO */
+#define TELEPORT_REGION(dir, reg) \
+    do { lg_tele_region(lev_, (dir), (reg)); } while (0)
+
+/* These all take regions, not positions, because of difficulty guaranteeing
+ * that a single position is good. You can use a region containing a single
+ * coordinate to specify an exact position */
 #define STAIR_UP(...) /* TODO */
 #define STAIR_DOWN(...) /* TODO */
 #define BRANCH_UP(...) /* TODO */
 #define BRANCH_DOWN(...) /* TODO */
-#define PORTAL(...) /* TODO */
+#define PORTAL(dest, reg) \
+    do { lg_place_portal(lev_, (dest), (reg)); } while (0)
 
 #define PLACE_DOOR(mask, loc) do { \
         lev_->locations[(loc).x][(loc).y].typ = DOOR; \
@@ -203,18 +209,18 @@ enum cardinal_dir {
  */
 
 #define C(x, y) ((struct coord){(x), (y)})
-#define R(tlx, tly, brx, bry) ((struct area){(tlx), (tly), (brx), (bry)})
+#define R(lx, ly, hx, hy) ((struct area){(lx), (ly), (hx), (hy)})
 #define REL(rel, coord) \
-    (C((coord).x + (rel).tlx, \
-       (coord).y + (rel).tly))
+    (C((coord).x + (rel).lx, \
+       (coord).y + (rel).ly))
 #define REL_REG(rel, reg) \
-    (R((reg).tlx + (rel).tlx, \
-       (reg).tly + (rel).tly, \
-       (reg).brx + (rel).tlx, \
-       (reg).bry + (rel).tly))
+    (R((reg).lx + (rel).lx, \
+       (reg).ly + (rel).ly, \
+       (reg).hx + (rel).lx, \
+       (reg).hy + (rel).ly))
 #define IN(reg) \
-    C((reg).tlx + rn2((reg).brx - (reg).tlx), \
-      (reg).tly + rn2((reg).bry - (reg).tly))
+    C((reg).lx + rn2((reg).hx - (reg).lx), \
+      (reg).ly + rn2((reg).hy - (reg).ly))
 #define MR(map) ((map)->area)
 
 /* ================================
@@ -284,5 +290,7 @@ struct maparea *lg_new_map(struct coord size, const char *text, int line,
                            const char *file, struct maparea **chain);
 void lg_place_at(struct level *lev, struct maparea *map, struct coord loc);
 struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc);
+void lg_tele_region(struct level *lev, char dir, struct area reg);
+void lg_place_portal(struct level *lev, const char *dest, struct area reg);
 
 #endif

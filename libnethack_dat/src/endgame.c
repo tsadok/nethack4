@@ -45,8 +45,8 @@ void gen_waterlevel(struct level *lev) {
     /* create the bubbles */
     setup_waterlevel(lev);
 
-    TELEPORT_REGION(R(0,0,25,19), UP);
-    PORTAL(R(51, 0, 75, 19), "astral");
+    TELEPORT_REGION(UP, R(0,0,25,21));
+    PORTAL("astral", R(51, 0, 75, 19));
     REPEAT(19)
         MON(PM_WATER_ELEMENTAL, RANDOM_LOC);
     REPEAT(9)

@@ -113,9 +113,9 @@ lg_new_map (struct coord size, const char *text, int line, const char * file,
 
     struct maparea *map = malloc(sizeof(struct maparea));
     map->locs = buf;
-    map->area.tlx = map->area.tly = 0;
-    map->area.brx = size.x - 1;
-    map->area.bry = size.y - 1;
+    map->area.lx = map->area.ly = 0;
+    map->area.hx = size.x - 1;
+    map->area.hy = size.y - 1;
     map->nextmap = *chain;
     *chain = map;
     return map;
@@ -124,24 +124,24 @@ lg_new_map (struct coord size, const char *text, int line, const char * file,
 void
 lg_place_at(struct level *lev, struct maparea *map, struct coord loc) {
     /* Reset the area position so that it can be used as a baseline */
-    map->area.brx -= map->area.tlx;
-    map->area.bry -= map->area.tly;
-    map->area.tlx = loc.x;
-    map->area.brx = loc.x;
-    map->area.tly += loc.y;
-    map->area.bry += loc.y;
+    map->area.hx -= map->area.lx;
+    map->area.hy -= map->area.ly;
+    map->area.lx = loc.x;
+    map->area.hx = loc.x;
+    map->area.ly += loc.y;
+    map->area.hy += loc.y;
 
-    if (map->area.tlx < 0 || map->area.tly < 0 ||
-        map->area.brx >= COLNO || map->area.bry >= ROWNO) {
+    if (map->area.lx < 0 || map->area.ly < 0 ||
+        map->area.hx >= COLNO || map->area.hy >= ROWNO) {
         impossible("Map area does not fit on map! Not placing!");
         return;
     }
 
     int x, y;
-    for (x = map->area.tlx; x <= map->area.brx; ++x) {
-        for (y = map->area.tly; y <= map->area.bry; ++y) {
-            int ix = (y - map->area.tly) * (map->area.brx - map->area.tlx + 1) +
-                     (x - map->area.brx);
+    for (x = map->area.lx; x <= map->area.hx; ++x) {
+        for (y = map->area.ly; y <= map->area.hy; ++y) {
+            int ix = (y - map->area.ly) * (map->area.hx - map->area.lx + 1) +
+                     (x - map->area.hx);
             lev->locations[x][y].typ = map->locs[ix];
             lev->locations[x][y].flags = 0;
             lev->locations[x][y].horizontal = 0;
@@ -156,7 +156,7 @@ lg_place_at(struct level *lev, struct maparea *map, struct coord loc) {
  */
 struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc) {
     if (id < LOW_PM || id >= NUMMONS || is_placeholder(&mons[id])) {
-        /* NON_PM means it was requested by the level to generate no monster. */
+        /* NON_PM means it was requested hy the level to generate no monster. */
         if (id != NON_PM)
             impossible("invalid monster id in monster generation: %d", id);
         return NULL;
@@ -190,7 +190,7 @@ struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc) {
 
     /* FIXME: a) the hardcoded role boundaries are a hack.
      *        b) this check ought to be elsewhere. Not sure where, but Not Here.
-     * I'm pretty sure this code path is dead anyhow.
+     * I'm pretly sure this code path is dead anyhow.
      */
     struct monst *mtmp = NULL;
     if (id >= PM_ARCHEOLOGIST && id <= PM_WIZARD)
@@ -201,4 +201,115 @@ struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc) {
     return mtmp;
 }
 
+/* Place a restricted-teleport region on the map. There are a bunch of things
+ * wrong with this and it needs to be rethought, but this will work in the
+ * interim.
+ * FIXME: Fix all the things wrong with this.
+ */
+void
+lg_tele_region(struct level *lev, char dir, struct area reg) {
+    if (dir != LR_UPTELE && dir != LR_DOWNTELE && dir != LR_TELE) {
+        impossible("invalid direction for teleport region!");
+        return;
+    }
 
+    if (dir == LR_UPTELE || dir == LR_TELE) {
+        lev->updest.lx = reg.lx;
+        lev->updest.ly = reg.ly;
+        lev->updest.hx = reg.hx;
+        lev->updest.hy = reg.hy;
+
+        lev->updest.nlx = lev->updest.nhx = COLNO;
+        lev->updest.nly = lev->updest.nhy = ROWNO;
+    }
+
+    if (dir == LR_DOWNTELE || dir == LR_TELE) {
+        lev->dndest.lx = reg.lx;
+        lev->dndest.ly = reg.ly;
+        lev->dndest.hx = reg.hx;
+        lev->dndest.hy = reg.hy;
+
+        lev->dndest.nlx = lev->dndest.nhx = COLNO;
+        lev->dndest.nly = lev->dndest.nhy = ROWNO;
+    }
+}
+
+static const int branch_tries = 20;
+
+/* Determine if we can place a portal here, even if there's a trap present. This
+ * is just occupied()/bad_location(), but with a weaker trap check on the second
+ * pass.
+ */
+static boolean
+portal_ok(struct level *lev, int x, int y, boolean first_pass) {
+    struct trap *ttmp = NULL;
+    if ((ttmp = t_at(lev, x, y)) && (first_pass ||
+            ttmp->ttyp == MAGIC_PORTAL || ttmp->ttyp != VIBRATING_SQUARE))
+        return FALSE;
+
+    schar typ = lev->locations[x][y].typ;
+    /* FIXME: The reliance on maze here means that we must go after the maze
+     * flag, and that's ugly. */
+    if ((typ == CORR && lev->flags.is_maze_lev) || typ == ROOM || typ == AIR ||
+        typ == ICE)
+        return TRUE;
+
+    return FALSE;
+}
+
+/* Place a portal somewhere in the given region. We will try really hard to do
+ * so, first by looking for a place we can safely put it, and if we can't find
+ * one, then we'll replace a trap to make it work. We could theoretically be
+ * even *more* agressive and start changing location types, but that would
+ * require knowledge about the level (do we use AIR? ROOM? CORR?).
+ */
+void 
+lg_place_portal(struct level *lev, const char *dest, struct area reg) {
+    int x, y;
+
+    s_level *sp = find_level(dest);
+    if (!sp) {
+        impossible("Unable to find destination level of portal: %s", dest);
+    }
+
+    int tries = branch_tries;
+
+    /* First, attempt to place randomly */
+    while (tries--) {
+        x = rn2(reg.hx - reg.lx + 1) + reg.lx;
+        y = rn2(reg.hy - reg.ly + 1) + reg.ly;
+
+        if (portal_ok(lev, x, y, TRUE))
+            goto located;
+    }
+
+    /* Next, attempt to place deterministically */
+    for (x = reg.lx; x <= reg.hx; ++x) {
+        for (y = reg.ly; y <= reg.hy; ++y) {
+            if (portal_ok(lev, x, y, TRUE))
+                goto located;
+        }
+    }
+
+    /* Okay, this is bad. We have no good options. So try replacing a trap. */
+    for (x = reg.lx; x <= reg.hx; ++x) {
+        for (y = reg.ly; y <= reg.hy; ++y) {
+            if (portal_ok(lev, x, y, FALSE))
+                goto located;
+        }
+    }
+
+    /* Great. *STILL* failed. Abort. */
+    impossible("Unable to find location to place portal");
+    return;
+
+located:;
+    struct trap *ttmp = maketrap(lev, x, y, MAGIC_PORTAL);
+    if (!ttmp) {
+        impossible("Portal placement failed");
+        return;
+    }
+    ttmp->dst = sp->dlevel;
+}
+
+/* levelgen_dsl.c */

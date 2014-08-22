@@ -204,11 +204,11 @@ gen_juiblex(struct level *lev) {
 
         TELEPORT_REGION(UP, downstair);
         TELEPORT_REGION(DOWN, upstair);
-        STAIR_DOWN(IN(downstair));
-        STAIR_UP(IN(upstair));
+        STAIR_DOWN(downstair);
+        STAIR_UP(upstair);
 
         IF_BRANCH_UP
-            BRANCH_UP(IN(downstair))
+            BRANCH_UP(downstair)
     }
 
     { /* fountains / mimics */
@@ -317,11 +317,11 @@ gen_orcus(struct level *lev) {
 
         TELEPORT_REGION(BOTH, leftside);
 
-        STAIR_UP(IN(leftside));
+        STAIR_UP(leftside);
         STAIR_DOWN(REL(MR(intown), C(33, 15)));
 
         IF_BRANCH_UP
-            BRANCH_UP(IN(leftside));
+            BRANCH_UP(leftside);
     }
 
     { /* boulders for destroyed walls */
