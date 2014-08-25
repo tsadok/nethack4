@@ -546,7 +546,7 @@ struct level_manager {
      * by the calling code. A specific monster class may be requested; the
      * argument will be 0 if any class can be chosen. The levgen parameter is
      * TRUE during level generation and FALSE otherwise. */
-    short (*generate_mon)(struct level *lev, char class, boolean levgen);
+    short (*pick_monster)(const struct level *lev, char class, boolean levgen);
 
     /* Fix up a monster after its generation is complete. This may be used to
      * edit the terrain around it, adjust its inventory, or adjust its level,

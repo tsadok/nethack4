@@ -258,13 +258,13 @@ mkbox_cnts(struct obj *box)
 
 /* select a random, common monster type */
 int
-rndmonnum(const d_level * dlev)
+rndmonnum(const struct level *lev)
 {
     const struct permonst *ptr;
     int i;
 
     /* Plan A: get a level-appropriate common monster */
-    ptr = rndmonst(dlev);
+    ptr = rndmonst(lev);
     if (ptr)
         return monsndx(ptr);
 
@@ -272,7 +272,7 @@ rndmonnum(const d_level * dlev)
     do {
         i = rn1(SPECIAL_PM - LOW_PM, LOW_PM);
         ptr = &mons[i];
-    } while ((ptr->geno & G_NOGEN) || (!In_hell(dlev) && (ptr->geno & G_HELL)));
+    } while ((ptr->geno & G_NOGEN) || (!In_hell(&lev->z) && (ptr->geno & G_HELL)));
 
     return i;
 }
@@ -515,7 +515,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
                 /* possibly overridden by mkcorpstat() */
                 tryct = 50;
                 do
-                    otmp->corpsenm = undead_to_corpse(rndmonnum(&lev->z));
+                    otmp->corpsenm = undead_to_corpse(rndmonnum(lev));
                 while ((mvitals[otmp->corpsenm].mvflags & G_NOCORPSE) &&
                        (--tryct > 0));
                 if (tryct == 0) {
@@ -530,7 +530,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
                 otmp->corpsenm = NON_PM;        /* generic egg */
                 if (!rn2(3))
                     for (tryct = 200; tryct > 0; --tryct) {
-                        mndx = can_be_hatched(rndmonnum(&lev->z));
+                        mndx = can_be_hatched(rndmonnum(lev));
                         if (mndx != NON_PM && !dead_species(mndx, TRUE)) {
                             otmp->corpsenm = mndx;      /* typed egg */
                             attach_egg_hatch_timeout(otmp);
@@ -544,7 +544,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
                     otmp->spe = 1;      /* spinach */
                 else
                     for (tryct = 200; tryct > 0; --tryct) {
-                        mndx = undead_to_corpse(rndmonnum(&lev->z));
+                        mndx = undead_to_corpse(rndmonnum(lev));
                         if (mons[mndx].cnutrit &&
                             !(mvitals[mndx].mvflags & G_NOCORPSE)) {
                             otmp->corpsenm = mndx;
@@ -629,7 +629,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
                     int tryct2 = 0;
 
                     do
-                        otmp->corpsenm = rndmonnum(&lev->z);
+                        otmp->corpsenm = rndmonnum(lev);
                     while (is_human(&mons[otmp->corpsenm])
                            && tryct2++ < 30);
                     blessorcurse(otmp, 4);
@@ -730,7 +730,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
             switch (otmp->otyp) {
             case STATUE:
                 /* possibly overridden by mkcorpstat() */
-                otmp->corpsenm = rndmonnum(&lev->z);
+                otmp->corpsenm = rndmonnum(lev);
                 if (!verysmall(&mons[otmp->corpsenm]) &&
                     rn2(level_difficulty(&lev->z) / 2 + 10) > 10)
                     add_to_container(otmp, mkobj(lev, SPBOOK_CLASS, FALSE));

@@ -1467,7 +1467,6 @@ do_class_genocide(void)
                     /* This check must be first since player monsters might
                        have G_GENOD or !G_GENO. */
                     mvitals[i].mvflags |= (G_GENOD | G_NOCORPSE);
-                    reset_rndmonst(i);
                     kill_genocided_monsters();
                     update_inventory(); /* eggs & tins */
                     /* While endgame messages track whether you genocided
@@ -1598,7 +1597,7 @@ do_genocide(int how)
             if (!strcmpi(buf, "none") || !strcmpi(buf, "nothing")) {
                 /* ... but no free pass if cursed */
                 if (!(how & REALLY)) {
-                    ptr = rndmonst(&u.uz);
+                    ptr = rndmonst(level);
                     if (!ptr)
                         return; /* no message, like normal case */
                     mndx = monsndx(ptr);
@@ -1695,7 +1694,6 @@ do_genocide(int how)
             /* As above: the death reason should never be relevant. */
             rehumanize(GENOCIDED, "arbitrary death reason");
         }
-        reset_rndmonst(mndx);
         /* While endgame messages track whether you genocided
          * by means other than looking at u.uconduct, call
          * break_conduct anyway to correctly note the first turn

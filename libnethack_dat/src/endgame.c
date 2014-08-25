@@ -16,7 +16,8 @@ static void setup_waterlevel(struct level *lev);
 static void save_waterlevel(struct level *lev, struct memfile *mf);
 static void restore_waterlevel(struct level *lev, struct memfile *mf);
 static void free_waterlevel(struct level *lev);
-static short waterlevel_generate_mon(struct level *, char class, boolean levgen);
+static short waterlevel_pick_mon(const struct level *, char class,
+                                 boolean levgen);
 
 /*=============================================================================
  * Level managers.
@@ -26,7 +27,7 @@ struct level_manager waterlevel_manager = {
     .save_extra = save_waterlevel,
     .restore_extra = restore_waterlevel,
     .free_extra = free_waterlevel,
-    .generate_mon = waterlevel_generate_mon,
+    .pick_monster = waterlevel_pick_mon,
 };
 
 /*=============================================================================
@@ -48,6 +49,7 @@ void gen_waterlevel(struct level *lev) {
 
     TELEPORT_REGION(UP, R(0,0,25,21));
     PORTAL("astral", R(51, 0, 75, 19));
+
     REPEAT(19)
         MON(PM_WATER_ELEMENTAL, RANDOM_LOC);
     REPEAT(9)
@@ -71,28 +73,35 @@ void gen_waterlevel(struct level *lev) {
  */
 
 static uchar
-waterlevel_gen_prob(const struct level *lev, int mndx, void *levgen) {
-    uchar prob = default_gen_prob(lev, mndx, levgen);
+waterlevel_gen_prob(const struct level *lev, short mndx, void *flags) {
+    uchar prob = default_gen_prob(lev, mndx, flags);
     const struct permonst *mdat = &mons[mndx];
 
-    if (is_swimmer(mdat))
-        prob *= 4;
-    if (is_flyer(mdat))
-        prob *= 2;
-    if (mndx == PM_COUATL)
-        prob *= 2;
-    if (mndx == PM_WATER_ELEMENTAL)
-        prob *= 4;
+    /* Respect a default probability of 0 */
+    if (!prob)
+        return 0;
+
+    /* Only swimming monsters should be present. */
+    if (!is_swimmer(mdat))
+        return 0;
+
+    /* Gremlins lead to degenerate growth. */
     if (mndx == PM_GREMLIN)
         return 0;
 
     return prob;
 }
 
-short waterlevel_generate_mon(struct level *lev, char class, boolean levgen) {
-    /* Invert levgen so as to tell default_gen_prob() to ignore xlvl */
-    levgen = !levgen;
-    return pick_monster_class(lev, class, waterlevel_gen_prob, &levgen);
+short
+waterlevel_pick_mon(const struct level *lev, char class, boolean levgen) {
+    struct default_gen_flags flags = {
+        .consider_xlvl = !levgen,
+        .ignore_extinct = FALSE,
+        .ignore_nogen = FALSE,
+        .ignore_uniq = FALSE,
+    };
+
+    return pick_monster_class(lev, class, waterlevel_gen_prob, &flags);
 }
 
 /*=============================================================================

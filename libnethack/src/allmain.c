@@ -155,7 +155,6 @@ startup_common(boolean including_program_state)
     /* create mutable copies of object and artifact liss */
     init_objlist();
     init_artilist();
-    reset_rndmonst(NON_PM);
     free_dungeon();     /* clean up stray dungeon data */
 
     initoptions();
@@ -1445,8 +1444,8 @@ newgame(microseconds birthday)
     role_init();        /* must be before init_dungeons(), u_init(), and
                            init_artifacts() */
 
-    init_dungeons();    /* must be before u_init() to avoid rndmonst() creating
-                           odd monsters for any tins and eggs in hero's initial
+    init_dungeons();    /* must be before u_init() to avoid creating odd
+                           monsters for any tins and eggs in hero's initial
                            inventory */
     init_artifacts();
     u_init(birthday);   /* struct you must have some basic data for mklev to

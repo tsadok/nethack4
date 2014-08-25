@@ -819,10 +819,7 @@ extern struct monst *clone_mon(struct monst *, xchar, xchar);
 extern struct monst *makemon(const struct permonst *, struct level *lev, int,
                              int, int);
 extern boolean create_critters(int, const struct permonst *);
-extern const struct permonst *rndmonst(const d_level * dlev);
-extern void reset_rndmonst(int);
-extern void save_rndmonst_state(struct memfile *mf);
-extern void restore_rndmonst_state(struct memfile *mf);
+extern const struct permonst *rndmonst(const struct level *lev);
 extern const struct permonst *mkclass(const d_level * dlev, char, int);
 extern int adj_lev(const d_level * dlev, const struct permonst *ptr);
 extern const struct permonst *grow_up(struct monst *, struct monst *);
@@ -988,7 +985,7 @@ extern struct obj *mkobj_at(char let, struct level *lev, int x, int y,
 extern struct obj *mksobj_at(int, struct level *, int, int, boolean, boolean);
 extern struct obj *mkobj(struct level *lev, char oclass, boolean artif);
 extern struct obj *mkobj_of_class(struct level *lev, char oclass, boolean artif);
-extern int rndmonnum(const d_level * dlev);
+extern int rndmonnum(const struct level *lev);
 extern struct obj *splitobj(struct obj *, long);
 extern void replace_object(struct obj *, struct obj *);
 extern void bill_dummy_object(struct obj *);

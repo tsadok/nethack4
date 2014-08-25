@@ -1650,7 +1650,7 @@ muse_newcham_mon(struct monst *mon)
         else if (Is_dragon_mail(m_armr))
             return Dragon_mail_to_pm(m_armr);
     }
-    return rndmonst(&mon->dlevel->z);
+    return rndmonst(mon->dlevel);
 }
 
 int

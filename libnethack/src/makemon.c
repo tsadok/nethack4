@@ -19,7 +19,6 @@
                 (mptr->mlet == S_HUMAN && Role_if (role_pm) && \
                   (mptr->msound == MS_LEADER || mptr->msound == MS_NEMESIS))
 
-static boolean uncommon(const d_level * dlev, int mndx);
 static boolean wrong_elem_type(const struct d_level *dlev,
                                const struct permonst *);
 static void m_initgrp(struct monst *, struct level *lev, int, int, int);
@@ -877,10 +876,8 @@ propagate(int mndx, boolean tally, boolean ghostly)
     if (mvitals[mndx].born < 255 && tally && (!ghostly || (ghostly && result)))
         mvitals[mndx].born++;
     if ((int)mvitals[mndx].born >= lim && !(mons[mndx].geno & G_NOGEN) &&
-        !(mvitals[mndx].mvflags & G_EXTINCT)) {
+        !(mvitals[mndx].mvflags & G_EXTINCT))
         mvitals[mndx].mvflags |= G_EXTINCT;
-        reset_rndmonst(mndx);
-    }
     return result;
 }
 
@@ -957,7 +954,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
         struct monst fakemon;
 
         do {
-            if (!(ptr = rndmonst(&lev->z))) {
+            if (!(ptr = rndmonst(lev))) {
                 return NULL;    /* no more monsters! */
             }
             fakemon.data = ptr; /* set up for goodpos */
@@ -1103,7 +1100,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
             mtmp->cham = CHAM_ORDINARY;
         else {
             mtmp->cham = mcham;
-            newcham(mtmp, rndmonst(&lev->z), FALSE, FALSE);
+            newcham(mtmp, rndmonst(lev), FALSE, FALSE);
         }
     } else if (mndx == PM_WIZARD_OF_YENDOR) {
         mtmp->iswiz = TRUE;
@@ -1218,143 +1215,40 @@ create_critters(int cnt, const struct permonst * mptr)
 }
 
 
-static boolean
-uncommon(const d_level * dlev, int mndx)
-{
-    if (mons[mndx].geno & (G_NOGEN | G_UNIQ))
-        return TRUE;
-    if (mvitals[mndx].mvflags & G_GONE)
-        return TRUE;
-    if (In_hell(dlev))
-        return (mons[mndx].geno & G_NOHELL) != 0;
-    else
-        return (mons[mndx].geno & G_HELL) != 0;
+/* temporary function until all special levels have managers */
+static uchar
+rndmonst_special_prob(const struct level *lev, short mndx, void *flags) {
+    uchar prob = default_gen_prob(lev, mndx, flags);
+    const struct permonst *mdat = &mons[mndx];
+
+    if (In_endgame(&lev->z) && !Is_astralevel(&lev->z) &&
+        wrong_elem_type(&lev->z, mdat))
+        return 0;
+
+    if (Is_rogue_level(&lev->z) && !isupper(def_monsyms[(int)(mdat->mlet)]))
+        return 0;
+
+    return prob;
 }
 
-static struct rndmonst_state {
-    int choice_count;
-    char mchoices[SPECIAL_PM];  /* value range is 0..127 */
-} rndmonst_state;
 
 /* select a random monster type */
 const struct permonst *
-rndmonst(const d_level * dlev)
+rndmonst(const struct level *lev)
 {
-    const struct permonst *ptr;
-    int mndx, ct;
+    struct default_gen_flags flags = {
+        .consider_xlvl = !in_mklev,
+        .ignore_nogen = FALSE,
+        .ignore_uniq = FALSE,
+        .ignore_extinct = FALSE,
+    };
 
-    if (dlev->dnum == quest_dnum && rn2(7) && (ptr = qt_montype(dlev)) != 0)
-        return ptr;
-
-    if (rndmonst_state.choice_count < 0) {      /* need to recalculate */
-        int zlevel, minmlev, maxmlev;
-        boolean elemlevel;
-        boolean upper;
-
-        rndmonst_state.choice_count = 0;
-        /* look for first common monster */
-        for (mndx = LOW_PM; mndx < SPECIAL_PM; mndx++) {
-            if (!uncommon(dlev, mndx))
-                break;
-            rndmonst_state.mchoices[mndx] = 0;
-        }
-        if (mndx == SPECIAL_PM) {
-            /* evidently they've all been exterminated */
-            return NULL;
-        }       /* else `mndx' now ready for use below */
-        zlevel = level_difficulty(dlev);
-        /* determine the level of the weakest monster to make. */
-        minmlev = zlevel / 6;
-        /* determine the level of the strongest monster to make. The strength
-           of the initial inhabitants of the level does not depend on the
-           player level; instead, we assume that the player level is 1 up to
-           D:10, and dlevel - 10 thereafter (to estimate a lower bound). */
-        if (in_mklev)
-            maxmlev = (zlevel <= 10 ? (zlevel + 1) / 2 : zlevel - 5);
-        else
-            maxmlev = (zlevel + u.ulevel) / 2;
-        upper = Is_rogue_level(dlev);
-        elemlevel = In_endgame(dlev) && !Is_astralevel(dlev);
-
-/*
- * Find out how many monsters exist in the range we have selected.
- */
-        /* (`mndx' initialized above) */
-        for (; mndx < SPECIAL_PM; mndx++) {
-            ptr = &mons[mndx];
-            rndmonst_state.mchoices[mndx] = 0;
-            if (tooweak(mndx, minmlev) || toostrong(mndx, maxmlev))
-                continue;
-            if (upper && !isupper(def_monsyms[(int)(ptr->mlet)]))
-                continue;
-            if (elemlevel && wrong_elem_type(dlev, ptr))
-                continue;
-            if (uncommon(dlev, mndx))
-                continue;
-            if (In_hell(dlev) && (ptr->geno & G_NOHELL))
-                continue;
-            ct = (int)(ptr->geno & G_FREQ) + align_shift(dlev, ptr);
-            if (ct < 0 || ct > 127)
-                panic("rndmonst: bad count [#%d: %d]", mndx, ct);
-            rndmonst_state.choice_count += ct;
-            rndmonst_state.mchoices[mndx] = (char)ct;
-        }
-/*
- * Possible modification:  if choice_count is "too low",
- * expand minmlev..maxmlev range and try again.
- */
-    }
-    /* choice_count+mchoices[] recalc */
-    if (rndmonst_state.choice_count <= 0) {
-        /* maybe no common mons left, or all are too weak or too strong */
-        return NULL;
-    }
-
-/*
- * Now, select a monster at random.
- */
-    ct = rnd(rndmonst_state.choice_count);
-    for (mndx = LOW_PM; mndx < SPECIAL_PM; mndx++)
-        if ((ct -= (int)rndmonst_state.mchoices[mndx]) <= 0)
-            break;
-
-    if (mndx == SPECIAL_PM || uncommon(dlev, mndx)) {   /* shouldn't happen */
-        impossible("rndmonst: bad `mndx' [#%d]", mndx);
-        return NULL;
-    }
+    int mndx = NON_PM;
+    if (lev->mgr)
+        mndx = lev->mgr->pick_monster(lev, 0, FALSE);
+    else
+        mndx = pick_monster(lev, rndmonst_special_prob, &flags);
     return &mons[mndx];
-}
-
-/* called when you change level (experience or dungeon depth) or when
-   monster species can no longer be created (genocide or extinction) */
-/* mndx: particular species that can no longer be created */
-void
-reset_rndmonst(int mndx)
-{
-    /* cached selection info is out of date */
-    if (mndx == NON_PM) {
-        rndmonst_state.choice_count = -1;       /* full recalc needed */
-    } else if (mndx < SPECIAL_PM) {
-        rndmonst_state.choice_count -= rndmonst_state.mchoices[mndx];
-        rndmonst_state.mchoices[mndx] = 0;
-    }   /* note: safe to ignore extinction of unique monsters */
-}
-
-
-void
-save_rndmonst_state(struct memfile *mf)
-{
-    mtag(mf, 0, MTAG_RNDMONST);
-    mwrite32(mf, rndmonst_state.choice_count);
-    mwrite(mf, rndmonst_state.mchoices, sizeof (rndmonst_state.mchoices));
-}
-
-
-void
-restore_rndmonst_state(struct memfile *mf)
-{
-    rndmonst_state.choice_count = mread32(mf);
-    mread(mf, rndmonst_state.mchoices, sizeof (rndmonst_state.mchoices));
 }
 
 
@@ -1430,24 +1324,15 @@ pick_monster(const struct level *lev, gen_prob_callback callback, void *dat) {
         if ((mvitals[i].mvflags & G_EXTINCT) & mons[i].geno & G_UNIQ)
             continue;
 
-        uchar raw = callback(lev, i, dat);
+        uchar prob = callback(lev, i, dat);
 
-        if ((mvitals[i].mvflags & G_EXTINCT) && !(raw & MP_IGNORE_EXTINCT))
-            continue;
-        if ((mons[i].geno & G_UNIQ) && !(raw & MP_IGNORE_UNIQ))
-            continue;
-        if ((mons[i].geno & G_NOGEN) && !(raw & MP_IGNORE_NOGEN))
-            continue;
-
-        raw &= ~(MP_FLAGS);
-
-        if (sum > INT_MAX - raw) {
+        if (sum > INT_MAX - prob) {
             impossible("cumulative monster probability is way too high!");
             break;
         }
 
-        probs[i] = raw;
-        sum += raw;
+        probs[i] = prob;
+        sum += prob;
     }
 
     if (sum <= 0)
@@ -1475,7 +1360,7 @@ struct class_filter {
 };
 
 static uchar
-class_filter_callback(const struct level *lev, int mndx, void *dat) {
+class_filter_callback(const struct level *lev, short mndx, void *dat) {
     struct class_filter *filter = dat;
     if (mons[mndx].mlet != filter->cls)
         return 0;
@@ -1495,7 +1380,7 @@ pick_monster_class(const struct level *lev, char cls,
 
 
 uchar
-align_shift(const struct d_level * dlvl, int mndx)
+align_shift(const struct d_level * dlvl, short mndx)
 {
     const struct permonst *ptr = &mons[mndx];
     int alshift;
@@ -1520,7 +1405,7 @@ align_shift(const struct d_level * dlvl, int mndx)
 }
 
 boolean
-out_of_depth(const struct level *lev, int mndx, boolean consider_xlvl) {
+out_of_depth(const struct level *lev, short mndx, boolean consider_xlvl) {
     int dl = level_difficulty(&lev->z);
     int minlev = dl / 6;
     int maxlev = consider_xlvl ? (dl + u.ulevel) / 2
@@ -1530,19 +1415,30 @@ out_of_depth(const struct level *lev, int mndx, boolean consider_xlvl) {
 }
 
 uchar
-default_gen_prob(const struct level *lev, int mndx, void *consider_xlvl) {
-    if (mons[mndx].geno & (G_NOGEN | G_UNIQ))
+default_gen_prob(const struct level *lev, short mndx, void *dat) {
+    struct default_gen_flags *flags = dat;
+    if (!flags->ignore_nogen && (mons[mndx].geno & G_NOGEN))
         return 0;
+    if (!flags->ignore_uniq && (mons[mndx].geno & G_UNIQ))
+        return 0;
+    if (!flags->ignore_extinct && (mvitals[mndx].mvflags & G_EXTINCT))
+        return 0;
+    if ((mons[mndx].geno & G_UNIQ) && (mvitals[mndx].mvflags & G_EXTINCT))
+        return 0;
+    if (mvitals[mndx].mvflags & G_GENO)
+        return 0;
+
     if (In_hell(&lev->z)) {
         if (mons[mndx].geno & G_NOHELL)
             return 0;
-    } else {
         if (mons[mndx].maligntyp > A_NEUTRAL)
             return 0;
+    } else {
+        if (mons[mndx].geno & G_HELL)
+            return 0;
     }
-    if (mvitals[mndx].mvflags & G_GONE)
-        return 0;
-    if (out_of_depth(lev, mndx, *(boolean*)consider_xlvl))
+
+    if (out_of_depth(lev, mndx, flags->consider_xlvl))
         return 0;
 
     return mons[mndx].geno & G_FREQ + align_shift(&lev->z, mndx);

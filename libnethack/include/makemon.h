@@ -9,21 +9,13 @@
 # include "global.h"
 # include "rm.h"
 
-static const uchar MP_IGNORE_NOGEN   = 0x80;
-static const uchar MP_IGNORE_EXTINCT = 0x40;
-static const uchar MP_IGNORE_UNIQ    = 0x20;
-static const uchar MP_FLAGS =
-    MP_IGNORE_NOGEN | MP_IGNORE_EXTINCT | MP_IGNORE_UNIQ;
-
 /* The callback type for gen_monster_type.
  * It is passed the level, the monster index, and its callback data. The
  * callback should give the probability of that type of monster being generated,
- * as a relative weight. Normally monsters with G_NOGEN, G_UNIQ, or G_EXTINCT
- * set cannot be selected; the above flags can be used to ignore these. If one
- * of these flags is set but not ignored, or the probability is 0, the monster
- * will not be generated. 
+ * as a relative weight. If the probability is 0, the monster will not be
+ * generated. 
  */
-typedef uchar (*gen_prob_callback)(const struct level *lev, int mndx,
+typedef uchar (*gen_prob_callback)(const struct level *lev, short mndx,
                                    void *dat);
 
 struct gen_prob_wrapper {
@@ -35,7 +27,9 @@ struct gen_prob_wrapper {
  * probability.
  *
  * Regardless of the flags passed, an extinct unique monster will never, ever be
- * selected, nor will a genocided monster or a placeholder.
+ * selected, nor will a genocided monster or a placeholder. Otherwise, the
+ * callback is responsible for checking for extinction, unique monsters, and
+ * non-generated monsters.
  */
 int pick_monster(const struct level *lev, gen_prob_callback callback,
                  void *dat);
@@ -50,23 +44,32 @@ int pick_monster_class(const struct level *lev, char cls,
 /* Get a shift from 0 to 5 that should happen to a monster because of its
  * alignment relative to the dungeon aligment. The stronger the match, the
  * higher the value. */
-uchar align_shift(const struct d_level *dlvl, int mndx);
+uchar align_shift(const struct d_level *dlvl, short mndx);
 
 /* Determine whether the monster is out-of-depth for a given level. If
  * consider_xlvl is TRUE, the player's experience level is taken into account.
  * Not that a monster which is too weak is also considered out of depth.
  */
-boolean out_of_depth(const struct level *lev, int mndx, boolean consider_xlvl);
+boolean out_of_depth(const struct level *lev, short mndx, boolean consider_xlvl);
+
+struct default_gen_flags {
+    boolean consider_xlvl : 1;
+    boolean ignore_extinct : 1;
+    boolean ignore_nogen : 1;
+    boolean ignore_uniq : 1;
+};
 
 /* Produce the default monster generation probability. The dat parameter should
- * be a pointer to boolean that indicates whether or not we should be taking the
- * player's experience level into account (normally false during level
- * generation, and true otherwise).
+ * be a pointer to a default_gen_flags that indicates whether or not we should be
+ * taking the player's experience level into account (normally false during
+ * level generation, and true otherwise), and whether to ignore
+ * NOGEN/UNIQ/EXTINCT monsters.
  *
  * This takes into account the monster's level, alignment, and the hellishness
- * of the level.
+ * of the level, as well as possibly its NOGEN/UNIQ/EXTINCT status and/or the
+ * experience level of the player.
  */
-uchar default_gen_prob(const struct level *lev, int mndx, void *consider_xlvl);
+uchar default_gen_prob(const struct level *lev, short mndx, void *flags);
 
 #endif /* MAKEMON_H */
 

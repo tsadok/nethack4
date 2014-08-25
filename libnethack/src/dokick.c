@@ -1463,13 +1463,8 @@ deliver_object(struct obj *obj, xchar dnum, xchar dlevel, int where)
     int nx, ny;
 
     lev = levels[ledger_no(&levnum)];
-    if (!lev) { /* this can go away if we pre-generate all levels */
-        /* Reset the rndmonst state so that it will generate correct monsters
-           for the level being created. */
-        reset_rndmonst(NON_PM);
+    if (!lev)
         lev = mklev(&levnum);
-        reset_rndmonst(NON_PM);
-    }
 
     obj_extract_self(obj);
 

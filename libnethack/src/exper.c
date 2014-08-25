@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-04-19 */
+/* Last modified by Sean Hunt, 2014-08-25 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -116,7 +116,6 @@ losexp(const char *killer, boolean override_res)
         pline("%s level %d.", Goodbye(), u.ulevel--);
         /* remove intrinsic abilities */
         adjabil(u.ulevel + 1, u.ulevel);
-        reset_rndmonst(NON_PM); /* new monster selection */
     } else {
         if (killer)
             done(DIED, killer);
@@ -213,7 +212,6 @@ pluslvl(boolean incr)
         }
         pline("Welcome to experience level %d.", u.ulevel);
         adjabil(u.ulevel - 1, u.ulevel);        /* give new intrinsics */
-        reset_rndmonst(NON_PM); /* new monster selection */
     }
 }
 

@@ -316,7 +316,6 @@ savegamestate(struct memfile *mf)
     mwrite(mf, flags.rngstate, sizeof flags.rngstate);
 
     save_track(mf);
-    save_rndmonst_state(mf);
     save_history(mf);
 }
 

@@ -474,7 +474,6 @@ restgamestate(struct memfile *mf)
     mread(mf, flags.rngstate, sizeof flags.rngstate);
 
     restore_track(mf);
-    restore_rndmonst_state(mf);
     restore_history(mf);
 
     /* must come after all mons & objs are restored */

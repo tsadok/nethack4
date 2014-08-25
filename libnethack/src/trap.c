@@ -295,7 +295,7 @@ maketrap(struct level *lev, int x, int y, int typ)
             struct obj *otmp, *statue;
 
             statue =
-                mkcorpstat(STATUE, NULL, &mons[rndmonnum(&lev->z)], lev, x, y,
+                mkcorpstat(STATUE, NULL, &mons[rndmonnum(lev)], lev, x, y,
                            FALSE);
             mtmp = makemon(&mons[statue->corpsenm], lev, COLNO, ROWNO, NO_MM_FLAGS);
             if (!mtmp)

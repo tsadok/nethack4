@@ -228,7 +228,7 @@ enum cardinal_dir {
  */
 
 #define RANDOM_MON_OF(c) \
-    (lev_->mgr->generate_mon(lev_, def_char_to_monclass((c)), TRUE))
+    (lev_->mgr->pick_monster(lev_, def_char_to_monclass((c)), TRUE))
 #define RANDOM_OBJ_OF(c) /* TODO */
 
 #define MIMIC /* TODO */
@@ -255,7 +255,7 @@ enum cardinal_dir {
 
 #define RANDOM_LOC (C(rn2(COLNO), rn2(ROWNO)))
 #define RANDOM_OBJ /* TODO */
-#define RANDOM_MON (lev_->mgr->generate_mon(lev_, 0, TRUE))
+#define RANDOM_MON (lev_->mgr->pick_monster(lev_, 0, TRUE))
 
 #define SMOOTHED (TRUE)
 #define UNSMOOTHED (FALSE)

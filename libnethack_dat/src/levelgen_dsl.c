@@ -175,7 +175,7 @@ struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc) {
      * will instead attempt to (once) generate a monster under the same rules,
      * and abort if we fail. */
     if (mvf & G_GENO) {
-        id = lev->mgr->generate_mon(lev, 0, TRUE);
+        id = lev->mgr->pick_monster(lev, 0, TRUE);
         if (id < LOW_PM || id >= NUMMONS || is_placeholder(&mons[id])) {
             if (id != NON_PM)
                 impossible("level manager gave invalid monster id: %d", id);

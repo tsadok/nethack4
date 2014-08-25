@@ -961,7 +961,7 @@ create_object(struct level *lev, object * o, struct mkroom *croom)
 
         /* corpsenm is "empty" if -1, random if -2, otherwise specific */
         if (o->corpsenm == NON_PM - 1)
-            otmp->corpsenm = rndmonnum(&lev->z);
+            otmp->corpsenm = rndmonnum(lev);
         else if (o->corpsenm != NON_PM)
             otmp->corpsenm = o->corpsenm;
 
@@ -1018,14 +1018,14 @@ create_object(struct level *lev, object * o, struct mkroom *croom)
                setting corpsenm). */
             wastyp = otmp->corpsenm;
             for (i = 0; i < 1000; i++) {
-                /* makemon without rndmonst() might create a group */
+                /* makemon with a random type might create a group */
                 was = makemon(&mons[wastyp], lev, COLNO, ROWNO, NO_MM_FLAGS);
                 if (was) {
                     if (!resists_ston(was))
                         break;
                     mongone(was);
                 }
-                wastyp = rndmonnum(&lev->z);
+                wastyp = rndmonnum(lev);
             }
             if (was) {
                 otmp->corpsenm = wastyp;
@@ -2780,7 +2780,7 @@ fixup_special(struct level *lev)
                 while (otmp &&
                        (poly_when_stoned(&mons[otmp->corpsenm]) ||
                         pm_resistance(&mons[otmp->corpsenm], MR_STONE))) {
-                    otmp->corpsenm = rndmonnum(&lev->z);
+                    otmp->corpsenm = rndmonnum(lev);
                     otmp->owt = weight(otmp);
                 }
             }
@@ -2799,7 +2799,7 @@ fixup_special(struct level *lev)
             while (otmp->corpsenm < LOW_PM
                    || pm_resistance(&mons[otmp->corpsenm], MR_STONE)
                    || poly_when_stoned(&mons[otmp->corpsenm])) {
-                otmp->corpsenm = rndmonnum(&lev->z);
+                otmp->corpsenm = rndmonnum(lev);
                 otmp->owt = weight(otmp);
             }
         }

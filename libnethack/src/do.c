@@ -984,8 +984,6 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
             dunlev_reached(&u.uz) = dunlev(&u.uz);
     }
 
-    reset_rndmonst(NON_PM);     /* u.uz change affects monster generation */
-
     origlev = level;
     level = NULL;
 
