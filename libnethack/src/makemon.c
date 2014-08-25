@@ -1226,7 +1226,7 @@ uncommon(const d_level * dlev, int mndx)
     if (mvitals[mndx].mvflags & G_GONE)
         return TRUE;
     if (In_hell(dlev))
-        return mons[mndx].maligntyp > A_NEUTRAL;
+        return (mons[mndx].geno & G_NOHELL) != 0;
     else
         return (mons[mndx].geno & G_HELL) != 0;
 }
