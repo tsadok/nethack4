@@ -741,9 +741,9 @@ resurrect(void)
 /* Here, we make trouble for the poor shmuck who actually  */
 /* managed to do in the Wizard.                            */
 void
-intervene(void)
+wiz_intervene(struct level *lev)
 {
-    int which = Is_astralevel(&u.uz) ? rnd(4) : rn2(6);
+    int which = Is_astralevel(&lev->z) ? rnd(4) : rn2(6);
 
     /* cases 0 and 5 don't apply on the Astral level */
     switch (which) {

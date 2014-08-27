@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-25 */
+/* Last modified by Sean Hunt, 2014-08-27 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -516,7 +516,15 @@ struct level_manager {
     /* Called every turn to allow the level to process turn-by-turn effects.
      * This should process only turn-by-turn effects unique ito the level; the
      * game engine will handle all monsters', objects', and tiles' effects. An
-     * example is the moving bubbles on the Plane of Water. */
+     * example is the moving bubbles on the Plane of Water.
+     *
+     * This is called as the *second-to-last* thing in the turn loop. At this point,
+     * all of the regular effects for tiles have been completed, hunger,
+     * regeneration, teleportation, etc. The only thing remaining in the turn
+     * loop is decrementing the helplessness counters, and this is to allow
+     * prayer to always act last (and hence, invulnerability to remain while
+     * this hook is called).
+     */
     void (*turn_effects)(struct level* lev);
 
     /* Called whenever a monster is migrating to the level. Exact API is subject

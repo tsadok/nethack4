@@ -952,27 +952,37 @@ you_moved(void)
                 if (u.udg_cnt)
                     u.udg_cnt--;
                 if (!u.udg_cnt) {
-                    intervene();
+                    if (level->mgr)
+                        level->mgr->intervene(level);
+                    else
+                        wiz_intervene(level);
                     u.udg_cnt = rn1(200, 50);
                 }
             }
             restore_attrib();
-            /* underwater and waterlevel vision are done here */
-            if (Is_waterlevel(&u.uz))
-                movebubbles(level);
-            else if (Underwater)
+
+            /* Special vision code */
+            if (Underwater)
                 under_water(0);
-            /* vision while buried done here */
             else if (u.uburied)
                 under_ground(0);
 
-            if (!u.umoved && (Is_waterlevel(&u.uz) ||
-                              !(Flying || Levitation))) {
+            /* Check for water/lava effects. Normally spoteffects() will get
+             * these, but not if you just moved.
+             *
+             * FIXME: This is probably a bug anyway if you are moved into
+             * water/lava in a way that doesn't set u.umoved. This should be
+             * investigated and rethought.
+             */
+            if (!u.umoved) {
                 if (Underwater)
                     drown();
-                else if (is_lava(level, u.ux, u.uy))
+                else if (is_lava(level, u.ux, u.uy) && !Flying && !Levitation)
                     lava_effects();
             }
+
+            if (level->mgr)
+                level->mgr->turn_effects(level);
 
             /* when immobile, count is in turns */
             decrement_helplessness();

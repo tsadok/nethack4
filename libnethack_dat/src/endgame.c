@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-25 */
+/* Last modified by Sean Hunt, 2014-08-27 */
 /* nh4-scripts: LEVGEN */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -24,10 +24,12 @@ static short waterlevel_pick_mon(const struct level *, char class,
  */
 
 struct level_manager waterlevel_manager = {
+    .turn_effects = movebubbles,
     .save_extra = save_waterlevel,
     .restore_extra = restore_waterlevel,
     .free_extra = free_waterlevel,
     .pick_monster = waterlevel_pick_mon,
+    .intervene = wiz_intervene,
 };
 
 /*=============================================================================

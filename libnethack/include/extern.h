@@ -1893,7 +1893,7 @@ extern void clonewiz(void);
 extern int pick_nasty(void);
 extern int nasty(struct monst *);
 extern void resurrect(void);
-extern void intervene(void);
+extern void wiz_intervene(struct level *lev);
 extern void wizdead(void);
 extern void cuss(struct monst *);
 
