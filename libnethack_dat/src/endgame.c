@@ -113,15 +113,17 @@ waterlevel_pick_mon(const struct level *lev, char class, boolean levgen) {
  * other source files, but they are all so nicely encapsulated here.
  */
 
-#define CONS_OBJ   0
-#define CONS_MON   1
-#define CONS_HERO  2
-#define CONS_TRAP  3
+enum bub_content {
+    bc_obj,
+    bc_mon,
+    bc_hero,
+    bc_trap,
+};
 
 struct container {
     struct container *next;
     xchar x, y;
-    short what;
+    enum bub_content what;
     void *list;
 };
 
@@ -304,7 +306,7 @@ movebubbles(struct level *lev)
 
                         cons->x = x;
                         cons->y = y;
-                        cons->what = CONS_OBJ;
+                        cons->what = bc_obj;
                         cons->list = olist;
                         cons->next = b->cons;
                         b->cons = cons;
@@ -316,7 +318,7 @@ movebubbles(struct level *lev)
 
                         cons->x = x;
                         cons->y = y;
-                        cons->what = CONS_MON;
+                        cons->what = bc_mon;
                         cons->list = mon;
 
                         cons->next = b->cons;
@@ -337,7 +339,7 @@ movebubbles(struct level *lev)
 
                         cons->x = x;
                         cons->y = y;
-                        cons->what = CONS_HERO;
+                        cons->what = bc_hero;
                         cons->list = NULL;
 
                         cons->next = b->cons;
@@ -349,7 +351,7 @@ movebubbles(struct level *lev)
 
                         cons->x = x;
                         cons->y = y;
-                        cons->what = CONS_TRAP;
+                        cons->what = bc_trap;
                         cons->list = btrap;
 
                         cons->next = b->cons;
@@ -546,7 +548,7 @@ mv_bubble(struct level *lev, struct bubble *b, int dx, int dy, boolean ini)
         cons->y += dy;
 
         switch (cons->what) {
-        case CONS_OBJ:{
+        case bc_obj:{
                 struct obj *olist, *otmp;
 
                 for (olist = (struct obj *)cons->list; olist; olist = otmp) {
@@ -556,14 +558,14 @@ mv_bubble(struct level *lev, struct bubble *b, int dx, int dy, boolean ini)
                 break;
             }
 
-        case CONS_MON:{
+        case bc_mon:{
                 struct monst *mon = (struct monst *)cons->list;
 
                 mnearto(mon, cons->x, cons->y, TRUE);
                 break;
             }
 
-        case CONS_HERO:{
+        case bc_hero:{
                 int ux0 = u.ux, uy0 = u.uy;
 
                 /* change u.ux0 and u.uy0? */
@@ -577,7 +579,7 @@ mv_bubble(struct level *lev, struct bubble *b, int dx, int dy, boolean ini)
                 break;
             }
 
-        case CONS_TRAP:{
+        case bc_trap:{
                 struct trap *btrap = (struct trap *)cons->list;
 
                 btrap->tx = cons->x;
