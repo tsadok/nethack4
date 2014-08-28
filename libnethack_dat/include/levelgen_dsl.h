@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-25 */
+/* Last modified by Sean Hunt, 2014-08-28 */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -81,12 +81,11 @@ enum cardinal_dir {
     int i_
 
 #define MAP(map) \
-    SUBMAP(wholemap_, C(COLNO - 1, ROWNO - 1), (map)); \
+    SUBMAP(wholemap_, C(COLNO, ROWNO), (map)); \
     PLACE_AT(wholemap_, C(0, 0))
     
 #define SUBMAP(name, size, map) \
-    struct maparea *name = lg_new_map((size), (map), __LINE__, __FILE__, \
-                                      &mapchain_)
+    struct maparea *name = lg_new_map((size), (map), &mapchain_)
 
 #define REGION(name, reg) \
     struct area name = (reg)
@@ -137,7 +136,7 @@ enum cardinal_dir {
  */
 
 #define FILL_MAP(c) \
-    do { lg_fill_map(lev_, (c), __LINE__, __FILE__); } while (0)
+    do { lg_fill_map(lev_, (c)); } while (0)
 
 #define MAKE_MAP(...) /* TODO */
 
@@ -151,13 +150,12 @@ enum cardinal_dir {
 
 #define MAZEWALK(...) /* TODO */
 #define PLACE_JUSTIFIED(...) /* TODO */
-#define PLACE_AT(map, loc) do { lg_place_at(lev_, (map), (loc)); } while (0)
+#define PLACE_AT(map, loc) do { lg_place_map(lev_, (map), (loc)); } while (0)
 
 #define TRAP(...) /* TODO */
 #define OBJ(...) /* TODO */
 #define OBJ_EX(...) /* TODO */
-#define MON(id, loc) do { lg_gen_monster(lev_, (id), (loc)); } while (0)
-#define MON_EX(id, loc, ...) do { \
+#define MON(id, loc, ...) do { \
         struct monst *mon_ = lg_gen_monster(lev_, (id), (loc)); \
         __VA_ARGS__; \
     } while (0)
@@ -232,6 +230,7 @@ enum cardinal_dir {
 #define RANDOM_OBJ_OF(c) /* TODO */
 
 #define MIMIC /* TODO */
+#define HOSTILE (mon_->mpeaceful = 0, set_malign(mon_))
 #define CORPSENM /* TODO */
 
 /* ==========================================
@@ -284,11 +283,11 @@ enum cardinal_dir {
 
 char lg_what_map_char(char c);
 char lg_what_mon_char(char c);
-void lg_fill_map(struct level *lev, char c, int line, const char *file);
+void lg_fill_map(struct level *lev, char c);
 void lg_shuffle_array(void *ptr, size_t num, size_t size);
-struct maparea *lg_new_map(struct coord size, const char *text, int line,
-                           const char *file, struct maparea **chain);
-void lg_place_at(struct level *lev, struct maparea *map, struct coord loc);
+struct maparea *lg_new_map(struct coord size, const char *text,
+                           struct maparea **chain);
+void lg_place_map(struct level *lev, struct maparea *map, struct coord loc);
 struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc);
 void lg_tele_region(struct level *lev, char dir, struct area reg);
 void lg_place_portal(struct level *lev, const char *dest, struct area reg);

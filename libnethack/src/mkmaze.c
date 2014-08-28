@@ -364,6 +364,9 @@ makemaz(struct level *lev, const char *s)
         } else if (!strcmp(protofile, "water")) {
             gen_waterlevel(lev);
             return;
+        } else if (!strcmp(protofile, "fire")) {
+            gen_firelevel(lev);
+            return;
         }
 
         strcat(protofile, LEV_EXT);

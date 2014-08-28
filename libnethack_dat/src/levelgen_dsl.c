@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-25 */
+/* Last modified by Sean Hunt, 2014-08-28 */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -56,11 +56,11 @@ lg_what_map_char(char c) {
 }
 
 void
-lg_fill_map(struct level *lev, char c, int line, const char * file) {
+lg_fill_map(struct level *lev, char c) {
     int val = lg_what_map_char(c);
 
     if (val == INVALID_TYPE) {
-        impossible("Invalid fill character at line %d of %s", line, file);
+        impossible("invalid fill character '%c' in fill", c);
         val = STONE;
     }
 
@@ -88,24 +88,25 @@ lg_shuffle_array(void *ptr, size_t num, size_t size) {
 }
 
 struct maparea *
-lg_new_map (struct coord size, const char *text, int line, const char * file,
-            struct maparea **chain) {
-    char *buf = malloc(size.x * size.y + 1);
+lg_new_map(struct coord size, const char *text, struct maparea **chain) {
 
     int len = strlen(text);
-    if (len < size.x * size.y)
-        impossible("Map diagram is too small at line %d of %s", line, file);
+    if (len != size.x * size.y)
+        /* This is not a recoverable error. The only sane thing would be to
+         * return NULL, which will give a crash. Better exit gracefully. */
+        panic("map diagram is %d characters, expected %dx%d", len,
+              size.x, size.y);
 
-    memset(buf, ' ', size.x * size.y);
-    buf[size.x * size.y] = '\0';
+    char *buf = malloc(len + 1);
+    memset(buf, ' ', len);
+    buf[len] = '\0';
     memcpy(buf, text, len);
 
     char *c;
-    for (c = buf; c < buf + size.x * size.y; ++buf) {
+    for (c = buf; c < buf + len; ++c) {
         char typ = lg_what_map_char(*c);
         if (typ == INVALID_TYPE) {
-            impossible("Invalid fill character 'c' "
-                        "in map at line %d of %s", line, file);
+            impossible("invalid fill character '%c' in map", *c);
             *c = ' ';
         } else
             *c = typ;
@@ -122,26 +123,24 @@ lg_new_map (struct coord size, const char *text, int line, const char * file,
 }
 
 void
-lg_place_at(struct level *lev, struct maparea *map, struct coord loc) {
+lg_place_map(struct level *lev, struct maparea *map, struct coord loc) {
     /* Reset the area position so that it can be used as a baseline */
     map->area.hx -= map->area.lx;
     map->area.hy -= map->area.ly;
     map->area.lx = loc.x;
-    map->area.hx = loc.x;
-    map->area.ly += loc.y;
+    map->area.ly = loc.y;
+    map->area.hx += loc.x;
     map->area.hy += loc.y;
 
     if (map->area.lx < 0 || map->area.ly < 0 ||
-        map->area.hx >= COLNO || map->area.hy >= ROWNO) {
-        impossible("Map area does not fit on map! Not placing!");
-        return;
-    }
+        map->area.hx >= COLNO || map->area.hy >= ROWNO)
+        panic("map area does not fit on map!");
 
     int x, y;
     for (x = map->area.lx; x <= map->area.hx; ++x) {
         for (y = map->area.ly; y <= map->area.hy; ++y) {
             int ix = (y - map->area.ly) * (map->area.hx - map->area.lx + 1) +
-                     (x - map->area.hx);
+                     (x - map->area.lx);
             lev->locations[x][y].typ = map->locs[ix];
             lev->locations[x][y].flags = 0;
             lev->locations[x][y].horizontal = 0;
@@ -269,7 +268,7 @@ lg_place_portal(struct level *lev, const char *dest, struct area reg) {
 
     s_level *sp = find_level(dest);
     if (!sp) {
-        impossible("Unable to find destination level of portal: %s", dest);
+        impossible("unable to find destination level of portal: %s", dest);
     }
 
     int tries = branch_tries;
@@ -300,13 +299,13 @@ lg_place_portal(struct level *lev, const char *dest, struct area reg) {
     }
 
     /* Great. *STILL* failed. Abort. */
-    impossible("Unable to find location to place portal");
+    impossible("unable to find location to place portal");
     return;
 
 located:;
     struct trap *ttmp = maketrap(lev, x, y, MAGIC_PORTAL);
     if (!ttmp) {
-        impossible("Portal placement failed");
+        impossible("portal placement failed");
         return;
     }
     ttmp->dst = sp->dlevel;

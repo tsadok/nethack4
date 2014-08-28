@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-27 */
+/* Last modified by Sean Hunt, 2014-08-28 */
 /* nh4-scripts: LEVGEN */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -16,12 +16,23 @@ static void setup_waterlevel(struct level *lev);
 static void save_waterlevel(struct level *lev, struct memfile *mf);
 static void restore_waterlevel(struct level *lev, struct memfile *mf);
 static void free_waterlevel(struct level *lev);
+static short firelevel_pick_mon(const struct level *, char class,
+                                boolean levgen);
 static short waterlevel_pick_mon(const struct level *, char class,
                                  boolean levgen);
 
 /*=============================================================================
  * Level managers.
  */
+
+struct level_manager firelevel_manager = {
+    .turn_effects = no_level_effects,
+    .save_extra = no_level_data,
+    .restore_extra = no_level_data,
+    .free_extra = no_level_effects,
+    .pick_monster = firelevel_pick_mon,
+    .intervene = wiz_intervene,
+};
 
 struct level_manager waterlevel_manager = {
     .turn_effects = movebubbles,
@@ -36,6 +47,76 @@ struct level_manager waterlevel_manager = {
  * Level generation functions.
  */
 
+void gen_firelevel(struct level *lev) {
+    lev->mgr = &firelevel_manager;
+    INIT_LEVGEN(lev);
+
+    NOTELEPORT;
+    HARDFLOOR;
+    SHORTSIGHTED;
+
+    MAP("..............................................................................."
+        "......LLLLLLLL............L.......................LLL.........................."
+        ".....LL...................L......................LLLL................LL........"
+        ".....L.............LLLL...LL....LL...............LLLLL.............LLL........."
+        "...LLLL..............LL....L.....LLL..............LLLL..............LLLL......."
+        "LL..........LLLL...LLLL...LLL....LLL......L........LLLL....LL........LLL......."
+        "L.........LLLLLLL...LL.....L......L......LL.........LL......LL........LL...L..."
+        "L.........LL..LLL..LL......LL......LLLL..L.........LL......LLL............LL..L"
+        "......L..LL....LLLLL.................LLLLLLL.......L......LL............LLLLLLL"
+        "......L..L.....LL.LLLL.......L............L........LLLLL.LL......LL.........LL."
+        "......LL........L...LL......LL.............LLL.....L...LLL.......LLL.........LL"
+        ".......LLLLLL........L.......LLL.............L....LL...L.LLL......LLLLLLL......"
+        "............LLLL............LL.L.............L....L...LL.........LLL..LLL......"
+        ".............................LLLLL...........LL...L...L........LLLL..LLLLLL...."
+        ".......LLLL.............LL....LL.......LLL...LL.......L..LLL....LLLLLLL........"
+        "L........LLL.........LLLLLLLLLLL......LLLLL...L...........LL...LL...LL........."
+        "L..........LL.......LL.........LL.......LLL....L..LLL....LL.........LL........."
+        "L...........LLLLLLLLL...........LL....LLL.......LLLLL.....LL........LL........."
+        "LL.................L.............LLLLLL............LL...LLLL.........LL........"
+        "LL.................................LL....................LL...................."
+        "..L....LL.L.......................LL......................LLL..................");
+
+    TELEPORT_REGION(UP, R(71, 16, 71, 16));
+    /* FIXME: the portal should be able to generate in any area but the
+     * bottom-right corner
+     */
+    PORTAL("water", R(0, 0, 66, 13));
+
+    REPEAT(40)
+        TRAP(FIRE_TRAP, RANDOM_LOC);
+
+    REPEAT(19)
+        MON(PM_FIRE_ELEMENTAL, RANDOM_LOC, HOSTILE);
+    REPEAT(8)
+        MON(PM_SALAMANDER, RANDOM_LOC);
+    REPEAT(6) {
+        MON(PM_FIRE_VORTEX, RANDOM_LOC);
+        MON(PM_HELL_HOUND, RANDOM_LOC);
+    }
+    REPEAT(5)
+        MON(PM_FIRE_GIANT, RANDOM_LOC);
+    REPEAT(3) {
+        MON(PM_PIT_FIEND, RANDOM_LOC);
+        MON(PM_PIT_VIPER, RANDOM_LOC);
+        MON(PM_BARBED_DEVIL, RANDOM_LOC);
+    }
+    REPEAT(2) {
+        MON(PM_STONE_GOLEM, RANDOM_LOC);
+        MON(PM_STEAM_VORTEX, RANDOM_LOC);
+    }
+    MON(PM_RED_DRAGON, RANDOM_LOC);
+    MON(PM_BALROG, RANDOM_LOC);
+    MON(PM_SCORPION, RANDOM_LOC);
+    MON(PM_DUST_VORTEX, RANDOM_LOC);
+    MON(PM_MINOTAUR, RANDOM_LOC);
+
+    REPEAT(5)
+        OBJ(BOULDER, RANDOM_LOC);
+
+    FINISH_LEV;
+}
+
 void gen_waterlevel(struct level *lev) {
     lev->mgr = &waterlevel_manager;
     INIT_LEVGEN(lev);
@@ -49,11 +130,11 @@ void gen_waterlevel(struct level *lev) {
     /* create the bubbles */
     setup_waterlevel(lev);
 
-    TELEPORT_REGION(UP, R(0,0,25,21));
-    PORTAL("astral", R(51, 0, 75, 19));
+    TELEPORT_REGION(UP, R(0,0,25,20));
+    PORTAL("astral", R(51, 0, 78, 20));
 
     REPEAT(19)
-        MON(PM_WATER_ELEMENTAL, RANDOM_LOC);
+        MON(PM_WATER_ELEMENTAL, RANDOM_LOC, HOSTILE);
     REPEAT(9)
         MON(PM_KRAKEN, RANDOM_LOC);
     REPEAT(8) {
@@ -105,6 +186,35 @@ waterlevel_pick_mon(const struct level *lev, char class, boolean levgen) {
 
     return pick_monster_class(lev, class, waterlevel_gen_prob, &flags);
 }
+
+static uchar
+firelevel_gen_prob(const struct level *lev, short mndx, void *flags) {
+    uchar prob = default_gen_prob(lev, mndx, flags);
+    const struct permonst *mdat = &mons[mndx];
+
+    /* Respect a default probability of 0 */
+    if (!prob)
+        return 0;
+
+    /* Only fire resistant monsters should be present. */
+    if (!pm_resistance(mdat, MR_FIRE))
+        return 0;
+
+    return prob;
+}
+
+short
+firelevel_pick_mon(const struct level *lev, char class, boolean levgen) {
+    struct default_gen_flags flags = {
+        .consider_xlvl = !levgen,
+        .ignore_extinct = FALSE,
+        .ignore_nogen = FALSE,
+        .ignore_uniq = FALSE,
+    };
+
+    return pick_monster_class(lev, class, firelevel_gen_prob, &flags);
+}
+
 
 /*=============================================================================
  * Special waterlevel stuff in endgame (TH).

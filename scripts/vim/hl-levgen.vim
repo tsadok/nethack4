@@ -1,5 +1,5 @@
 " NetHack4 Levelgen vim highlighting script
-" Last modified by Sean Hunt, 2014-08-25
+" Last modified by Sean Hunt, 2014-08-28
 " Copyright (c) Sean Hunt, 2014
 " This script may be freely redistributed under the same license as NetHack.
 " See license for details.
@@ -19,7 +19,7 @@ let s:statements = [
   \ "NOTELEPORT", "SHORTSIGHTED", "NOMMAP", "HARDFLOOR", "ARBOREAL",
   \ "FORGETFUL",
   \ "MAZEWALK", "PLACE_JUSTIFIED", "PLACE_AT",
-  \ "TRAP", "OBJ", "OBJ_EX", "MON", "MON_EX", "OBJ_EX",
+  \ "TRAP", "OBJ", "MON",
   \ "FILL_IRREGULAR", "LIGHT_REGION", "DARKEN_REGION", "NON_DIGGABLE",
   \ "TELEPORT_REGION", "STAIR_UP", "STAIR_DOWN", "BRANCH_UP", "BRANCH_DOWN",
   \ "PORTAL",
@@ -34,7 +34,7 @@ let s:short_functions = [
 
 let s:functions = [
   \ "RANDOM_MON_OF", "RANDOM_OBJ_OF",
-  \ "MIMIC", "CORPSENM",
+  \ "MIMIC", "HOSTILE", "CORPSENM",
 \]
 
 let s:constants = [

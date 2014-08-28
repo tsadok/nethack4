@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-25 */
+/* Last modified by Sean Hunt, 2014-08-28 */
 /* nh4-scripts: LEVGEN */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -72,28 +72,28 @@ gen_valley(struct level *lev) {
 
     { /* objects */
         { /* adventurer corpses */
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_ARCHEOLOGIST));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_ARCHEOLOGIST));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_BARBARIAN));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_BARBARIAN));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_CAVEMAN));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_CAVEWOMAN));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_HEALER));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_HEALER));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_KNIGHT));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_KNIGHT));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_RANGER));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_RANGER));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_ROGUE));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_ROGUE));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_SAMURAI));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_SAMURAI));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_TOURIST));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_TOURIST));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_VALKYRIE));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_VALKYRIE));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_WIZARD));
-            OBJ_EX(CORPSE, RANDOM_LOC, CORPSENM(PM_WIZARD));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_ARCHEOLOGIST));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_ARCHEOLOGIST));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_BARBARIAN));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_BARBARIAN));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_CAVEMAN));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_CAVEWOMAN));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_HEALER));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_HEALER));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_KNIGHT));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_KNIGHT));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_RANGER));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_RANGER));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_ROGUE));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_ROGUE));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_SAMURAI));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_SAMURAI));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_TOURIST));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_TOURIST));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_VALKYRIE));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_VALKYRIE));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_WIZARD));
+            OBJ(CORPSE, RANDOM_LOC, CORPSENM(PM_WIZARD));
         }
 
         OBJ(RUBY, RANDOM_LOC);
@@ -218,9 +218,9 @@ gen_juiblex(struct level *lev) {
 
         PLACE_FOUNTAIN(places[0]);
 
-        MON_EX(PM_GIANT_MIMIC, places[1], MIMIC("fountain"));
-        MON_EX(PM_GIANT_MIMIC, places[2], MIMIC("fountain"));
-        MON_EX(PM_GIANT_MIMIC, places[3], MIMIC("fountain"));
+        MON(PM_GIANT_MIMIC, places[1], MIMIC("fountain"));
+        MON(PM_GIANT_MIMIC, places[2], MIMIC("fountain"));
+        MON(PM_GIANT_MIMIC, places[3], MIMIC("fountain"));
     }
 
 

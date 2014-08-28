@@ -730,6 +730,8 @@ extern void silly_thing(const char *, struct obj *);
 
 extern boolean has_sanctum(struct level *lev, xchar alignmask);
 extern boolean has_terrain(struct level *lev, schar typ);
+extern void no_level_effects(struct level *lev);
+extern void no_level_data(struct level *lev, struct memfile *mf);
 
 /* ### light.c ### */
 
