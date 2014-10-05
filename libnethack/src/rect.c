@@ -1,15 +1,15 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-04-05 */
+/* Last modified by Sean Hunt, 2014-10-05 */
 /* Copyright (c) 1990 by Jean-Christophe Collet  */
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
 
-int get_rect_ind(struct nhrect *);
+int get_rect_ind(struct rect *);
 
-static void remove_rect(struct nhrect *);
-static void add_rect(struct nhrect *);
-static boolean intersect(struct nhrect *, struct nhrect *, struct nhrect *);
+static void remove_rect(struct rect *);
+static void add_rect(struct rect *);
+static boolean intersect(struct rect *, struct rect *, struct rect *);
 
     /* 
      * In this file, we will handle the various rectangle functions we
@@ -20,7 +20,7 @@ static boolean intersect(struct nhrect *, struct nhrect *, struct nhrect *);
 #define XLIM    4
 #define YLIM    3
 
-static struct nhrect rect[MAXRECT + 1];
+static struct rect rect[MAXRECT + 1];
 static int rect_cnt;
 
 /*
@@ -38,12 +38,12 @@ init_rect(void)
 }
 
 /*
- * Search Index of one precise struct nhrect.
+ * Search Index of one precise struct rect.
  */
 int
-get_rect_ind(struct nhrect *r)
+get_rect_ind(struct rect *r)
 {
-    struct nhrect *rectp;
+    struct rect *rectp;
     int lx, ly, hx, hy;
     int i;
 
@@ -61,10 +61,10 @@ get_rect_ind(struct nhrect *r)
 /*
  * Search a free rectangle that include the one given in arg
  */
-struct nhrect *
-get_rect(struct nhrect *r)
+struct rect *
+get_rect(struct rect *r)
 {
-    struct nhrect *rectp;
+    struct rect *rectp;
     int lx, ly, hx, hy;
     int i;
 
@@ -80,10 +80,10 @@ get_rect(struct nhrect *r)
 }
 
 /*
- * Get some random struct nhrect from the list.
+ * Get some random struct rect from the list.
  */
 
-struct nhrect *
+struct rect *
 rnd_rect(void)
 {
     return rect_cnt > 0 ? &rect[rn2(rect_cnt)] : 0;
@@ -96,7 +96,7 @@ rnd_rect(void)
  */
 
 static boolean
-intersect(struct nhrect *r1, struct nhrect *r2, struct nhrect *r3)
+intersect(struct rect *r1, struct rect *r2, struct rect *r3)
 {
     if (r2->lx > r1->hx || r2->ly > r1->hy || r2->hx < r1->lx ||
         r2->hy < r1->ly)
@@ -113,11 +113,11 @@ intersect(struct nhrect *r1, struct nhrect *r2, struct nhrect *r3)
 }
 
 /*
- * Remove a rectangle from the list of free struct nhrect.
+ * Remove a rectangle from the list of free struct rect.
  */
 
 void
-remove_rect(struct nhrect *r)
+remove_rect(struct rect *r)
 {
     int ind;
 
@@ -127,18 +127,18 @@ remove_rect(struct nhrect *r)
 }
 
 /*
- * Add a struct nhrect to the list.
+ * Add a struct rect to the list.
  */
 
 void
-add_rect(struct nhrect *r)
+add_rect(struct rect *r)
 {
     if (rect_cnt >= MAXRECT) {
         if (wizard)
             pline("MAXRECT may be too small.");
         return;
     }
-    /* Check that this struct nhrect is not included in another one */
+    /* Check that this struct rect is not included in another one */
     if (get_rect(r))
         return;
     rect[rect_cnt] = *r;
@@ -153,9 +153,9 @@ add_rect(struct nhrect *r)
  */
 
 void
-split_rects(struct nhrect *r1, struct nhrect *r2)
+split_rects(struct rect *r1, struct rect *r2)
 {
-    struct nhrect r, old_r;
+    struct rect r, old_r;
     int i;
 
     old_r = *r1;

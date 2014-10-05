@@ -18,10 +18,6 @@
 
 #define sgn(x) ((x) >= 0 ? 1 : -1)
 
-struct coord {
-    int x, y;
-};
-
 static struct nh_dbuf_entry display_buffer[ROWNO][COLNO];
 static struct nh_dbuf_entry onscreen_display_buffer[ROWNO][COLNO];
 static nh_bool fully_refresh_display_buffer = 1;
@@ -150,15 +146,15 @@ draw_map(int cx, int cy)
             /* make the map mouse-active for left clicks, middle/right clicks
                (which are interchangeable, because some terminals don't allow
                right clicks), and hovers */
-            wset_mouse_event(mapwin, uncursed_mbutton_left, KEY_MAX + 256 + 
+            wset_mouse_event(mapwin, uncursed_mbutton_left, KEY_MAX + 256 +
                              (ROWNO * COLNO * 0) + x + y * COLNO, KEY_CODE_YES);
-            wset_mouse_event(mapwin, uncursed_mbutton_middle, KEY_MAX + 256 + 
+            wset_mouse_event(mapwin, uncursed_mbutton_middle, KEY_MAX + 256 +
                              (ROWNO * COLNO * 1) + x + y * COLNO, KEY_CODE_YES);
-            wset_mouse_event(mapwin, uncursed_mbutton_right, KEY_MAX + 256 + 
+            wset_mouse_event(mapwin, uncursed_mbutton_right, KEY_MAX + 256 +
                              (ROWNO * COLNO * 1) + x + y * COLNO, KEY_CODE_YES);
-            wset_mouse_event(mapwin, uncursed_mbutton_hover, KEY_MAX + 256 + 
+            wset_mouse_event(mapwin, uncursed_mbutton_hover, KEY_MAX + 256 +
                              (ROWNO * COLNO * 2) + x + y * COLNO, KEY_CODE_YES);
-            
+ 
             /* draw the tile first, because doing that doesn't move the cursor;
                backgrounds are special because they can be composed from
                multiple tiles (e.g. furthest background + fountain) */

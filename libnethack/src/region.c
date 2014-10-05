@@ -16,10 +16,10 @@
 
 static boolean inside_gas_cloud(void *, void *);
 static boolean expire_gas_cloud(void *, void *);
-static boolean inside_rect(struct nhrect *, int, int);
+static boolean inside_rect(struct rect *, int, int);
 static boolean inside_region(struct region *, int, int);
-static struct region *create_region(struct nhrect *, int);
-static void add_rect_to_reg(struct region *, struct nhrect *);
+static struct region *create_region(struct rect *, int);
+static void add_rect_to_reg(struct region *, struct rect *);
 static void add_mon_to_reg(struct region *, struct monst *);
 static void remove_mon_from_reg(struct region *, struct monst *);
 static boolean mon_in_region(struct region *, struct monst *);
@@ -40,7 +40,7 @@ static const callback_proc callbacks[] = {
 
 /* Should be inlined. */
 static boolean
-inside_rect(struct nhrect *r, int x, int y)
+inside_rect(struct rect *r, int x, int y)
 {
     return x >= r->lx && x <= r->hx && y >= r->ly && y <= r->hy;
 }
@@ -65,7 +65,7 @@ inside_region(struct region *reg, int x, int y)
  * Create a region. It does not activate it.
  */
 static struct region *
-create_region(struct nhrect *rects, int nrect)
+create_region(struct rect *rects, int nrect)
 {
     int i;
     struct region *reg;
@@ -83,7 +83,7 @@ create_region(struct nhrect *rects, int nrect)
         reg->bounding_box.hy = 0;
     }
     reg->nrects = nrect;
-    reg->rects = nrect > 0 ? malloc((sizeof (struct nhrect)) * nrect) : NULL;
+    reg->rects = nrect > 0 ? malloc((sizeof (struct rect)) * nrect) : NULL;
     for (i = 0; i < nrect; i++) {
         if (rects[i].lx < reg->bounding_box.lx)
             reg->bounding_box.lx = rects[i].lx;
@@ -112,13 +112,13 @@ create_region(struct nhrect *rects, int nrect)
  * Add rectangle to region.
  */
 static void
-add_rect_to_reg(struct region *reg, struct nhrect *rect)
+add_rect_to_reg(struct region *reg, struct rect *rect)
 {
-    struct nhrect *tmp_rect;
+    struct rect *tmp_rect;
 
-    tmp_rect = malloc(sizeof (struct nhrect) * (reg->nrects + 1));
+    tmp_rect = malloc(sizeof (struct rect) * (reg->nrects + 1));
     if (reg->nrects > 0) {
-        memcpy(tmp_rect, reg->rects, (sizeof (struct nhrect) * reg->nrects));
+        memcpy(tmp_rect, reg->rects, (sizeof (struct rect) * reg->nrects));
         free(reg->rects);
     }
     tmp_rect[reg->nrects] = *rect;
@@ -486,7 +486,7 @@ visible_region_at(struct level *lev, xchar x, xchar y)
 
 
 static void
-save_rect(struct memfile *mf, struct nhrect r)
+save_rect(struct memfile *mf, struct rect r)
 {
     mwrite8(mf, r.lx);
     mwrite8(mf, r.ly);
@@ -552,7 +552,7 @@ save_regions(struct memfile *mf, struct level *lev)
 
 
 static void
-restore_rect(struct memfile *mf, struct nhrect *r)
+restore_rect(struct memfile *mf, struct rect *r)
 {
     r->lx = mread8(mf);
     r->ly = mread8(mf);
@@ -595,7 +595,7 @@ rest_regions(struct memfile *mf, struct level *lev, boolean ghostly)
         r->arg = mread32(mf);
         r->nrects = mread16(mf);
         if (r->nrects > 0)
-            r->rects = malloc(sizeof (struct nhrect) * r->nrects);
+            r->rects = malloc(sizeof (struct rect) * r->nrects);
         for (j = 0; j < r->nrects; j++)
             restore_rect(mf, &r->rects[j]);
         r->ttl = mread16(mf);
@@ -757,7 +757,7 @@ create_gas_cloud(struct level *lev, xchar x, xchar y, int radius, int damage)
 {
     struct region *cloud;
     int i, nrect;
-    struct nhrect tmprect;
+    struct rect tmprect;
 
     cloud = create_region(NULL, 0);
     nrect = radius;

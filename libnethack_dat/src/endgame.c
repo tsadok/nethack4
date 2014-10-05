@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-28 */
+/* Last modified by Sean Hunt, 2014-10-05 */
 /* nh4-scripts: LEVGEN */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -77,42 +77,39 @@ void gen_firelevel(struct level *lev) {
         "LL.................................LL....................LL...................."
         "..L....LL.L.......................LL......................LLL..................");
 
-    TELEPORT_REGION(UP, R(71, 16, 71, 16));
-    /* FIXME: the portal should be able to generate in any area but the
-     * bottom-right corner
-     */
-    PORTAL("water", R(0, 0, 66, 13));
+    TELEPORT_REGION(UP, ZR(71, 16, 71, 16));
+    PORTAL("water", zn_subtract(EVERYWHERE, ZR(67, 13, 78, 20)));
 
     REPEAT(40)
-        TRAP(FIRE_TRAP, RANDOM_LOC);
+        TRAP(FIRE_TRAP, EVERYWHERE);
 
     REPEAT(19)
-        MON(PM_FIRE_ELEMENTAL, RANDOM_LOC, HOSTILE);
+        MON(PM_FIRE_ELEMENTAL, EVERYWHERE, HOSTILE);
     REPEAT(8)
-        MON(PM_SALAMANDER, RANDOM_LOC);
+        MON(PM_SALAMANDER, EVERYWHERE);
     REPEAT(6) {
-        MON(PM_FIRE_VORTEX, RANDOM_LOC);
-        MON(PM_HELL_HOUND, RANDOM_LOC);
+        MON(PM_FIRE_VORTEX, EVERYWHERE);
+        MON(PM_HELL_HOUND, EVERYWHERE);
     }
     REPEAT(5)
-        MON(PM_FIRE_GIANT, RANDOM_LOC);
+        MON(PM_FIRE_GIANT, EVERYWHERE);
     REPEAT(3) {
-        MON(PM_PIT_FIEND, RANDOM_LOC);
-        MON(PM_PIT_VIPER, RANDOM_LOC);
-        MON(PM_BARBED_DEVIL, RANDOM_LOC);
+        MON(PM_PIT_FIEND, EVERYWHERE);
+        MON(PM_PIT_VIPER, EVERYWHERE);
+        MON(PM_BARBED_DEVIL, EVERYWHERE);
     }
     REPEAT(2) {
-        MON(PM_STONE_GOLEM, RANDOM_LOC);
-        MON(PM_STEAM_VORTEX, RANDOM_LOC);
+        MON(PM_STONE_GOLEM, EVERYWHERE);
+        MON(PM_STEAM_VORTEX, EVERYWHERE);
     }
-    MON(PM_RED_DRAGON, RANDOM_LOC);
-    MON(PM_BALROG, RANDOM_LOC);
-    MON(PM_SCORPION, RANDOM_LOC);
-    MON(PM_DUST_VORTEX, RANDOM_LOC);
-    MON(PM_MINOTAUR, RANDOM_LOC);
+    MON(PM_RED_DRAGON, EVERYWHERE);
+    MON(PM_BALROG, EVERYWHERE);
+    MON(PM_SCORPION, EVERYWHERE);
+    MON(PM_DUST_VORTEX, EVERYWHERE);
+    MON(PM_MINOTAUR, EVERYWHERE);
 
     REPEAT(5)
-        OBJ(BOULDER, RANDOM_LOC);
+        OBJ(BOULDER, EVERYWHERE);
 
     FINISH_LEV;
 }
@@ -130,22 +127,22 @@ void gen_waterlevel(struct level *lev) {
     /* create the bubbles */
     setup_waterlevel(lev);
 
-    TELEPORT_REGION(UP, R(0,0,25,20));
-    PORTAL("astral", R(51, 0, 78, 20));
+    TELEPORT_REGION(UP, ZR(0,0,25,20));
+    PORTAL("astral", ZR(51, 0, 78, 20));
 
     REPEAT(19)
-        MON(PM_WATER_ELEMENTAL, RANDOM_LOC, HOSTILE);
+        MON(PM_WATER_ELEMENTAL, EVERYWHERE, HOSTILE);
     REPEAT(9)
-        MON(PM_KRAKEN, RANDOM_LOC);
+        MON(PM_KRAKEN, EVERYWHERE);
     REPEAT(8) {
-        MON(PM_GIANT_EEL, RANDOM_LOC);
-        MON(PM_ELECTRIC_EEL, RANDOM_LOC);
+        MON(PM_GIANT_EEL, EVERYWHERE);
+        MON(PM_ELECTRIC_EEL, EVERYWHERE);
     }
     REPEAT(4) {
-        MON(PM_SHARK, RANDOM_LOC);
-        MON(PM_PIRANHA, RANDOM_LOC);
-        MON(PM_JELLYFISH, RANDOM_LOC);
-        MON(RANDOM_MON_OF(';'), RANDOM_LOC);
+        MON(PM_SHARK, EVERYWHERE);
+        MON(PM_PIRANHA, EVERYWHERE);
+        MON(PM_JELLYFISH, EVERYWHERE);
+        MON(RANDOM_MON_OF(';'), EVERYWHERE);
     }
 
     FINISH_LEV;

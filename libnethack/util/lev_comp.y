@@ -29,10 +29,7 @@ static struct reg {
 	int x2, y2;
 }		current_region;
 
-static struct coord {
-	int x;
-	int y;
-}		current_coord, current_align;
+static struct coord current_coord, current_align;
 
 static struct size {
 	int height;

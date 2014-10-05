@@ -1,24 +1,19 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-28 */
+/* Last modified by Sean Hunt, 2014-10-05 */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
 
 #ifndef LEVGEN_DSL_H
 #define LEVGEN_DSL_H
 
+#include "coord.h"
 #include "hack.h"
 #include "rm.h"
-
-struct coord {
-    xchar x, y;
-};
-
-struct area {
-    xchar lx, ly, hx, hy;
-};
+#include "rect.h"
+#include "zone.h"
 
 struct maparea {
-    struct area area;
+    struct rect area;
     char * locs;
     struct maparea *nextmap;
 };
@@ -87,11 +82,13 @@ enum cardinal_dir {
 #define SUBMAP(name, size, map) \
     struct maparea *name = lg_new_map((size), (map), &mapchain_)
 
-#define REGION(name, reg) \
-    struct area name = (reg)
+#define ZONE(name, zn) \
+    struct zone name = (zn)
+#define RECT(name, r) \
+    struct rect name = (r)
 
-#define REGION_ARRAY(name, ...) \
-    struct area name[] = { __VA_ARGS__ }; \
+#define ZONE_ARRAY(name, ...) \
+    struct zone name[] = { __VA_ARGS__ }; \
     lg_shuffle_array(name, sizeof (name) / sizeof (*(name)), sizeof (*(name)))
 #define COORD_ARRAY(name, ...) \
     struct coord name[] = { __VA_ARGS__ }; \
@@ -126,7 +123,7 @@ enum cardinal_dir {
     for (i_ = 0; i_ < (n); ++i_)
 
 #define FOR_EACH_COORD(...) /* TODO */
-#define FOR_EACH_REGION(...) /* TODO */
+#define FOR_EACH_ZONE(...) /* TODO */
 
 #define IF_BRANCH_UP /* TODO */
 #define IF_BRANCH_DOWN /* TODO */
@@ -161,8 +158,8 @@ enum cardinal_dir {
     } while (0)
 
 #define FILL_IRREGULAR(...) /* TODO */
-#define LIGHT_REGION(...) /* TODO */
-#define DARKEN_REGION(...) /* TODO */
+#define LIGHT_ZONE(...) /* TODO */
+#define DARKEN_ZONE(...) /* TODO */
 #define NON_DIGGABLE(...) /* TODO */
 
 #define TELEPORT_REGION(dir, reg) \
@@ -178,23 +175,10 @@ enum cardinal_dir {
 #define PORTAL(dest, reg) \
     do { lg_place_portal(lev_, (dest), (reg)); } while (0)
 
-#define PLACE_DOOR(mask, loc) do { \
-        lev_->locations[(loc).x][(loc).y].typ = DOOR; \
-        lev_->locations[(loc).x][(loc).y].doormask = (mask); \
-    } while (0)
-#define PLACE_SDOOR(mask, loc) do { \
-        lev_->locations[(loc).x][(loc).y].typ = SDOOR; \
-        lev_->locations[(loc).x][(loc).y].doormask = (mask); \
-    } while (0)
-#define PLACE_FOUNTAIN(loc) do { \
-        lev_->locations[(loc).x][(loc).y].typ = FOUNTAIN; \
-        lev_->locations[(loc).x][(loc).y].flags = 0; \
-        lev_->locations[(loc).x][(loc).y].horizontal = 0; \
-    } while (0)
-#define PLACE_ALTAR(align, loc) do { \
-        lev_->locations[(loc).x][(loc).y].typ = ALTAR; \
-        lev_->locations[(loc).x][(loc).y].altarmask = align; \
-    } while (0)
+#define PLACE_DOOR(mask, loc) /* TODO */
+#define PLACE_SDOOR(mask, loc) /* TODO */
+#define PLACE_FOUNTAIN(loc) /* TODO */
+#define PLACE_ALTAR(align, loc) /* TODO */
 
 #define MAKE_ROOM(...) /* TODO */
 #define MAKE_TEMPLE(...) /* TODO */
@@ -207,19 +191,16 @@ enum cardinal_dir {
  */
 
 #define C(x, y) ((struct coord){(x), (y)})
-#define R(lx, ly, hx, hy) ((struct area){(lx), (ly), (hx), (hy)})
-#define REL(rel, coord) \
-    (C((coord).x + (rel).lx, \
-       (coord).y + (rel).ly))
-#define REL_REG(rel, reg) \
-    (R((reg).lx + (rel).lx, \
-       (reg).ly + (rel).ly, \
-       (reg).hx + (rel).lx, \
-       (reg).hy + (rel).ly))
-#define IN(reg) \
-    C((reg).lx + rn2((reg).hx - (reg).lx), \
-      (reg).ly + rn2((reg).hy - (reg).ly))
+#define ZC(x, y) (zn_loc((struct coord){(x), (y)}))
+#define R(lx, ly, hx, hy) ((struct rect){(lx), (ly), (hx), (hy)})
+#define Z(rect) (zn_rect((rect)))
+#define ZR(lx, ly, hx, hy) (Z(R((lx), (ly), (hx), (hy))))
+
 #define MR(map) ((map)->area)
+#define MZ(map) (Z(MR(map)))
+
+#define REL(rect, zn) \
+    (zn_shift((zn), (struct coord){(rect).lx, (rect).ly}))
 
 /* ================================
  * Functions for use in expressions
@@ -230,7 +211,7 @@ enum cardinal_dir {
 #define RANDOM_OBJ_OF(c) /* TODO */
 
 #define MIMIC /* TODO */
-#define HOSTILE (mon_->mpeaceful = 0, set_malign(mon_))
+#define HOSTILE (mon_ ? (mon_->mpeaceful = 0, set_malign(mon_)) : (void) 0)
 #define CORPSENM /* TODO */
 
 /* ==========================================
@@ -238,6 +219,7 @@ enum cardinal_dir {
  */
 
 #define WHOLEMAP (wholemap_)
+#define EVERYWHERE (zn_whole())
 
 #define UNALIGNED (AM_NONE)
 #define LAWFUL (AM_LAWFUL)
@@ -252,7 +234,6 @@ enum cardinal_dir {
 #define TRAPPED (D_TRAPPED | D_CLOSED)
 #define LOCKED_TRAPPED (D_TRAPPED | D_LOCKED | D_CLOSED)
 
-#define RANDOM_LOC (C(rn2(COLNO), rn2(ROWNO)))
 #define RANDOM_OBJ /* TODO */
 #define RANDOM_MON (lev_->mgr->pick_monster(lev_, 0, TRUE))
 
@@ -288,8 +269,8 @@ void lg_shuffle_array(void *ptr, size_t num, size_t size);
 struct maparea *lg_new_map(struct coord size, const char *text,
                            struct maparea **chain);
 void lg_place_map(struct level *lev, struct maparea *map, struct coord loc);
-struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc);
-void lg_tele_region(struct level *lev, char dir, struct area reg);
-void lg_place_portal(struct level *lev, const char *dest, struct area reg);
+struct monst *lg_gen_monster(struct level *lev, short id, struct zone zn);
+void lg_tele_region(struct level *lev, char dir, struct zone zn);
+void lg_place_portal(struct level *lev, const char *dest, struct zone zn);
 
 #endif

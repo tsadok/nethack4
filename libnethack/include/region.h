@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-06-04 */
+/* Last modified by Sean Hunt, 2014-10-05 */
 /* Copyright (c) 1996 by Jean-Christophe Collet                   */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -24,8 +24,8 @@ typedef boolean(*callback_proc) (void *, void *);
 
 struct region {
     struct level *lev;  /* the level this region is on */
-    struct nhrect *rects;       /* Rectangles composing the region */
-    struct nhrect bounding_box; /* Bounding box of the region */
+    struct rect *rects;       /* Rectangles composing the region */
+    struct rect bounding_box; /* Bounding box of the region */
     short nrects;       /* Number of rectangles */
     const char *enter_msg;      /* Message when entering */
     const char *leave_msg;      /* Message when leaving */

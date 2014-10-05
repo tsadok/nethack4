@@ -41,12 +41,12 @@ struct nh_menulist;
 struct nh_objitem;
 struct nh_objresult;
 struct nh_option_desc;
-struct nhrect;
 struct nh_topten_entry;
 struct nh_window_procs;
 struct obj;
 struct object_pick;
 struct permonst;
+struct rect;
 struct region;
 struct rm;
 struct tmp_sym;
@@ -1431,9 +1431,9 @@ extern boolean create_particular(const struct nh_cmd_arg *);
 /* ### rect.c ### */
 
 extern void init_rect(void);
-extern struct nhrect *get_rect(struct nhrect *);
-extern struct nhrect *rnd_rect(void);
-extern void split_rects(struct nhrect *, struct nhrect *);
+extern struct rect *get_rect(struct rect *);
+extern struct rect *rnd_rect(void);
+extern void split_rects(struct rect *, struct rect *);
 
 /* ### region.c ### */
 extern void run_regions(struct level *lev);

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-28 */
+/* Last modified by Sean Hunt, 2014-10-05 */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -153,7 +153,9 @@ lg_place_map(struct level *lev, struct maparea *map, struct coord loc) {
  * but will fall back to a random monster if a genocided monster type was
  * chosen.
  */
-struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc) {
+struct monst *lg_gen_monster(struct level *lev, short id, struct zone zn) {
+    return NULL;
+#if 0
     if (id < LOW_PM || id >= NUMMONS || is_placeholder(&mons[id])) {
         /* NON_PM means it was requested hy the level to generate no monster. */
         if (id != NON_PM)
@@ -189,7 +191,6 @@ struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc) {
 
     /* FIXME: a) the hardcoded role boundaries are a hack.
      *        b) this check ought to be elsewhere. Not sure where, but Not Here.
-     * I'm pretly sure this code path is dead anyhow.
      */
     struct monst *mtmp = NULL;
     if (id >= PM_ARCHEOLOGIST && id <= PM_WIZARD)
@@ -198,6 +199,7 @@ struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc) {
         mtmp = makemon(pm, lev, loc.x, loc.y, MM_ADJACENTOK);
 
     return mtmp;
+#endif
 }
 
 /* Place a restricted-teleport region on the map. There are a bunch of things
@@ -206,7 +208,8 @@ struct monst *lg_gen_monster(struct level *lev, short id, struct coord loc) {
  * FIXME: Fix all the things wrong with this.
  */
 void
-lg_tele_region(struct level *lev, char dir, struct area reg) {
+lg_tele_region(struct level *lev, char dir, struct zone zn) {
+#if 0
     if (dir != LR_UPTELE && dir != LR_DOWNTELE && dir != LR_TELE) {
         impossible("invalid direction for teleport region!");
         return;
@@ -231,22 +234,22 @@ lg_tele_region(struct level *lev, char dir, struct area reg) {
         lev->dndest.nlx = lev->dndest.nhx = COLNO;
         lev->dndest.nly = lev->dndest.nhy = ROWNO;
     }
+#endif
 }
-
-static const int branch_tries = 20;
 
 /* Determine if we can place a portal here, even if there's a trap present. This
  * is just occupied()/bad_location(), but with a weaker trap check on the second
  * pass.
  */
 static boolean
-portal_ok(struct level *lev, int x, int y, boolean first_pass) {
+portal_ok(struct coord c, void *arg) {
+    struct level *lev = arg;
     struct trap *ttmp = NULL;
-    if ((ttmp = t_at(lev, x, y)) && (first_pass ||
-            ttmp->ttyp == MAGIC_PORTAL || ttmp->ttyp != VIBRATING_SQUARE))
+    if ((ttmp = t_at(lev, c.x, c.y)) && (ttmp->ttyp == MAGIC_PORTAL ||
+                                         ttmp->ttyp != VIBRATING_SQUARE))
         return FALSE;
 
-    schar typ = lev->locations[x][y].typ;
+    schar typ = lev->locations[c.x][c.y].typ;
     /* FIXME: The reliance on maze here means that we must go after the maze
      * flag, and that's ugly. */
     if ((typ == CORR && lev->flags.is_maze_lev) || typ == ROOM || typ == AIR ||
@@ -256,6 +259,12 @@ portal_ok(struct level *lev, int x, int y, boolean first_pass) {
     return FALSE;
 }
 
+/* FIXME: put this somewhere waaaaay better */
+static boolean
+has_trap(struct coord c, void *lev) {
+    return !!t_at(lev, c.x, c.y);
+}
+
 /* Place a portal somewhere in the given region. We will try really hard to do
  * so, first by looking for a place we can safely put it, and if we can't find
  * one, then we'll replace a trap to make it work. We could theoretically be
@@ -263,47 +272,28 @@ portal_ok(struct level *lev, int x, int y, boolean first_pass) {
  * require knowledge about the level (do we use AIR? ROOM? CORR?).
  */
 void 
-lg_place_portal(struct level *lev, const char *dest, struct area reg) {
-    int x, y;
-
+lg_place_portal(struct level *lev, const char *dest, struct zone zn) {
     s_level *sp = find_level(dest);
     if (!sp) {
         impossible("unable to find destination level of portal: %s", dest);
     }
 
-    int tries = branch_tries;
-
-    /* First, attempt to place randomly */
-    while (tries--) {
-        x = rn2(reg.hx - reg.lx + 1) + reg.lx;
-        y = rn2(reg.hy - reg.ly + 1) + reg.ly;
-
-        if (portal_ok(lev, x, y, TRUE))
-            goto located;
+    struct zone znp = zn_intersect(zn, zn_pred(portal_ok, lev));
+    if (zn_is_empty(znp)) {
+        impossible("unable to find location to place portal");
+        return;
     }
 
-    /* Next, attempt to place deterministically */
-    for (x = reg.lx; x <= reg.hx; ++x) {
-        for (y = reg.ly; y <= reg.hy; ++y) {
-            if (portal_ok(lev, x, y, TRUE))
-                goto located;
-        }
-    }
+    struct zone znt = zn_pred(has_trap, lev);
 
-    /* Okay, this is bad. We have no good options. So try replacing a trap. */
-    for (x = reg.lx; x <= reg.hx; ++x) {
-        for (y = reg.ly; y <= reg.hy; ++y) {
-            if (portal_ok(lev, x, y, FALSE))
-                goto located;
-        }
-    }
+    zn = zn_intersect(znp, znt);
+    
+    if (zn_is_empty(zn))
+        zn = znp;
 
-    /* Great. *STILL* failed. Abort. */
-    impossible("unable to find location to place portal");
-    return;
+    struct coord c = zn_rand(zn);
 
-located:;
-    struct trap *ttmp = maketrap(lev, x, y, MAGIC_PORTAL);
+    struct trap *ttmp = maketrap(lev, c.x, c.y, MAGIC_PORTAL);
     if (!ttmp) {
         impossible("portal placement failed");
         return;

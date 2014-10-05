@@ -368,7 +368,7 @@ create_room(struct level * lev, xchar x, xchar y, xchar w, xchar h, xchar xal,
 {
     xchar xabs = 0, yabs = 0;
     int wtmp, htmp, xaltmp, yaltmp, xtmp, ytmp;
-    struct nhrect *r1 = NULL, r2;
+    struct rect *r1 = NULL, r2;
     int trycnt = 0;
     boolean vault = FALSE;
     int xlim = XLIM, ylim = YLIM;
