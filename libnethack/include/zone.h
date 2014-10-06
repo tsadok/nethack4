@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-05 */
+/* Last modified by Sean Hunt, 2014-10-07 */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -12,6 +12,8 @@
 # include "rect.h"
 /* for min and max */
 # include "hack.h"
+
+#pragma clang diagnostic ignored "-Wstatic-in-inline"
 
 /* A zone is long enough to store ROWNO * COLNO bits. */
 static const int zone_length = ((ROWNO * COLNO) + (CHAR_BIT - 1)) / CHAR_BIT;
@@ -27,17 +29,17 @@ struct zone {
     uchar dat[zone_length];
 };
 
-static inline int
+inline int
 zn_byte_index(struct coord loc) {
     return (loc.x + loc.y * COLNO) / CHAR_BIT;
 }
 
-static inline int
+inline int
 zn_bit_index(struct coord loc) {
     return (loc.x + loc.y * COLNO) % CHAR_BIT;
 }
 
-static inline struct coord
+inline struct coord
 zn_from_indices(int byte, int bit) {
     int idx = byte * CHAR_BIT + bit;
     return (struct coord){idx % COLNO, idx / COLNO};
@@ -45,12 +47,12 @@ zn_from_indices(int byte, int bit) {
 
 /**** Basic set-theoretic constructions ****/
 
-static inline struct zone
+inline struct zone
 zn_empty(void) {
     return (struct zone){};
 }
 
-static inline struct zone
+inline struct zone
 zn_union(struct zone zn1, struct zone zn2) {
     struct zone zn;
     int i;
@@ -59,7 +61,7 @@ zn_union(struct zone zn1, struct zone zn2) {
     return zn;
 }
 
-static inline struct zone
+inline struct zone
 zn_intersect(struct zone zn1, struct zone zn2) {
     struct zone zn;
     int i;
@@ -68,7 +70,7 @@ zn_intersect(struct zone zn1, struct zone zn2) {
     return zn;
 }
 
-static inline struct zone
+inline struct zone
 zn_subtract(struct zone zn1, struct zone zn2) {
     struct zone zn;
     int i;
@@ -77,7 +79,7 @@ zn_subtract(struct zone zn1, struct zone zn2) {
     return zn;
 }
 
-static inline struct zone
+inline struct zone
 zn_sym_diff(struct zone zn1, struct zone zn2) {
     struct zone zn;
     int i;
@@ -88,12 +90,12 @@ zn_sym_diff(struct zone zn1, struct zone zn2) {
 
 /**** Tests ****/
 
-static inline boolean
+inline boolean
 zn_contains(struct zone zn, struct coord loc) {
     return zn.dat[zn_byte_index(loc)] & (1 << zn_bit_index(loc));
 }
 
-static inline boolean
+inline boolean
 zn_is_empty(struct zone zn) {
     int i;
     for (i = 0; i < zone_length - 1; ++i)
@@ -107,18 +109,18 @@ zn_is_empty(struct zone zn) {
 
 /**** Constructions with single locations ****/
 
-static inline struct zone
+inline struct zone
 zn_add(struct zone zn, struct coord loc) {
     zn.dat[zn_byte_index(loc)] |= 1 << zn_bit_index(loc);
     return zn;
 }
 
-static inline struct zone
+inline struct zone
 zn_loc(struct coord loc) {
     return zn_add(zn_empty(), loc);
 }
 
-static inline struct zone
+inline struct zone
 zn_del(struct zone zn, struct coord loc) {
     zn.dat[zn_byte_index(loc)] &= ~(1 << zn_bit_index(loc));
     return zn;
@@ -126,7 +128,7 @@ zn_del(struct zone zn, struct coord loc) {
 
 /**** Constructions with callbacks ****/
 
-static inline struct zone
+inline struct zone
 zn_add_pred(struct zone zn, zn_pred_fn pred, void *arg) {
     int x, y;
     for (y = 0; y < ROWNO; ++y) {
@@ -139,7 +141,7 @@ zn_add_pred(struct zone zn, zn_pred_fn pred, void *arg) {
     return zn;
 }
 
-static inline struct zone
+inline struct zone
 zn_del_pred(struct zone zn, zn_pred_fn pred, void *arg) {
     int x, y;
     for (y = 0; y < ROWNO; ++y) {
@@ -152,7 +154,7 @@ zn_del_pred(struct zone zn, zn_pred_fn pred, void *arg) {
     return zn;
 }
 
-static inline struct zone
+inline struct zone
 zn_except_pred(struct zone zn, zn_pred_fn pred, void *arg) {
     int x, y;
     for (y = 0; y < ROWNO; ++y) {
@@ -165,14 +167,14 @@ zn_except_pred(struct zone zn, zn_pred_fn pred, void *arg) {
     return zn;
 }
 
-static inline struct zone
+inline struct zone
 zn_pred(zn_pred_fn pred, void *arg) {
     return zn_add_pred(zn_empty(), pred, arg);
 }
 
 /**** Constructions with rectangles ****/
 
-static inline struct zone
+inline struct zone
 zn_add_rect(struct zone zn, struct rect r) {
     int y, x;
     /* This loop does the data assignment one byte at a time (not counting
@@ -200,22 +202,22 @@ zn_add_rect(struct zone zn, struct rect r) {
     return zn;
 }
 
-static inline struct zone
+inline struct zone
 zn_rect(struct rect r) {
     return zn_add_rect(zn_empty(), r);
 }
 
-static inline struct zone
+inline struct zone
 zn_whole(void) {
     return zn_rect((struct rect){0, 0, COLNO - 1, ROWNO - 1});
 }
 
-static inline struct zone
+inline struct zone
 zn_del_rect(struct zone zn, struct rect r) {
     return zn_subtract(zn, zn_rect(r));
 }
 
-static inline struct zone
+inline struct zone
 zn_except_rect(struct zone zn, struct rect r) {
     return zn_intersect(zn, zn_rect(r));
 }
@@ -225,7 +227,7 @@ zn_except_rect(struct zone zn, struct rect r) {
  * Note that delta may contain negative values, in which case a negative shift
  * is performed.
  */
-static inline struct zone
+inline struct zone
 zn_shift(struct zone zn, struct coord delta) {
     /* When performing shifts, we must truncate to the range possible, or else
      * we may wrap coordinates in the zone to the other side, outside the new
@@ -265,7 +267,7 @@ zn_shift(struct zone zn, struct coord delta) {
 }
 
 /* FIXME: Move this somewhere better (hack.h?) */
-static inline uchar
+inline uchar
 count_bits(uchar bits) {
     bits -= (bits >> 1) & 0x55;
     bits = (bits & 0x33) + ((bits >> 2) & 0x33);
@@ -273,7 +275,7 @@ count_bits(uchar bits) {
     return bits;
 }
 
-static inline uchar
+inline uchar
 nth_set_bit(uchar bits, uchar n) {
     int i;
     for (i = 0; n || !(bits & 1); ++i, bits >>= 1)
@@ -282,7 +284,7 @@ nth_set_bit(uchar bits, uchar n) {
     return i;
 }
 
-static inline struct coord
+inline struct coord
 zn_rand(struct zone zn) {
     int i, count = 0;
     for (i = 0; i < zone_length; ++i)
