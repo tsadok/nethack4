@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-07 */
+/* Last modified by Sean Hunt, 2014-10-17 */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -15,8 +15,14 @@
 
 #pragma clang diagnostic ignored "-Wstatic-in-inline"
 
-/* A zone is long enough to store ROWNO * COLNO bits. */
-static const int zone_length = ((ROWNO * COLNO) + (CHAR_BIT - 1)) / CHAR_BIT;
+/* An anonymous enum is used here to create a constant which can be used in
+ * constant expressions, because C's definition of an integer constant
+ * expression is overly restrictive and does not allow static const variables to
+ * be used. */
+enum {
+    /* A zone is long enough to store ROWNO * COLNO bits. */
+    zone_length = ((ROWNO * COLNO) + (CHAR_BIT - 1)) / CHAR_BIT
+};
 
 /* A predicate for use in zone functions: is a square good? */
 typedef boolean (*zn_pred_fn) (struct coord loc, void *arg);
@@ -49,7 +55,7 @@ zn_from_indices(int byte, int bit) {
 
 inline struct zone
 zn_empty(void) {
-    return (struct zone){};
+    return (struct zone){{0}};
 }
 
 inline struct zone

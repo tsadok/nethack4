@@ -1217,8 +1217,8 @@ create_critters(int cnt, const struct permonst * mptr)
 
 /* temporary function until all special levels have managers */
 static uchar
-rndmonst_special_prob(const struct level *lev, short mndx, void *flags) {
-    uchar prob = default_gen_prob(lev, mndx, flags);
+rndmonst_special_prob(const struct level *lev, short mndx, void *genflags) {
+    uchar prob = default_gen_prob(lev, mndx, genflags);
     const struct permonst *mdat = &mons[mndx];
 
     if (In_endgame(&lev->z) && !Is_astralevel(&lev->z) &&
@@ -1236,7 +1236,7 @@ rndmonst_special_prob(const struct level *lev, short mndx, void *flags) {
 const struct permonst *
 rndmonst(const struct level *lev)
 {
-    struct default_gen_flags flags = {
+    struct default_gen_flags genflags = {
         .consider_xlvl = !in_mklev,
         .ignore_nogen = FALSE,
         .ignore_uniq = FALSE,
@@ -1247,7 +1247,7 @@ rndmonst(const struct level *lev)
     if (lev->mgr)
         mndx = lev->mgr->pick_monster(lev, 0, FALSE);
     else
-        mndx = pick_monster(lev, rndmonst_special_prob, &flags);
+        mndx = pick_monster(lev, rndmonst_special_prob, &genflags);
     return &mons[mndx];
 }
 
@@ -1312,7 +1312,7 @@ mkclass(const d_level * dlev, char class, int spc)
 
 int
 pick_monster(const struct level *lev, gen_prob_callback callback, void *dat) {
-    uchar probs[NUMMONS] = {};
+    uchar probs[NUMMONS] = {0};
     int sum = 0;
     int i;
 
@@ -1416,12 +1416,12 @@ out_of_depth(const struct level *lev, short mndx, boolean consider_xlvl) {
 
 uchar
 default_gen_prob(const struct level *lev, short mndx, void *dat) {
-    struct default_gen_flags *flags = dat;
-    if (!flags->ignore_nogen && (mons[mndx].geno & G_NOGEN))
+    struct default_gen_flags *genflags = dat;
+    if (!genflags->ignore_nogen && (mons[mndx].geno & G_NOGEN))
         return 0;
-    if (!flags->ignore_uniq && (mons[mndx].geno & G_UNIQ))
+    if (!genflags->ignore_uniq && (mons[mndx].geno & G_UNIQ))
         return 0;
-    if (!flags->ignore_extinct && (mvitals[mndx].mvflags & G_EXTINCT))
+    if (!genflags->ignore_extinct && (mvitals[mndx].mvflags & G_EXTINCT))
         return 0;
     if ((mons[mndx].geno & G_UNIQ) && (mvitals[mndx].mvflags & G_EXTINCT))
         return 0;
@@ -1438,7 +1438,7 @@ default_gen_prob(const struct level *lev, short mndx, void *dat) {
             return 0;
     }
 
-    if (out_of_depth(lev, mndx, flags->consider_xlvl))
+    if (out_of_depth(lev, mndx, genflags->consider_xlvl))
         return 0;
 
     return mons[mndx].geno & G_FREQ + align_shift(&lev->z, mndx);
