@@ -917,7 +917,7 @@ dokick(const struct nh_cmd_arg *arg)
                 maploc->looted = T_LOOTED;
                 return 1;
             } else if (!rn2(4)) {
-                if (dunlev(&u.uz) < dunlevs_in_dungeon(&u.uz)) {
+                if (dunlev(&level->z) < dunlevs_in_dungeon(&level->z)) {
                     fall_through(FALSE);
                     return 1;
                 } else
@@ -1198,14 +1198,14 @@ drop_to(coord * cc, schar loc)
             cc->x = valley_level.dnum;
             cc->y = valley_level.dlevel;
             break;
-        } else if (In_endgame(&u.uz) || Is_botlevel(&u.uz)) {
+        } else if (In_endgame(&level->z) || Is_botlevel(&level->z)) {
             cc->y = cc->x = -1;
             break;
         }       /* else fall to the next cases */
     case MIGR_STAIRS_UP:
     case MIGR_LADDER_UP:
-        cc->x = u.uz.dnum;
-        cc->y = u.uz.dlevel + 1;
+        cc->x = level->z.dnum;
+        cc->y = level->z.dlevel + 1;
         break;
     case MIGR_SSTAIRS:
         cc->x = level->sstairs.tolev.dnum;
@@ -1532,7 +1532,7 @@ down_gate(xchar x, xchar y)
 
     gate_str = 0;
     /* this matches the player restriction in goto_level() */
-    if (on_level(&u.uz, &qstart_level) && !ok_to_quest(FALSE))
+    if (on_level(&level->z, &qstart_level) && !ok_to_quest(FALSE))
         return MIGR_NOWHERE;
 
     if ((level->dnstair.sx == x && level->dnstair.sy == y) ||

@@ -615,8 +615,8 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
                 pline("You fall through...");
                 /* Earlier checks must ensure that the destination level exists 
                    and is in the present dungeon. */
-                newlevel.dnum = u.uz.dnum;
-                newlevel.dlevel = u.uz.dlevel + 1;
+                newlevel.dnum = level->z.dnum;
+                newlevel.dlevel = level->z.dlevel + 1;
                 goto_level(&newlevel, FALSE, TRUE, FALSE);
                 /* messages for arriving in special rooms */
                 spoteffects(FALSE);
@@ -641,12 +641,12 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
 
                     if (Is_stronghold(level)) {
                         assign_level(&tolevel, &valley_level);
-                    } else if (Is_botlevel(&u.uz)) {
+                    } else if (Is_botlevel(&level->z)) {
                         if (canseemon(mtmp))
                             pline("%s avoids the trap.", Monnam(mtmp));
                         return;
                     } else {
-                        get_level(&tolevel, depth(&u.uz) + 1);
+                        get_level(&tolevel, depth(&level->z) + 1);
                     }
                     if (mtmp->isshk)
                         make_angry_shk(mtmp, 0, 0);

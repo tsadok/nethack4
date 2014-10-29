@@ -32,8 +32,8 @@ on_start(const struct level * orig_lev)
     if (!Qstat(first_start)) {
         qt_pager(QT_FIRSTTIME);
         Qstat(first_start) = TRUE;
-    } else if ((orig_lev->z.dnum != u.uz.dnum) ||
-               (orig_lev->z.dlevel < u.uz.dlevel)) {
+    } else if ((orig_lev->z.dnum != level->z.dnum) ||
+               (orig_lev->z.dlevel < level->z.dlevel)) {
         if (Qstat(not_ready) <= 2)
             qt_pager(QT_NEXTTIME);
         else
@@ -47,7 +47,7 @@ on_locate(const struct level * orig_lev)
     if (!Qstat(first_locate)) {
         qt_pager(QT_FIRSTLOCATE);
         Qstat(first_locate) = TRUE;
-    } else if (orig_lev->z.dlevel < u.uz.dlevel && !Qstat(killed_nemesis))
+    } else if (orig_lev->z.dlevel < level->z.dlevel && !Qstat(killed_nemesis))
         qt_pager(QT_NEXTLOCATE);
 }
 
@@ -69,14 +69,14 @@ on_goal(void)
 void
 onquest(const struct level *orig_lev)
 {
-    if (u.uevent.qcompleted || on_level(&orig_lev->z, &u.uz))
+    if (u.uevent.qcompleted || on_level(&orig_lev->z, &level->z))
         return;
-    if (!Is_special(&u.uz))
+    if (!Is_special(&level->z))
         return;
 
     if (Is_qstart(level))
         on_start(orig_lev);
-    else if (Is_qlocate(level) && u.uz.dlevel > orig_lev->z.dlevel)
+    else if (Is_qlocate(level) && level->z.dlevel > orig_lev->z.dlevel)
         on_locate(orig_lev);
     else if (Is_nemesis(level))
         on_goal();
@@ -185,7 +185,7 @@ expulsion(boolean seal)
     int portal_flag;
 
     br = dungeon_branch("The Quest");
-    dest = (br->end1.dnum == u.uz.dnum) ? &br->end2 : &br->end1;
+    dest = (br->end1.dnum == level->z.dnum) ? &br->end2 : &br->end1;
     portal_flag = u.uevent.qexpelled ? 0 :      /* returned via artifact? */
         !seal ? 1 : -1;
     schedule_goto(dest, FALSE, FALSE, portal_flag, NULL, NULL);
@@ -287,7 +287,7 @@ chat_with_leader(void)
             qt_pager(QT_NEXTLEADER);
         /* the quest leader might have passed through the portal into the
            regular dungeon; none of the remaining make sense there */
-        if (!on_level(&u.uz, &qstart_level))
+        if (!on_level(&level->z, &qstart_level))
             return;
 
         if (not_capable()) {
@@ -326,7 +326,7 @@ leader_speaks(struct monst *mtmp)
     }
     /* the quest leader might have passed through the portal into the regular
        dungeon; if so, mustn't perform "backwards expulsion" */
-    if (!on_level(&u.uz, &qstart_level))
+    if (!on_level(&level->z, &qstart_level))
         return;
 
     if (Qstat(pissed_off)) {

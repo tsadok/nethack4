@@ -848,22 +848,22 @@ display_rip(int how, long umoney, const char *killer)
 
     } else {
         /* did not escape or ascend */
-        if (u.uz.dnum == 0 && u.uz.dlevel <= 0) {
+        if (level->z.dnum == 0 && level->z.dlevel <= 0) {
             /* level teleported out of the dungeon; `how' is DIED, due to
                falling or to "arriving at heaven prematurely" */
             pbuf = msgprintf("You %s beyond the confines of the dungeon",
-                             (u.uz.dlevel < 0) ? "passed away" : ends[how]);
+                             (level->z.dlevel < 0) ? "passed away" : ends[how]);
         } else {
             /* more conventional demise */
-            const char *where = dungeons[u.uz.dnum].dname;
+            const char *where = dungeons[level->z.dnum].dname;
 
             if (Is_astralevel(level))
                 where = "The Astral Plane";
             pbuf = msgprintf("You %s in %s", ends[how], where);
-            if (!In_endgame(&u.uz) && !Is_knox(level))
+            if (!In_endgame(&level->z) && !Is_knox(level))
                 pbuf = msgprintf("%s on dungeon level %d", pbuf,
-                                 In_quest(&u.uz) ?
-                                 dunlev(&u.uz) : depth(&u.uz));
+                                 In_quest(&level->z) ?
+                                 dunlev(&level->z) : depth(&level->z));
         }
 
         pbuf = msgprintf("%s with %d point%s,", pbuf, u.urexp, plur(u.urexp));
@@ -923,7 +923,7 @@ done_noreturn(int how, const char *killer)
     if (moves <= 1 && how <= LAST_KILLER)   /* You die... --More-- */
         pline("Do not pass go.  Do not collect 200 %s.", currency(200L));
 
-    bones_ok = how <= LAST_KILLER && how != GENOCIDED && can_make_bones(&u.uz);
+    bones_ok = how <= LAST_KILLER && how != GENOCIDED && can_make_bones(&level->z);
 
     if (!killer)
         killer = killer_msg(how, NULL);

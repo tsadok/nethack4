@@ -216,7 +216,7 @@ restshk(struct monst *shkp, boolean ghostly)
     /* shoplevel can change as dungeons move around */
     /* paybill() guarantees that non-homed shk's will be gone */
     if (ghostly) {
-        assign_level(&eshkp->shoplevel, &u.uz);
+        assign_level(&eshkp->shoplevel, &level->z);
         if (ANGRY(shkp) && strncmpi(eshkp->customer, u.uplname, PL_NSIZ))
             pacify_shk(shkp);
     }
@@ -3331,7 +3331,7 @@ makekops(coord * mm)
     };
     int k_cnt[4], cnt, mndx, k;
 
-    k_cnt[0] = cnt = abs(depth(&u.uz)) + rnd(5);
+    k_cnt[0] = cnt = abs(depth(&level->z)) + rnd(5);
     k_cnt[1] = (cnt / 3) + 1;   /* at least one sarge */
     k_cnt[2] = (cnt / 6);       /* maybe a lieutenant */
     k_cnt[3] = (cnt / 9);       /* and maybe a kaptain */

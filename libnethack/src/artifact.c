@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-17 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -1364,12 +1364,12 @@ arti_invoke(struct obj *obj)
                  * The closest level is either the entry or dunlev_ureached.
                  */
                 newlev.dnum = i;
-                if (dungeons[i].depth_start >= depth(&u.uz))
+                if (dungeons[i].depth_start >= depth(&level->z))
                     newlev.dlevel = dungeons[i].entry_lev;
                 else
                     newlev.dlevel = dungeons[i].dunlev_ureached;
-                if (Uhave_amulet || In_endgame(&u.uz) || In_endgame(&newlev)
-                    || newlev.dnum == u.uz.dnum) {
+                if (Uhave_amulet || In_endgame(&level->z) || In_endgame(&newlev)
+                    || newlev.dnum == level->z.dnum) {
                     pline("You feel very disoriented for a moment.");
                 } else {
                     if (!Blind)

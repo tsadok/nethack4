@@ -760,19 +760,19 @@ peffects(struct obj *otmp)
         if (otmp->cursed) {
             unkn++;
             /* they went up a level */
-            if ((ledger_no(&u.uz) == 1 && Uhave_amulet) ||
+            if ((ledger_no(&level->z) == 1 && Uhave_amulet) ||
                 Can_rise_up(u.ux, u.uy, level)) {
                 const char *riseup = "You rise up, through the %s!";
 
-                if (ledger_no(&u.uz) == 1) {
+                if (ledger_no(&level->z) == 1) {
                     pline(riseup, ceiling(u.ux, u.uy));
                     goto_level(&earth_level, FALSE, FALSE, FALSE);
                 } else {
-                    int newlev = depth(&u.uz) - 1;
+                    int newlev = depth(&level->z) - 1;
                     d_level newlevel;
 
                     get_level(&newlevel, newlev);
-                    if (on_level(&newlevel, &u.uz)) {
+                    if (on_level(&newlevel, &level->z)) {
                         pline("It tasted bad.");
                         break;
                     } else

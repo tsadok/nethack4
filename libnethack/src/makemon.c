@@ -1466,7 +1466,7 @@ adj_lev(xchar difficulty, const struct permonst *ptr)
         return 50;      /* "special" demons/devils */
     tmp2 = (difficulty - ptr->mlevel);
     if (tmp2 < 0)
-        tmp--;  /* if mlevel > u.uz decrement tmp */
+        tmp--;  /* if mlevel > level->z decrement tmp */
     else
         tmp += (tmp2 / 5);      /* else increment 1 per five diff */
 

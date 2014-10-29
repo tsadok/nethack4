@@ -1160,8 +1160,8 @@ next_level(boolean at_stairs)
         /* Going down a stairs or jump in a trap door. */
         d_level newlevel;
 
-        newlevel.dnum = u.uz.dnum;
-        newlevel.dlevel = u.uz.dlevel + 1;
+        newlevel.dnum = level->z.dnum;
+        newlevel.dlevel = level->z.dlevel + 1;
         goto_level(&newlevel, at_stairs, !at_stairs, FALSE);
     }
 }
@@ -1174,7 +1174,7 @@ prev_level(boolean at_stairs)
         /* Taking an up dungeon branch. */
         /* KMH -- Upwards branches are okay if not level 1 */
         /* (Just make sure it doesn't go above depth 1) */
-        if (!u.uz.dnum && u.uz.dlevel == 1 && !Uhave_amulet)
+        if (!level->z.dnum && level->z.dlevel == 1 && !Uhave_amulet)
             done(ESCAPED, NULL);
         else
             goto_level(&level->sstairs.tolev, at_stairs, FALSE, FALSE);
@@ -1182,8 +1182,8 @@ prev_level(boolean at_stairs)
         /* Going up a stairs or rising through the ceiling. */
         d_level newlevel;
 
-        newlevel.dnum = u.uz.dnum;
-        newlevel.dlevel = u.uz.dlevel - 1;
+        newlevel.dnum = level->z.dnum;
+        newlevel.dlevel = level->z.dlevel - 1;
         goto_level(&newlevel, at_stairs, FALSE, FALSE);
     }
 }
@@ -1321,11 +1321,11 @@ void
 get_level(d_level * newlevel, int levnum)
 {
     branch *br;
-    xchar dgn = u.uz.dnum;
+    xchar dgn = level->z.dnum;
 
     if (levnum <= 0) {
         /* can only currently happen in endgame */
-        levnum = u.uz.dlevel;
+        levnum = level->z.dlevel;
     } else if (levnum >
                dungeons[dgn].depth_start + dungeons[dgn].num_dunlevs - 1) {
         /* beyond end of dungeon, jump to last level */
@@ -1571,10 +1571,10 @@ lev_by_name(const char *nam)
     if ((slev = find_level(nam)) != 0) {
         dlev = slev->dlevel;
         idx = ledger_no(&dlev);
-        if ((dlev.dnum == u.uz.dnum ||
+        if ((dlev.dnum == level->z.dnum ||
              /* within same branch, or else main dungeon <-> gehennom */
-             (u.uz.dnum == valley_level.dnum && dlev.dnum == medusa_level.dnum)
-             || (u.uz.dnum == medusa_level.dnum &&
+             (level->z.dnum == valley_level.dnum && dlev.dnum == medusa_level.dnum)
+             || (level->z.dnum == medusa_level.dnum &&
                  dlev.dnum == valley_level.dnum)) &&
             /* either wizard mode or else seen and not forgotten */
             (wizard || (levels[idx] && !levels[idx]->flags.forgotten))) {
@@ -1594,7 +1594,7 @@ lev_by_name(const char *nam)
                    wizard || ((levels[idx] && !levels[idx]->flags.forgotten) &&
                               (levels[idxtoo] &&
                                !levels[idxtoo]->flags.forgotten))) {
-                if (ledger_to_dnum(idxtoo) == u.uz.dnum)
+                if (ledger_to_dnum(idxtoo) == level->z.dnum)
                     idx = idxtoo;
                 dlev.dnum = ledger_to_dnum(idx);
                 dlev.dlevel = ledger_to_dlev(idx);

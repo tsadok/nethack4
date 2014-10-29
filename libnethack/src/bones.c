@@ -243,7 +243,7 @@ savebones(struct obj *corpse, boolean take_items)
     /* caller has already checked `can_make_bones()' */
 
     clear_bypasses();
-    make_bones_id(bonesid, &u.uz);
+    make_bones_id(bonesid, &level->z);
     fd = open_bonesfile(bonesid);
     if (fd >= 0) {
         close(fd);
@@ -380,7 +380,7 @@ make_bones:
     mwrite(&mf, bonesid, (unsigned)c);  /* DD.nnn */
     savefruitchn(&mf);
     update_mlstmv();    /* update monsters for eventual restoration */
-    savelev(&mf, ledger_no(&u.uz));
+    savelev(&mf, ledger_no(&level->z));
 
     store_mf(fd, &mf);  /* also frees mf */
 

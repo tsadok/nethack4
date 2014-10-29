@@ -166,7 +166,7 @@ describe_bg(int x, int y, int bg, char *buf)
 
     switch (bg) {
     case S_altar:
-        if (!In_endgame(&u.uz))
+        if (!In_endgame(&level->z))
             sprintf(buf, "%s altar",
                     align_str(Amask2align
                               (level->locations[x][y].altarmask & AM_MASK)));

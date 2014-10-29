@@ -2375,7 +2375,7 @@ zap_updown(struct obj *obj, schar dz)
                    (x == level->dnstair.sx && y == level->dnstair.sy) &&
                    /* can't use the stairs down to quest level 2 until leader
                       "unlocks" them; give feedback if you try */
-                   on_level(&u.uz, &qstart_level) && !ok_to_quest(FALSE)) {
+                   on_level(&level->z, &qstart_level) && !ok_to_quest(FALSE)) {
             pline("The stairs seem to ripple momentarily.");
             disclose = TRUE;
         }

@@ -690,7 +690,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
                 otmp = mk_artifact(lev, otmp, (aligntyp) A_NONE);
             /* simulate lacquered armor for samurai */
             if (Role_if(PM_SAMURAI) && otmp->otyp == SPLINT_MAIL &&
-                In_quest(&u.uz)) {
+                In_quest(&level->z)) {
                 otmp->oerodeproof = otmp->rknown = 1;
             }
             break;

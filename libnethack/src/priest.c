@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-25 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Izchak Miller, Steve Linhart, 1989.              */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -127,7 +127,7 @@ histemple_at(struct monst *priest, xchar x, xchar y)
 {
     return ((boolean)
             ((CONST_EPRI(priest)->shroom == *in_rooms(level, x, y, TEMPLE)) &&
-             on_level(&(CONST_EPRI(priest)->shrlevel), &u.uz)));
+             on_level(&(CONST_EPRI(priest)->shrlevel), &level->z)));
 }
 
 /*
@@ -735,7 +735,7 @@ clearpriests(void)
     for (mtmp = level->monlist; mtmp; mtmp = mtmp2) {
         mtmp2 = mtmp->nmon;
         if (!DEADMONSTER(mtmp) && mtmp->ispriest &&
-            !on_level(&(CONST_EPRI(mtmp)->shrlevel), &u.uz))
+            !on_level(&(CONST_EPRI(mtmp)->shrlevel), &level->z))
             mongone(mtmp);
     }
 }
@@ -744,9 +744,9 @@ clearpriests(void)
 void
 restpriest(struct monst *mtmp, boolean ghostly)
 {
-    if (u.uz.dlevel) {
+    if (level->z.dlevel) {
         if (ghostly)
-            assign_level(&(EPRI(mtmp)->shrlevel), &u.uz);
+            assign_level(&(EPRI(mtmp)->shrlevel), &level->z);
     }
 }
 

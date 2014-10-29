@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-06-01 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -22,7 +22,7 @@ clear_fcorr(struct monst *grd, boolean forceshow)
     struct monst *mtmp;
     boolean showmsg = FALSE;
 
-    if (!on_level(&(EGD(grd)->gdlevel), &u.uz))
+    if (!on_level(&(EGD(grd)->gdlevel), &level->z))
         return TRUE;
 
     while ((fcbeg = EGD(grd)->fcbeg) < EGD(grd)->fcend) {
@@ -123,7 +123,7 @@ findgd(void)
 
     for (mtmp = level->monlist; mtmp; mtmp = mtmp->nmon)
         if (mtmp->isgd && !DEADMONSTER(mtmp) &&
-            on_level(&(EGD(mtmp)->gdlevel), &u.uz))
+            on_level(&(EGD(mtmp)->gdlevel), &level->z))
             return mtmp;
     return NULL;
 }
@@ -277,7 +277,7 @@ invault(void)
         EGD(guard)->gddone = 0;
         EGD(guard)->ogx = x;
         EGD(guard)->ogy = y;
-        assign_level(&(EGD(guard)->gdlevel), &u.uz);
+        assign_level(&(EGD(guard)->gdlevel), &level->z);
         EGD(guard)->vroom = vaultroom;
         EGD(guard)->warncnt = 0;
 
@@ -495,7 +495,7 @@ gd_move(struct monst *grd)
     boolean u_carry_gold = ((umoney + hidden_gold()) > 0L);
     boolean see_guard;
 
-    if (!on_level(&(egrd->gdlevel), &u.uz))
+    if (!on_level(&(egrd->gdlevel), &level->z))
         return -1;
     nx = ny = m = n = 0;
     if (!u_in_vault && !grd_in_vault)

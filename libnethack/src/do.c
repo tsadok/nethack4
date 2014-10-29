@@ -738,7 +738,7 @@ dodown(enum u_interaction_mode uim)
               is_animal(u.ustuck->data) ? "swallowed" : "engulfed");
         return 1;
     }
-    if (on_level(&valley_level, &u.uz) && !u.uevent.gehennom_entered) {
+    if (on_level(&valley_level, &level->z) && !u.uevent.gehennom_entered) {
         pline("You are standing at the gate to Gehennom.");
         pline("Unspeakable cruelty and harm lurk down there.");
         if (yn("Are you sure you want to enter?") != 'y')
@@ -820,7 +820,7 @@ doup(enum u_interaction_mode uim)
               level->locations[u.ux][u.uy].typ == STAIRS ? "stairs" : "ladder");
         return 1;
     }
-    if (ledger_no(&u.uz) == 1) {
+    if (ledger_no(&level->z) == 1) {
         if (yn("Beware, there will be no return! Still climb?") != 'y')
             return 0;
     }
@@ -875,8 +875,8 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
            boolean portal)
 {
     xchar new_ledger;
-    boolean up = (depth(newlevel) < depth(&u.uz)), newdungeon =
-        (u.uz.dnum != newlevel->dnum), was_in_W_tower =
+    boolean up = (depth(newlevel) < depth(&level->z)), newdungeon =
+        (level->z.dnum != newlevel->dnum), was_in_W_tower =
         In_W_tower(u.ux, u.uy, level), familiar = FALSE;
     boolean new = FALSE;        /* made a new level? */
     struct monst *mtmp, *mtmp2;
@@ -909,24 +909,24 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
        6.25 8.33 12.5 -2 8.33 4.17 0.0 -2 6.25 8.33 0.0 -3 8.33 4.17 0.0 -3
        6.25 0.0 0.0 */
     if (Inhell && up && Uhave_amulet && !newdungeon && !portal &&
-        (dunlev(&u.uz) < dunlevs_in_dungeon(&u.uz) - 3)) {
+        (dunlev(&level->z) < dunlevs_in_dungeon(&level->z) - 3)) {
         if (!rn2(4)) {
             int odds = 3 + (int)u.ualign.type,  /* 2..4 */
                 diff = odds <= 1 ? 0 : rn2(odds);       /* paranoia */
 
             if (diff != 0) {
-                assign_rnd_level(newlevel, &u.uz, diff);
+                assign_rnd_level(newlevel, &level->z, diff);
                 /* if inside the tower, stay inside */
                 if (was_in_W_tower && !On_W_tower_level(newlevel))
                     diff = 0;
             }
             if (diff == 0)
-                assign_level(newlevel, &u.uz);
+                assign_level(newlevel, &level->z);
 
             new_ledger = ledger_no(newlevel);
 
             pline("A mysterious force momentarily surrounds you...");
-            if (on_level(newlevel, &u.uz)) {
+            if (on_level(newlevel, &level->z)) {
                 safe_teleds(FALSE);
                 next_to_u();
                 return;
@@ -937,10 +937,10 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
 
     /* Prevent the player from going past the first quest level unless (s)he
        has been given the go-ahead by the leader. */
-    if (on_level(&u.uz, &qstart_level) && !newdungeon && !ok_to_quest(TRUE))
+    if (on_level(&level->z, &qstart_level) && !newdungeon && !ok_to_quest(TRUE))
         return;
 
-    if (on_level(newlevel, &u.uz))
+    if (on_level(newlevel, &level->z))
         return; /* this can happen */
 
     if (falling)        /* assuming this is only trap door or hole */
@@ -970,17 +970,14 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     update_mlstmv();    /* current monsters are becoming inactive */
 
 
-    assign_level(&orig_d, &u.uz);
-    assign_level(&u.uz, newlevel);
-
     /* If the entry level is the top level, then the dungeon goes down.
        Otherwise it goes up. */
-    if (dungeons[u.uz.dnum].entry_lev == 1) {
-        if (dunlev_reached(&u.uz) < dunlev(&u.uz))
-            dunlev_reached(&u.uz) = dunlev(&u.uz);
+    if (dungeons[level->z.dnum].entry_lev == 1) {
+        if (dunlev_reached(&level->z) < dunlev(&level->z))
+            dunlev_reached(&level->z) = dunlev(&level->z);
     } else {
-        if (dunlev_reached(&u.uz) > dunlev(&u.uz) || !dunlev_reached(&u.uz))
-            dunlev_reached(&u.uz) = dunlev(&u.uz);
+        if (dunlev_reached(&level->z) > dunlev(&level->z) || !dunlev_reached(&level->z))
+            dunlev_reached(&level->z) = dunlev(&level->z);
     }
 
     origlev = level;
@@ -988,7 +985,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
 
     if (!levels[new_ledger]) {
         /* entering this level for first time; make it now */
-        level = mklev(&u.uz);
+        level = mklev(newlevel);
         historic_event(FALSE, "reached %s.", hist_lev_name(level, FALSE));
         new = TRUE;     /* made the level */
     } else {
@@ -1018,7 +1015,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     turnstate.vision_full_recalc = FALSE;
     flush_screen_disable();     /* ensure all map flushes are postponed */
 
-    if (portal && !In_endgame(&u.uz)) {
+    if (portal && !In_endgame(&level->z)) {
         /* find the portal on the new level */
         struct trap *ttrap;
 
@@ -1030,7 +1027,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
             panic("goto_level: no corresponding portal!");
         seetrap(ttrap);
         u_on_newpos(ttrap->tx, ttrap->ty);
-    } else if (at_stairs && !In_endgame(&u.uz)) {
+    } else if (at_stairs && !In_endgame(&level->z)) {
         if (up) {
             if (at_ladder) {
                 u_on_newpos(level->dnladder.sx, level->dnladder.sy);
@@ -1122,7 +1119,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
         struct obj *otmp2 = otmp;
         otmp = otmp2->nobj;
 
-        deliver_object(otmp2, u.uz.dnum, u.uz.dlevel, MIGR_NEAR_PLAYER);
+        deliver_object(otmp2, level->z.dnum, level->z.dlevel, MIGR_NEAR_PLAYER);
     }
 
     for (otmp = invent; otmp; otmp = otmp->nobj)
@@ -1232,7 +1229,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     if (new && Is_rogue_level(level))
         pline("You enter what seems to be an older, more primitive world.");
     /* Final confrontation */
-    if (In_endgame(&u.uz) && newdungeon && Uhave_amulet)
+    if (In_endgame(&level->z) && newdungeon && Uhave_amulet)
         resurrect();
     if (newdungeon && In_V_tower(level) && In_hell(&orig_d))
         pline("The heat and smoke are gone.");
@@ -1259,7 +1256,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
                 mtmp->msleeping = 0;
     }
 
-    if (on_level(&u.uz, &astral_level))
+    if (on_level(&level->z, &astral_level))
         final_level();
     else
         onquest(origlev);
@@ -1376,7 +1373,7 @@ deferred_goto(void)
     d_level dest;
     assign_level(&dest, &turnstate.goto_info.dlevel);
 
-    if (!on_level(&u.uz, &dest)) {
+    if (!on_level(&level->z, &dest)) {
         int typmask = turnstate.goto_info.flags;
 
         if (*turnstate.goto_info.pre_msg)

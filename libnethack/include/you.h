@@ -41,7 +41,6 @@ struct you {
     xchar ux, uy;
     xchar tx, ty;       /* destination of travel */
     xchar ux0, uy0;     /* initial position of a move */
-    d_level uz;    /* your level on this and the previous turn */
     boolean umoved;     /* changed map location (post-move) */
     /* +: turn right, -: turn left */
     int ulevel;         /* 1 to MAXULEV */

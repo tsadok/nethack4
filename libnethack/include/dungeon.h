@@ -143,7 +143,7 @@ struct overview_info {
 # define Is_knox(x)             (on_level(&(x)->z, &knox_level))
 
 # define In_sokoban(x)          ((x)->z.dnum == sokoban_dnum)
-# define Inhell                 In_hell(&u.uz)  /* now gehennom */
+# define Inhell                 In_hell(&level->z)  /* now gehennom */
 # define In_endgame(x)          ((x)->dnum == astral_level.dnum)
 
 # define within_bounded_area(X,Y,LX,LY,HX,HY)                   \

@@ -210,7 +210,7 @@ moverock(schar dx, schar dy)
                     seetrap(ttmp);
                     continue;
                 case LEVEL_TELEP:
-                    if (In_endgame(&u.uz)) {
+                    if (In_endgame(&level->z)) {
                         pline ("%s strains, but fails to escape the plane.",
                             msgupcasefirst(the(xname(otmp))));
                         deltrap(level, ttmp);
@@ -221,7 +221,7 @@ moverock(schar dx, schar dy)
                     d_level dest;
                     do
                         newlev = random_teleport_level();
-                    while (newlev == depth(&u.uz));
+                    while (newlev == depth(&level->z));
 
                     if (u.usteed)
                         pline("%s pushes %s and suddenly it disappears!",
@@ -2180,7 +2180,7 @@ in_rooms(struct level *lev, xchar x, xchar y, int typewanted)
 boolean
 in_town(int x, int y)
 {
-    s_level *slev = Is_special(&u.uz);
+    s_level *slev = Is_special(&level->z);
     struct mkroom *sroom;
     boolean has_subrooms = FALSE;
 

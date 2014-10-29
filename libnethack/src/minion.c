@@ -26,7 +26,7 @@ msummon(struct monst *mon, const struct level *lev)
     } else {
         ptr = &mons[PM_WIZARD_OF_YENDOR];
         atyp = (ptr->maligntyp == A_NONE) ? A_NONE : sgn(ptr->maligntyp);
-        if (lev->z.dnum != u.uz.dnum || lev->z.dnum != u.uz.dlevel)
+        if (lev->z.dnum != level->z.dnum || lev->z.dnum != level->z.dlevel)
             impossible("lev mismatch for player in msummon");
     }
 

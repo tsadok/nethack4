@@ -480,7 +480,7 @@ dipfountain(struct obj *obj)
             break;
         SET_FOUNTAIN_LOOTED(u.ux, u.uy);
         mkgold((long)
-               (rnd((dunlevs_in_dungeon(&u.uz) - dunlev(&u.uz) + 1) * 2) + 5),
+               (rnd((dunlevs_in_dungeon(&level->z) - dunlev(&level->z) + 1) * 2) + 5),
                level, u.ux, u.uy);
         if (!Blind)
             pline("Far below you, you see coins glistening in the water.");

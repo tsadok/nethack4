@@ -22,7 +22,7 @@ static struct monst *restmonchn(struct memfile *mf, struct level *lev,
 static struct fruit *loadfruitchn(struct memfile *mf);
 static void freefruitchn(struct fruit *);
 static void ghostfruit(struct obj *);
-static void restgamestate(struct memfile *mf);
+static void restgamestate(struct memfile *mf, struct level *lev);
 static void reset_oattached_mids(boolean ghostly, struct level *lev);
 
 /*
@@ -441,14 +441,11 @@ restore_spellbook(struct memfile *mf)
 
 
 static void
-restgamestate(struct memfile *mf)
+restgamestate(struct memfile *mf, struct level *lev)
 {
     struct monst *mtmp;
-    struct level *lev;
 
     mfmagic_check(mf, STATE_MAGIC);
-
-    lev = levels[ledger_no(&u.uz)];
 
     /* this stuff comes after potential aborted restore attempts */
     restore_timers(mf, lev, RANGE_GLOBAL, FALSE, 0L);
@@ -594,8 +591,6 @@ restore_you(struct memfile *mf, struct you *y)
     y->ty = mread8(mf);
     y->ux0 = mread8(mf);
     y->uy0 = mread8(mf);
-    y->uz.dnum = mread8(mf);
-    y->uz.dlevel = mread8(mf);
     /* Padding to replace utolev/utotype, which was removed. */
     /* SAVEBREAK (4.3-beta1 -> 4.3-beta2): delete the next few lines. */
     y->save_compat_bytes[0] = mread8(mf);
@@ -883,14 +878,15 @@ dorecover(struct memfile *mf)
         getlev(mf, ltmp, FALSE);
     }
 
-    restgamestate(mf);
+    d_level dlev;
+    restore_dlevel(mf, &dlev);
+    level = levels[ledger_no(&dlev)];
+
+    restgamestate(mf, level);
 
     /* utracked is read last, because it might need to find items on any level
        or in the player inventory */
     restore_utracked(mf, &u);
-
-    /* all data has been read, prepare for player */
-    level = levels[ledger_no(&u.uz)];
 
     max_rank_sz();      /* to recompute mrank_sz (botl.c) */
     /* take care of iron ball & chain */
@@ -1227,7 +1223,7 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
 
     rest_regions(mf, lev, ghostly);
     if (ghostly) {
-        /* assert(lev->z == u.uz); */
+        /* assert(lev->z == level->z); */
 
         /* Now get rid of all the temp fruits... */
         freefruitchn(oldfruit), oldfruit = 0;

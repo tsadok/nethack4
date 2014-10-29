@@ -752,7 +752,7 @@ you_moved(void)
 
             if (flags.mon_generation &&
                 !rn2(u.uevent.udemigod ? 25 :
-                     (depth(&u.uz) > depth(&stronghold_level)) ? 50 : 70))
+                     (depth(&level->z) > depth(&stronghold_level)) ? 50 : 70))
                 makemon(NULL, level, COLNO, ROWNO, NO_MM_FLAGS);
 
             int oldmoveamt = u.moveamt;
@@ -1464,7 +1464,9 @@ newgame(microseconds birthday)
 
     load_qtlist();      /* load up the quest text info */
 
-    level = mklev(&u.uz);
+    /* FIXME: hardcode replacing u_init() */
+    d_level first_lev = { .dnum = 0, .dlevel = 1 };
+    level = mklev(&first_lev);
 
     u_on_upstairs();    /* place the player on the upstairs before initializing
                            inventory, or else the x-ray vision check when

@@ -204,7 +204,7 @@ losedogs(void)
 
     for (mtmp = migrating_mons; mtmp; mtmp = mtmp2) {
         mtmp2 = mtmp->nmon;
-        if (mtmp->mux == u.uz.dnum && mtmp->muy == u.uz.dlevel) {
+        if (mtmp->mux == level->z.dnum && mtmp->muy == level->z.dlevel) {
             if (mtmp == migrating_mons)
                 migrating_mons = mtmp->nmon;
             else
@@ -308,7 +308,7 @@ mon_arrive(struct monst *mtmp, boolean with_you)
         xlocale = level->sstairs.sx, ylocale = level->sstairs.sy;
         break;
     case MIGR_PORTAL:
-        if (In_endgame(&u.uz)) {
+        if (In_endgame(&level->z)) {
             /* there is no arrival portal for endgame levels */
             /* BUG[?]: for simplicity, this code relies on the fact that we
                know that the current endgame levels always build upwards and
@@ -582,7 +582,7 @@ keepdogs(boolean pets_only)
             /* we want to be able to find him when his next resurrection chance 
                comes up, but have him resume his present location if player
                returns to this level before that time */
-            migrate_to_level(mtmp, ledger_no(&u.uz), MIGR_EXACT_XY, NULL);
+            migrate_to_level(mtmp, ledger_no(&level->z), MIGR_EXACT_XY, NULL);
         } else if (mtmp->mleashed) {
             /* this can happen if your quest leader ejects you from the "home"
                level while a leashed pet isn't next to you */
@@ -636,7 +636,7 @@ migrate_to_level(struct monst *mtmp, xchar tolev,       /* destination level */
     new_lev.dlevel = ledger_to_dlev((xchar) tolev);
 
     /* set migration data */
-    xyflags = (depth(&new_lev) < depth(&u.uz)); /* 1 => up */
+    xyflags = (depth(&new_lev) < depth(&level->)); /* 1 => up */
     if (In_W_tower(mtmp->mx, mtmp->my, level))
         xyflags |= 2;
     mtmp->wormno = num_segs;

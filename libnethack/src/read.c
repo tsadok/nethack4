@@ -1118,7 +1118,7 @@ seffects(struct obj *sobj, boolean * known)
     case SCR_EARTH:
         /* TODO: handle steeds */
         if (!Is_rogue_level(level) &&
-            (!In_endgame(&u.uz) || Is_earthlevel(level))) {
+            (!In_endgame(&level->z) || Is_earthlevel(level))) {
             int x, y;
 
             /* Identify the scroll */

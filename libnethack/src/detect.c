@@ -741,8 +741,8 @@ outtrapmap:
 static const char *
 level_distance(d_level * where)
 {
-    schar ll = depth(&u.uz) - depth(where);
-    boolean indun = (u.uz.dnum == where->dnum);
+    schar ll = depth(&level->z) - depth(where);
+    boolean indun = (level->z.dnum == where->dnum);
 
     if (ll < 0) {
         if (ll < (-8 - rn2(3)))

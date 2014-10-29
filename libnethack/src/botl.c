@@ -149,23 +149,23 @@ describe_level(char *buf)
     int ret = 1;
 
     if (Is_knox(level))
-        sprintf(buf, "%s", dungeons[u.uz.dnum].dname);
-    else if (In_quest(&u.uz))
-        sprintf(buf, "Home:%d", dunlev(&u.uz));
-    else if (In_endgame(&u.uz))
+        sprintf(buf, "%s", dungeons[level->z.dnum].dname);
+    else if (In_quest(&level->z))
+        sprintf(buf, "Home:%d", dunlev(&level->z));
+    else if (In_endgame(&level->z))
         sprintf(buf, Is_astralevel(level) ? "Astral Plane" : "End Game");
     else if (In_mines(level))
-        sprintf(buf, "Mines:%d", depth(&u.uz));
+        sprintf(buf, "Mines:%d", depth(&level->z));
     else if (In_sokoban(level))
-        sprintf(buf, "Sokoban:%d", depth(&u.uz));
+        sprintf(buf, "Sokoban:%d", depth(&level->z));
     else if (Is_valley(level))
-        sprintf(buf, "Valley:%d", depth(&u.uz));
-    else if (In_hell(&u.uz))
-        sprintf(buf, "Gehennom:%d", depth(&u.uz));
+        sprintf(buf, "Valley:%d", depth(&level->z));
+    else if (In_hell(&level->z))
+        sprintf(buf, "Gehennom:%d", depth(&level->z));
     else if (In_V_tower(level))
-        sprintf(buf, "Tower:%d", depth(&u.uz));
+        sprintf(buf, "Tower:%d", depth(&level->z));
     else
-        sprintf(buf, "Dungeons:%d", depth(&u.uz)), (ret = 0);
+        sprintf(buf, "Dungeons:%d", depth(&level->z)), (ret = 0);
     return ret;
 }
 
@@ -192,7 +192,7 @@ make_player_info(struct nh_player_info *pi)
 
     pi->x = u.ux;
     pi->y = u.uy;
-    pi->z = u.uz.dlevel;
+    pi->z = level->z.dlevel;
 
     if (Upolyd) {
         strncpy(pi->rank, msgtitlecase(mons[u.umonnum].mname),

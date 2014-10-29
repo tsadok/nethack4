@@ -121,6 +121,9 @@ savegame(struct memfile *mf)
         mwrite8(mf, ltmp);      /* level number */
         savelev(mf, ltmp);      /* actual level */
     }
+
+    save_dlevel(mf, level->z);
+
     savegamestate(mf);
 
     /* must come last, because it needs to be restored last */
@@ -470,8 +473,6 @@ save_you(struct memfile *mf, struct you *y)
     mwrite8(mf, y->ty);
     mwrite8(mf, y->ux0);
     mwrite8(mf, y->uy0);
-    mwrite8(mf, y->uz.dnum);
-    mwrite8(mf, y->uz.dlevel);
     /* Padding to replace utolev/utotype, which were removed. */
     /* SAVEBREAK (4.3-beta1 -> 4.3-beta2): remove the next three lines. */
     mwrite8(mf, y->save_compat_bytes[0]);

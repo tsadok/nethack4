@@ -320,7 +320,7 @@ find_defensive(struct monst *mtmp, struct musable *m)
             !is_floater(mtmp->data))
             m->has_defense = MUSE_DOWNSTAIRS;
         if (x == lev->upstair.sx && y == lev->upstair.sy &&
-            ledger_no(&u.uz) != 1)
+            ledger_no(&level->z) != 1)
             /* Unfair to let the monsters leave the dungeon with the Amulet
                (or go to the endlevel since you also need it, to get there) */
             m->has_defense = MUSE_UPSTAIRS;
@@ -417,7 +417,7 @@ find_defensive(struct monst *mtmp, struct musable *m)
             && !In_sokoban(level)
             /* digging wouldn't be effective; assume they know that */
             && !(lev->locations[x][y].wall_info & W_NONDIGGABLE)
-            && !(Is_botlevel(&u.uz) || In_endgame(&u.uz))
+            && !(Is_botlevel(&level->z) || In_endgame(&level->z))
             && !(is_ice(lev, x, y) || is_pool(lev, x, y) || is_lava(lev, x, y))
             && !(mtmp->data == &mons[PM_VLAD_THE_IMPALER]
                  && In_V_tower(level))) {
@@ -564,7 +564,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
                 mtmp->mtrapseen |= (1 << (TELEP_TRAP - 1));
             return 2;
         }
-        if ((On_W_tower_level(&u.uz)) && !rn2(3)) {
+        if ((On_W_tower_level(&level->z)) && !rn2(3)) {
             if (vismon)
                 pline("%s seems disoriented for a moment.", Monnam(mtmp));
             return 2;
@@ -598,14 +598,14 @@ use_defensive(struct monst *mtmp, struct musable *m)
                 int nlev;
                 d_level flev;
 
-                if (mon_has_amulet(mtmp) || In_endgame(&u.uz)) {
+                if (mon_has_amulet(mtmp) || In_endgame(&level->z)) {
                     if (vismon)
                         pline("%s seems very disoriented for a moment.",
                               Monnam(mtmp));
                     return 2;
                 }
                 nlev = random_teleport_level();
-                if (nlev == depth(&u.uz)) {
+                if (nlev == depth(&level->z)) {
                     if (vismon)
                         pline("%s shudders for a moment.", Monnam(mtmp));
                     return 2;
@@ -654,7 +654,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
                 You_hear("something crash through the %s.",
                          surface(mtmp->mx, mtmp->my));
             /* we made sure that there is a level for mtmp to go to */
-            migrate_to_level(mtmp, ledger_no(&u.uz) + 1, MIGR_RANDOM, NULL);
+            migrate_to_level(mtmp, ledger_no(&level->z) + 1, MIGR_RANDOM, NULL);
             return 2;
         }
     case MUSE_WAN_CREATE_MONSTER:
@@ -719,7 +719,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
     case MUSE_TRAPDOOR:
         /* trap doors on "bottom" levels of dungeons are rock-drop trap doors,
            not holes in the floor.  We check here for safety. */
-        if (Is_botlevel(&u.uz))
+        if (Is_botlevel(&level->z))
             return 0;
         m_flee(mtmp);
         if (vis) {
@@ -744,14 +744,14 @@ use_defensive(struct monst *mtmp, struct musable *m)
             worm_move(mtmp);
         newsym(trapx, trapy);
 
-        migrate_to_level(mtmp, ledger_no(&u.uz) + 1, MIGR_RANDOM, NULL);
+        migrate_to_level(mtmp, ledger_no(&level->z) + 1, MIGR_RANDOM, NULL);
         return 2;
     case MUSE_UPSTAIRS:
         /* Monsters without amulets escape the dungeon and are gone for good
            when they leave up the up stairs. Monsters with amulets would reach
            the endlevel, which we cannot allow since that would leave the
            player stranded. */
-        if (ledger_no(&u.uz) == 1) {
+        if (ledger_no(&level->z) == 1) {
             if (mon_has_special(mtmp))
                 return 0;
             if (vismon)
@@ -761,7 +761,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
         }
         m_flee(mtmp);
         if (Inhell && mon_has_amulet(mtmp) && !rn2(4) &&
-            (dunlev(&u.uz) < dunlevs_in_dungeon(&u.uz) - 3)) {
+            (dunlev(&level->z) < dunlevs_in_dungeon(&level->z) - 3)) {
             if (vismon)
                 pline("As %s climbs the stairs, a mysterious force momentarily "
                       "surrounds %s...", mon_nam(mtmp), mhim(mtmp));
@@ -769,11 +769,11 @@ use_defensive(struct monst *mtmp, struct musable *m)
                he'll immediately go right to the upstairs, so there's not much
                point in having any chance for a random position on the current
                level */
-            migrate_to_level(mtmp, ledger_no(&u.uz) + 1, MIGR_RANDOM, NULL);
+            migrate_to_level(mtmp, ledger_no(&level->z) + 1, MIGR_RANDOM, NULL);
         } else {
             if (vismon)
                 pline("%s escapes upstairs!", Monnam(mtmp));
-            migrate_to_level(mtmp, ledger_no(&u.uz) - 1, MIGR_STAIRS_DOWN,
+            migrate_to_level(mtmp, ledger_no(&level->z) - 1, MIGR_STAIRS_DOWN,
                              NULL);
         }
         return 2;
@@ -781,19 +781,19 @@ use_defensive(struct monst *mtmp, struct musable *m)
         m_flee(mtmp);
         if (vismon)
             pline("%s escapes downstairs!", Monnam(mtmp));
-        migrate_to_level(mtmp, ledger_no(&u.uz) + 1, MIGR_STAIRS_UP, NULL);
+        migrate_to_level(mtmp, ledger_no(&level->z) + 1, MIGR_STAIRS_UP, NULL);
         return 2;
     case MUSE_UP_LADDER:
         m_flee(mtmp);
         if (vismon)
             pline("%s escapes up the ladder!", Monnam(mtmp));
-        migrate_to_level(mtmp, ledger_no(&u.uz) - 1, MIGR_LADDER_DOWN, NULL);
+        migrate_to_level(mtmp, ledger_no(&level->z) - 1, MIGR_LADDER_DOWN, NULL);
         return 2;
     case MUSE_DN_LADDER:
         m_flee(mtmp);
         if (vismon)
             pline("%s escapes down the ladder!", Monnam(mtmp));
-        migrate_to_level(mtmp, ledger_no(&u.uz) + 1, MIGR_LADDER_UP, NULL);
+        migrate_to_level(mtmp, ledger_no(&level->z) + 1, MIGR_LADDER_UP, NULL);
         return 2;
     case MUSE_SSTAIRS:
         m_flee(mtmp);
@@ -1071,7 +1071,7 @@ find_offensive(struct monst * mtmp, struct musable * m)
             && (mtmp->mx != mtmp->mux || mtmp->my != mtmp->muy)
             && mtmp->mcansee && haseyes(mtmp->data)
             && !Is_rogue_level(level)
-            && (!In_endgame(&u.uz) || Is_earthlevel(level))) {
+            && (!In_endgame(&level->z) || Is_earthlevel(level))) {
             m->offensive = obj;
             m->has_offense = MUSE_SCR_EARTH;
         }
@@ -1672,12 +1672,12 @@ use_misc(struct monst *mtmp, struct musable *m)
         mquaffmsg(mtmp, otmp);
         if (otmp->cursed) {
             if (Can_rise_up(mtmp->mx, mtmp->my, level)) {
-                int tolev = depth(&u.uz) - 1;
+                int tolev = depth(&level->z) - 1;
                 d_level tolevel;
 
                 get_level(&tolevel, tolev);
                 /* insurance against future changes... */
-                if (on_level(&tolevel, &u.uz))
+                if (on_level(&tolevel, &level->z))
                     goto skipmsg;
                 if (vismon) {
                     pline("%s rises up, through the %s!", Monnam(mtmp),

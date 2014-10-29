@@ -538,8 +538,6 @@ u_init(microseconds birthday)
 
     u.ustuck = NULL;
 
-    u.uz.dlevel = 1;
-
     u.umoved = FALSE;
     u.umortality = 0;
     u.ugrave_arise = NON_PM;

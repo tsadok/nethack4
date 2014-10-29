@@ -422,8 +422,8 @@ fill_topten_entry(struct toptenentry *newtt, int how, const char *killer)
     newtt->points = u.urexp > -1 ?      /* u.urexp stores score once invent is
                                            invalid */
         u.urexp : calc_score(how, FALSE, money_cnt(invent) + hidden_gold());
-    newtt->deathdnum = u.uz.dnum;
-    newtt->deathlev = depth(&u.uz);
+    newtt->deathdnum = level->z.dnum;
+    newtt->deathlev = depth(&level->z);
     newtt->maxlvl = deepest_lev_reached(TRUE);
     newtt->hp = u.uhp;
     newtt->maxhp = u.uhpmax;

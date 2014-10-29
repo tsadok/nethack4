@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-10-18 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -1536,7 +1536,7 @@ canwearobj(struct obj *otmp, long *mask,
             return FALSE;
         }
         if (otmp->otyp == HELM_OF_OPPOSITE_ALIGNMENT &&
-            qstart_level.dnum == u.uz.dnum && spoil) {   /* in quest */
+            qstart_level.dnum == level->z.dnum && spoil) {   /* in quest */
             if (u.ualignbase[A_CURRENT] == u.ualignbase[A_ORIGINAL])
                 pline("You narrowly avoid losing all chance at your goal.");
             else    /* converted */
