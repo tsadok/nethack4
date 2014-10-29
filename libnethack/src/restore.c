@@ -1134,6 +1134,8 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
     /* FIXME: This is a total kludge. Fix. */
     if (Is_waterlevel(lev))
         lev->mgr = &waterlevel_manager;
+    if (Is_firelevel(lev))
+        lev->mgr = &firelevel_manager;
 
     mread(mf, lev->levname, sizeof (lev->levname));
     for (x = 0; x < COLNO; x++)
