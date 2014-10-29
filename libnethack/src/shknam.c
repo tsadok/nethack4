@@ -210,7 +210,7 @@ mkshobj_at(const struct shclass *shp, struct level *lev, int sx, int sy)
     const struct permonst *ptr;
 
     if (rn2(100) < depth(&lev->z) && !MON_AT(lev, sx, sy) &&
-        (ptr = mkclass(&lev->z, S_MIMIC, 0)) &&
+        (ptr = mkclass(lev, S_MIMIC, 0)) &&
         (mtmp = makemon(ptr, lev, sx, sy, NO_MM_FLAGS)) != 0) {
         /* note: makemon will set the mimic symbol to a shop item */
         if (rn2(10) >= depth(&lev->z)) {

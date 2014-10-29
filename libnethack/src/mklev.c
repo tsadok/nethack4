@@ -375,9 +375,8 @@ dosdoor(struct level *lev, xchar x, xchar y, struct mkroom *aroom, int type)
                   (mvitals[PM_GIANT_MIMIC].mvflags & G_GONE))) {
                 /* make a mimic instead */
                 lev->locations[x][y].doormask = D_NODOOR;
-                mtmp =
-                    makemon(mkclass(&lev->z, S_MIMIC, 0), lev, x, y,
-                            NO_MM_FLAGS);
+                mtmp = makemon(mkclass(lev, S_MIMIC, 0), lev, x, y,
+                               NO_MM_FLAGS);
                 if (mtmp)
                     set_mimic_sym(mtmp, lev);
             }
@@ -681,7 +680,7 @@ makelevel(struct level *lev)
             mkroom(lev, BEEHIVE);
         else if (u_depth > 11 && !rn2(6))
             mkroom(lev, MORGUE);
-        else if (u_depth > 12 && !rn2(8) && antholemon(&lev->z))
+        else if (u_depth > 12 && !rn2(8) && antholemon(lev))
             mkroom(lev, ANTHOLE);
         else if (u_depth > 14 && !rn2(4) &&
                  !(mvitals[PM_SOLDIER].mvflags & G_GONE))

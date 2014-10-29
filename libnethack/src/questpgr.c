@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-05-30 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /*      Copyright 1991, M. Stephenson             */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -375,7 +375,7 @@ qt_pager(int msgnum)
 }
 
 const struct permonst *
-qt_montype(const d_level * dlev)
+qt_montype(const struct level *lev)
 {
     int qpm;
 
@@ -383,12 +383,12 @@ qt_montype(const d_level * dlev)
         qpm = urole.enemy1num;
         if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GENOD))
             return &mons[qpm];
-        return mkclass(dlev, urole.enemy1sym, 0);
+        return mkclass(lev, urole.enemy1sym, 0);
     }
     qpm = urole.enemy2num;
     if (qpm != NON_PM && rn2(5) && !(mvitals[qpm].mvflags & G_GENOD))
         return &mons[qpm];
-    return mkclass(dlev, urole.enemy2sym, 0);
+    return mkclass(lev, urole.enemy2sym, 0);
 }
 
 /*questpgr.c*/

@@ -1056,7 +1056,7 @@ mlevel_tele_trap(struct monst *mtmp, struct trap *trap, boolean force_it,
         } else if (tt == MAGIC_PORTAL) {
             if (In_endgame(&u.uz) &&
                 (mon_has_amulet(mtmp) ||
-                 is_home_elemental(&mtmp->dlevel->z, mptr))) {
+                 is_home_elemental(mtmp->dlevel, mptr))) {
                 if (in_sight && mptr->mlet != S_ELEMENTAL) {
                     pline("%s seems to shimmer for a moment.", Monnam(mtmp));
                     seetrap(trap);

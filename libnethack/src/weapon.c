@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-17 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -782,7 +782,7 @@ abon(void)
     int str = ACURR(A_STR), dex = ACURR(A_DEX);
 
     if (Upolyd)
-        return adj_lev(&u.uz, &mons[u.umonnum]) - 3;
+        return adj_lev(level_difficulty(level), &mons[u.umonnum]) - 3;
     if (str < 6)
         sbon = -2;
     else if (str < 8)

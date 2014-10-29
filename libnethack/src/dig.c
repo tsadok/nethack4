@@ -804,13 +804,13 @@ dig_up_grave(void)
         if (!Blind)
             pline(Hallucination ? "Dude!  The living dead!" :
                   "The grave's owner is very upset!");
-        makemon(mkclass(&u.uz, S_ZOMBIE, 0), level, u.ux, u.uy, NO_MM_FLAGS);
+        makemon(mkclass(level, S_ZOMBIE, 0), level, u.ux, u.uy, NO_MM_FLAGS);
         break;
     case 3:
         if (!Blind)
             pline(Hallucination ? "I want my mummy!" :
                   "You've disturbed a tomb!");
-        makemon(mkclass(&u.uz, S_MUMMY, 0), level, u.ux, u.uy, NO_MM_FLAGS);
+        makemon(mkclass(level, S_MUMMY, 0), level, u.ux, u.uy, NO_MM_FLAGS);
         break;
     default:
         /* No corpse */

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-25 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Sean Hunt, 2014.                                 */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -44,7 +44,7 @@ int pick_monster_class(const struct level *lev, char cls,
 /* Get a shift from 0 to 5 that should happen to a monster because of its
  * alignment relative to the dungeon aligment. The stronger the match, the
  * higher the value. */
-uchar align_shift(const struct d_level *dlvl, short mndx);
+uchar align_shift(const struct level *lev, short mndx);
 
 /* Determine whether the monster is out-of-depth for a given level. If
  * consider_xlvl is TRUE, the player's experience level is taken into account.

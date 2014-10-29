@@ -479,7 +479,7 @@ mattacku(struct monst *mtmp)
         && mtmp->data != &mons[PM_SUCCUBUS]
         && mtmp->data != &mons[PM_INCUBUS])
         if (!mtmp->mcan && !rn2(13))
-            msummon(mtmp, &mtmp->dlevel->z);
+            msummon(mtmp, mtmp->dlevel);
 
 /* Special lycanthrope handling code */
     if (!mtmp->cham && is_were(mdat) && !range2) {

@@ -1859,7 +1859,7 @@ create_particular(const struct nh_cmd_arg *arg)
         whichpm = &mons[which];
         for (i = 0; i < quan; i++) {
             if (monclass != MAXMCLASSES)
-                whichpm = mkclass(&u.uz, monclass, 0);
+                whichpm = mkclass(level, monclass, 0);
             if (maketame) {
                 mtmp = makemon(whichpm, level, u.ux, u.uy, MM_EDOG);
                 if (mtmp) {

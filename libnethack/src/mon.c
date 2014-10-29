@@ -2625,7 +2625,8 @@ newcham(struct monst *mtmp, const struct permonst *mdat,
     if (!hpd)
         hpd = 4;
 
-    mtmp->m_lev = adj_lev(&mtmp->dlevel->z, mdat);      /* new monster level */
+    /* new monster level */
+    mtmp->m_lev = adj_lev(level_difficulty(mtmp->dlevel), mdat);
 
     mhp = (mtmp->m_lev < 50) ? ((int)mtmp->m_lev) * 8 : mdat->mlevel;
     if (!mhp)

@@ -19,7 +19,7 @@
                 (mptr->mlet == S_HUMAN && Role_if (role_pm) && \
                   (mptr->msound == MS_LEADER || mptr->msound == MS_NEMESIS))
 
-static boolean wrong_elem_type(const struct d_level *dlev,
+static boolean wrong_elem_type(const struct level *lev,
                                const struct permonst *);
 static void m_initgrp(struct monst *, struct level *lev, int, int, int);
 static void m_initthrow(struct monst *, int, int);
@@ -74,18 +74,18 @@ newmonst(int extyp, int namelen)
 
 
 boolean
-is_home_elemental(const struct d_level * dlev, const struct permonst * ptr)
+is_home_elemental(const struct level *lev, const struct permonst * ptr)
 {
     if (ptr->mlet == S_ELEMENTAL)
         switch (monsndx(ptr)) {
         case PM_AIR_ELEMENTAL:
-            return Is_airlevel(dlev);
+            return Is_airlevel(&lev->z);
         case PM_FIRE_ELEMENTAL:
-            return Is_firelevel(dlev);
+            return Is_firelevel(&lev->z);
         case PM_EARTH_ELEMENTAL:
-            return Is_earthlevel(dlev);
+            return Is_earthlevel(&lev->z);
         case PM_WATER_ELEMENTAL:
-            return Is_waterlevel(dlev);
+            return Is_waterlevel(&lev->z);
         }
     return FALSE;
 }
@@ -94,20 +94,20 @@ is_home_elemental(const struct d_level * dlev, const struct permonst * ptr)
  * Return true if the given monster cannot exist on this elemental level->
  */
 static boolean
-wrong_elem_type(const struct d_level *dlev, const struct permonst *ptr)
+wrong_elem_type(const struct level *lev, const struct permonst *ptr)
 {
     if (ptr->mlet == S_ELEMENTAL) {
-        return (boolean) (!is_home_elemental(dlev, ptr));
-    } else if (Is_earthlevel(dlev)) {
+        return (boolean) (!is_home_elemental(lev, ptr));
+    } else if (Is_earthlevel(&lev->z)) {
         /* no restrictions? */
-    } else if (Is_waterlevel(dlev)) {
+    } else if (Is_waterlevel(&lev->z)) {
         /* just monsters that can swim */
         if (!is_swimmer(ptr))
             return TRUE;
-    } else if (Is_firelevel(dlev)) {
+    } else if (Is_firelevel(&lev->z)) {
         if (!pm_resistance(ptr, MR_FIRE))
             return TRUE;
-    } else if (Is_airlevel(dlev)) {
+    } else if (Is_airlevel(&lev->z)) {
         if (!(is_flyer(ptr) && ptr->mlet != S_TRAPPER) && !is_floater(ptr)
             && !amorphous(ptr) && !noncorporeal(ptr) && !is_whirly(ptr))
             return TRUE;
@@ -987,7 +987,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
         u.quest_status.leader_m_id = mtmp->m_id;
     mtmp->mnum = mndx;
 
-    mtmp->m_lev = adj_lev(&lev->z, ptr);
+    mtmp->m_lev = adj_lev(level_difficulty(&lev->z), ptr);
     if (is_golem(ptr)) {
         mtmp->mhpmax = mtmp->mhp = golemhp(mndx);
     } else if (is_rider(ptr)) {
@@ -1009,7 +1009,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
         mtmp->mhpmax = mtmp->mhp = rnd(4);
     } else {
         mtmp->mhpmax = mtmp->mhp = dice((int)mtmp->m_lev, 8);
-        if (is_home_elemental(&lev->z, ptr))
+        if (is_home_elemental(lev, ptr))
             mtmp->mhpmax = (mtmp->mhp *= 3);
     }
 
@@ -1222,7 +1222,7 @@ rndmonst_special_prob(const struct level *lev, short mndx, void *genflags) {
     const struct permonst *mdat = &mons[mndx];
 
     if (In_endgame(&lev->z) && !Is_astralevel(&lev->z) &&
-        wrong_elem_type(&lev->z, mdat))
+        wrong_elem_type(lev, mdat))
         return 0;
 
     if (Is_rogue_level(&lev->z) && !isupper(def_monsyms[(int)(mdat->mlet)]))
@@ -1257,12 +1257,14 @@ rndmonst(const struct level *lev)
    allow the normal genesis masks to be deactivated. Returns 0 if no monsters
    in that class can be made. */
 const struct permonst *
-mkclass(const d_level * dlev, char class, int spc)
+mkclass(const struct level *lev, char class, int spc)
 {
     int first, last, num = 0;
-    int maxmlev, mask = (G_NOGEN | G_UNIQ) & ~spc;
+    int mask = (G_NOGEN | G_UNIQ) & ~spc;
 
-    maxmlev = level_difficulty(dlev) >> 1;
+    int difficulty = level_difficulty(&lev->z);
+    int maxmlev = difficulty >> 1;
+
     if (class < 1 || class >= MAXMCLASSES) {
         impossible("mkclass called with bad class!");
         return NULL;
@@ -1297,8 +1299,7 @@ mkclass(const d_level * dlev, char class, int spc)
             && !is_placeholder(&mons[first])) {
             /* skew towards lower value monsters at lower exp. levels */
             num -= mons[first].geno & G_FREQ;
-            if (num &&
-                adj_lev(dlev, &mons[first]) > (level_difficulty(dlev) * 2)) {
+            if (num && adj_lev(difficulty, &mons[first]) > (difficulty * 2)) {
                 /* but not when multiple monsters are same level */
                 if (mons[first].mlevel != mons[first + 1].mlevel)
                     num--;
@@ -1380,13 +1381,13 @@ pick_monster_class(const struct level *lev, char cls,
 
 
 uchar
-align_shift(const struct d_level * dlvl, short mndx)
+align_shift(const struct level *lev, short mndx)
 {
     const struct permonst *ptr = &mons[mndx];
     int alshift;
-    const s_level *lev = Is_special(dlvl);
+    const s_level *slev = Is_special(&lev->z);
 
-    switch ((lev) ? lev->flags.align : dungeons[dlvl->dnum].flags.align) {
+    switch ((slev) ? slev->flags.align : dungeons[lev->z.dnum].flags.align) {
     default:   /* just in case */
     case AM_NONE:
         alshift = 0;
@@ -1441,13 +1442,13 @@ default_gen_prob(const struct level *lev, short mndx, void *dat) {
     if (out_of_depth(lev, mndx, genflags->consider_xlvl))
         return 0;
 
-    return mons[mndx].geno & G_FREQ + align_shift(&lev->z, mndx);
+    return mons[mndx].geno & G_FREQ + align_shift(lev, mndx);
 }
 
 
 /* adjust strength of monsters based on depth */
 int
-adj_lev(const d_level * dlev, const struct permonst *ptr)
+adj_lev(xchar difficulty, const struct permonst *ptr)
 {
     int tmp, tmp2;
 
@@ -1463,7 +1464,7 @@ adj_lev(const d_level * dlev, const struct permonst *ptr)
     tmp = ptr->mlevel;
     if (ptr->mlevel > 49)
         return 50;      /* "special" demons/devils */
-    tmp2 = (level_difficulty(dlev) - ptr->mlevel);
+    tmp2 = (difficulty - ptr->mlevel);
     if (tmp2 < 0)
         tmp--;  /* if mlevel > u.uz decrement tmp */
     else
@@ -1509,7 +1510,7 @@ grow_up(struct monst *mtmp,     /* `mtmp' might "grow up" into a bigger version
             hp_threshold = 4;
         else if (is_golem(ptr)) /* strange creatures */
             hp_threshold = ((mtmp->mhpmax / 10) + 1) * 10 - 1;
-        else if (is_home_elemental(&mtmp->dlevel->z, ptr))
+        else if (is_home_elemental(mtmp->dlevel, ptr))
             hp_threshold *= 3;
         lev_limit = 3 * (int)ptr->mlevel / 2;   /* same as adj_lev() */
         /* If they can grow up, be sure the level is high enough for that */

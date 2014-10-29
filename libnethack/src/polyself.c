@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-25 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (C) 1987, 1988, 1989 by Ken Arromdee */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -452,7 +452,7 @@ polymon(int mntmp, boolean noisy)
             u.mhmax = rnd(4);
         else
             u.mhmax = dice(mlvl, 8);
-        if (is_home_elemental(&u.uz, &mons[mntmp]))
+        if (is_home_elemental(level, &mons[mntmp]))
             u.mhmax *= 3;
     }
     u.mh = u.mhmax;

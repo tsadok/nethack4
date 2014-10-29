@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-17 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -536,7 +536,7 @@ cast_cleric_spell(struct monst *mtmp, int dmg, int spellnum)
         {
             /* Try for insects, and if there are none left, go for (sticks to)
                snakes.  -3. */
-            const struct permonst *pm = mkclass(&u.uz, S_ANT, 0);
+            const struct permonst *pm = mkclass(level, S_ANT, 0);
             struct monst *mtmp2 = NULL;
             char let = (pm ? S_ANT : S_SNAKE);
             boolean success;
@@ -551,7 +551,7 @@ cast_cleric_spell(struct monst *mtmp, int dmg, int spellnum)
             for (i = 0; i <= quan; i++) {
                 if (!enexto(&bypos, level, mtmp->mux, mtmp->muy, mtmp->data))
                     break;
-                if ((pm = mkclass(&u.uz, let, 0)) != 0 &&
+                if ((pm = mkclass(level, let, 0)) != 0 &&
                     (mtmp2 =
                      makemon(pm, level, bypos.x, bypos.y, NO_MM_FLAGS)) != 0) {
                     success = TRUE;
@@ -1209,7 +1209,7 @@ ucast_wizard_spell(struct monst *mattk, struct monst *mtmp, int dmg,
                 if (yours)
                     demonpet();
                 else
-                    msummon(mattk, &mattk->dlevel->z);
+                    msummon(mattk, mattk->dlevel);
             } else {
                 int i, j;
                 int makeindex, tmp = (u.ulevel > 3) ? u.ulevel / 3 : 1;
@@ -1527,7 +1527,7 @@ ucast_cleric_spell(struct monst *mattk, struct monst *mtmp, int dmg,
         {
             /* Try for insects, and if there are none left, go for (sticks to)
                snakes.  -3. */
-            const struct permonst *pm = mkclass(&u.uz, S_ANT, 0);
+            const struct permonst *pm = mkclass(level, S_ANT, 0);
             struct monst *mtmp2 = (struct monst *)0;
             char let = (pm ? S_ANT : S_SNAKE);
             boolean success;
@@ -1549,7 +1549,7 @@ ucast_cleric_spell(struct monst *mattk, struct monst *mtmp, int dmg,
             for (i = 0; i <= quan; i++) {
                 if (!enexto(&bypos, level, mtmp->mx, mtmp->my, mtmp->data))
                     break;
-                if ((pm = mkclass(&u.uz, let, 0)) != 0 &&
+                if ((pm = mkclass(level, let, 0)) != 0 &&
                     (mtmp2 =
                      makemon(pm, level, bypos.x, bypos.y, NO_MM_FLAGS)) != 0) {
                     success = TRUE;

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-17 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /*      Copyright (c) 1989 by Jean-Christophe Collet */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -786,7 +786,7 @@ create_monster(struct level *lev, monster * m, struct mkroom *croom)
             else if (g_mvflags & G_GONE)        /* genocided or extinct */
                 pm = NULL;      /* make random monster */
         } else {
-            pm = mkclass(&lev->z, class,
+            pm = mkclass(lev, class,
                          ((class == S_KOP) || (class == S_EEL)) ? G_NOGEN : 0);
             /* if we can't get a specific monster type (pm == 0) then the class
                has been genocided, so settle for a random monster */

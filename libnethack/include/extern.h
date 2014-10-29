@@ -815,15 +815,15 @@ extern void log_game_state(void);
 /* ### makemon.c ### */
 
 extern struct monst *newmonst(int extyp, int namelen);
-extern boolean is_home_elemental(const struct d_level *dlev,
+extern boolean is_home_elemental(const struct level *lev,
                                  const struct permonst *);
 extern struct monst *clone_mon(struct monst *, xchar, xchar);
 extern struct monst *makemon(const struct permonst *, struct level *lev, int,
                              int, int);
 extern boolean create_critters(int, const struct permonst *);
 extern const struct permonst *rndmonst(const struct level *lev);
-extern const struct permonst *mkclass(const d_level * dlev, char, int);
-extern int adj_lev(const d_level * dlev, const struct permonst *ptr);
+extern const struct permonst *mkclass(const struct level *lev, char, int);
+extern int adj_lev(xchar difficulty, const struct permonst *ptr);
 extern const struct permonst *grow_up(struct monst *, struct monst *);
 extern int mongets(struct monst *, int);
 extern int golemhp(int);
@@ -929,14 +929,14 @@ extern int doseduce(struct monst *);
 
 /* ### minion.c ### */
 
-extern void msummon(struct monst *, const d_level *);
+extern void msummon(struct monst *mon, const struct level *lev);
 extern void summon_minion(aligntyp, boolean);
 extern int demon_talk(struct monst *);
 extern long bribe(struct monst *);
 extern int dprince(aligntyp);
 extern int dlord(aligntyp);
 extern int llord(void);
-extern int ndemon(const d_level * dlev, aligntyp atyp);
+extern int ndemon(const struct level *lev, aligntyp atyp);
 extern int lminion(void);
 
 /* ### mklev.c ### */
@@ -1035,7 +1035,7 @@ extern void save_obj(struct memfile *mf, struct obj *obj);
 
 extern void mkroom(struct level *lev, int roomtype);
 extern void fill_zoo(struct level *lev, struct mkroom *sroom);
-extern const struct permonst *antholemon(const d_level * dlev);
+extern const struct permonst *antholemon(const struct level *lev);
 extern boolean nexttodoor(struct level *lev, int sx, int sy);
 extern int somex(struct mkroom *);
 extern int somey(struct mkroom *);
@@ -1043,7 +1043,7 @@ extern boolean inside_room(struct mkroom *, xchar, xchar);
 extern boolean somexy(struct level *lev, struct mkroom *, coord *);
 extern void mkundead(struct level *lev, coord * mm, boolean revive_corpses,
                      int mmflags);
-extern const struct permonst *courtmon(const d_level * dlev);
+extern const struct permonst *courtmon(const struct level *lev);
 extern void save_rooms(struct memfile *mf, struct level *lev);
 extern void rest_rooms(struct memfile *mf, struct level *lev);
 extern struct mkroom *search_special(struct level *lev, schar type);
@@ -1411,7 +1411,7 @@ extern short quest_info(int);
 extern boolean is_quest_artifact(struct obj *);
 extern void com_pager(int);
 extern void qt_pager(int);
-extern const struct permonst *qt_montype(const d_level * dlev);
+extern const struct permonst *qt_montype(const struct level *lev);
 
 /* ### read.c ### */
 
