@@ -683,7 +683,7 @@ cast_protection(void)
                 pline("The %s haze around you becomes more dense.", hgolden);
             else
                 pline("The %s around you begins to shimmer with %s haze.",
-                      (Underwater || Is_waterlevel(&u.uz)) ? "water" :
+                      (Underwater || Is_waterlevel(level)) ? "water" :
                       Engulfed ? mbodypart(u.ustuck, STOMACH) :
                       IS_STWALL(level->locations[u.ux][u.uy].typ) ? "stone" :
                       "air",
@@ -1050,7 +1050,7 @@ throwspell(schar *dx, schar *dy, const struct nh_cmd_arg *arg)
     if (u.uinwater) {
         pline("You're joking! In this weather?");
         return 0;
-    } else if (Is_waterlevel(&u.uz)) {
+    } else if (Is_waterlevel(level)) {
         pline("You had better wait for the sun to come out.");
         return 0;
     }

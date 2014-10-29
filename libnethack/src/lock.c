@@ -865,7 +865,7 @@ doorlock(struct obj * otmp, int x, int y)
     switch (otmp->otyp) {
     case WAN_LOCKING:
     case SPE_WIZARD_LOCK:
-        if (Is_rogue_level(&u.uz)) {
+        if (Is_rogue_level(level)) {
             boolean vis = cansee(x, y);
 
             /* Can't have real locking in Rogue, so just hide doorway */

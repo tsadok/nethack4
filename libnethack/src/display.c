@@ -558,7 +558,7 @@ feel_location(xchar x, xchar y)
         return;
 
     /* The hero can't feel non pool locations while under water. */
-    if (Underwater && !Is_waterlevel(&u.uz) && !is_pool(level, x, y))
+    if (Underwater && !Is_waterlevel(level) && !is_pool(level, x, y))
         return;
 
     /* If it passed the above check, then there should not be an invisible
@@ -569,7 +569,7 @@ feel_location(xchar x, xchar y)
     /* if the hero is levitating or not.  */
     set_seenv(loc, u.ux, u.uy, x, y);
 
-    if (Levitation && !Is_airlevel(&u.uz) && !Is_waterlevel(&u.uz)) {
+    if (Levitation && !Is_airlevel(level) && !Is_waterlevel(level)) {
         /* 
          * Levitation Rules.  It is assumed that the hero can feel the state
          * of the walls around herself and can tell if she is in a corridor,
@@ -658,7 +658,7 @@ newsym_core(int x, int y, boolean reroll_hallucinated_appearances)
             display_self();
         return;
     }
-    if (Underwater && !Is_waterlevel(&u.uz)) {
+    if (Underwater && !Is_waterlevel(level)) {
         /* don't do anything unless (x,y) is an adjacent underwater position */
         int dx, dy;
 
@@ -1044,7 +1044,7 @@ under_water(int mode)
     int x, y;
 
     /* swallowing has a higher precedence than under water */
-    if (Is_waterlevel(&u.uz) || Engulfed)
+    if (Is_waterlevel(level) || Engulfed)
         return;
 
     /* full update */
@@ -1253,7 +1253,7 @@ doredraw(void)
         swallowed(1);
         return 0;
     }
-    if (Underwater && !Is_waterlevel(&u.uz)) {
+    if (Underwater && !Is_waterlevel(level)) {
         under_water(1);
         return 0;
     }

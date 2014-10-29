@@ -1136,7 +1136,7 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
     }
 
     /* FIXME: This is a total kludge. Fix. */
-    if (Is_waterlevel(&lev->z))
+    if (Is_waterlevel(lev))
         lev->mgr = &waterlevel_manager;
 
     mread(mf, lev->levname, sizeof (lev->levname));

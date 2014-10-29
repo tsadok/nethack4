@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-05-28 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) 1989 Mike Threepoint                             */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* Copyright (c) 2014 Alex Smith                                  */
@@ -97,7 +97,7 @@ u_have_property(enum youprop property, unsigned reasons,
         if (property == BLINDED &&
             ublindf && ublindf->oartifact == ART_EYES_OF_THE_OVERWORLD)
             rv &= (unsigned)(W_MASK(os_circumstance) | W_MASK(os_birthopt));
-        if (property == WWALKING && Is_waterlevel(&u.uz))
+        if (property == WWALKING && Is_waterlevel(level))
             rv &= (unsigned)(W_MASK(os_birthopt));
         if (worn_blocked(property))
             rv &= (unsigned)(W_MASK(os_birthopt));

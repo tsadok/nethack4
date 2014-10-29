@@ -552,7 +552,7 @@ level_tele_impl(boolean wizard_tele)
     boolean force_dest = FALSE;
     const char *buf, *killer = NULL;
 
-    if ((Uhave_amulet || In_endgame(&u.uz) || In_sokoban(&u.uz))
+    if ((Uhave_amulet || In_endgame(&u.uz) || In_sokoban(level))
         && !wizard_tele) {
         pline("You feel very disoriented for a moment.");
         return;
@@ -632,7 +632,7 @@ level_tele_impl(boolean wizard_tele)
 
         /* if in Knox and the requested level > 0, stay put. we let negative
            values requests fall into the "heaven" loop. */
-        if (Is_knox(&u.uz) && newlev > 0) {
+        if (Is_knox(level) && newlev > 0) {
             pline("You shudder for a moment.");
             return;
         }
@@ -1043,7 +1043,7 @@ mlevel_tele_trap(struct monst *mtmp, struct trap *trap, boolean force_it,
         int migrate_typ = MIGR_RANDOM;
 
         if ((tt == HOLE || tt == TRAPDOOR)) {
-            if (Is_stronghold(&u.uz)) {
+            if (Is_stronghold(level)) {
                 assign_level(&tolevel, &valley_level);
             } else if (Is_botlevel(&u.uz)) {
                 if (in_sight && trap->tseen)
@@ -1166,7 +1166,7 @@ random_teleport_level(void)
 {
     int nlev, max_depth, min_depth, cur_depth = (int)depth(&u.uz);
 
-    if (!rn2(5) || Is_knox(&u.uz))
+    if (!rn2(5) || Is_knox(level))
         return cur_depth;
 
     if (In_endgame(&u.uz))      /* only happens in wizmode */

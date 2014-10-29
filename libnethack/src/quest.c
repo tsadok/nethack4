@@ -74,11 +74,11 @@ onquest(const struct level *orig_lev)
     if (!Is_special(&u.uz))
         return;
 
-    if (Is_qstart(&u.uz))
+    if (Is_qstart(level))
         on_start(orig_lev);
-    else if (Is_qlocate(&u.uz) && u.uz.dlevel > orig_lev->z.dlevel)
+    else if (Is_qlocate(level) && u.uz.dlevel > orig_lev->z.dlevel)
         on_locate(orig_lev);
-    else if (Is_nemesis(&u.uz))
+    else if (Is_nemesis(level))
         on_goal();
     return;
 }

@@ -192,11 +192,11 @@ dig_check(struct monst * madeby, boolean verbose, int x, int y)
         if (verbose)
             pline("The altar is too hard to break apart.");
         return FALSE;
-    } else if (Is_airlevel(&u.uz)) {
+    } else if (Is_airlevel(level)) {
         if (verbose)
             pline("You cannot %s thin air.", verb);
         return FALSE;
-    } else if (Is_waterlevel(&u.uz)) {
+    } else if (Is_waterlevel(level)) {
         if (verbose)
             pline("The water splashes and subsides.");
         return FALSE;
@@ -345,7 +345,7 @@ dig(void)
             digtxt = "The boulder falls apart.";
         } else if (loc->typ == STONE || loc->typ == SCORR ||
                    IS_TREE(loc->typ)) {
-            if (Is_earthlevel(&u.uz)) {
+            if (Is_earthlevel(level)) {
                 if (uwep->blessed && !rn2(3)) {
                     mkcavearea(FALSE);
                     goto cleanup;
@@ -405,7 +405,7 @@ dig(void)
         if (dmgtxt)
             pay_for_damage(dmgtxt, FALSE);
 
-        if (Is_earthlevel(&u.uz) && !rn2(3)) {
+        if (Is_earthlevel(level) && !rn2(3)) {
             struct monst *mtmp;
 
             switch (rn2(2)) {
@@ -639,7 +639,7 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
                 if (teleport_pet(mtmp, FALSE)) {
                     d_level tolevel;
 
-                    if (Is_stronghold(&u.uz)) {
+                    if (Is_stronghold(level)) {
                         assign_level(&tolevel, &valley_level);
                     } else if (Is_botlevel(&u.uz)) {
                         if (canseemon(mtmp))
@@ -954,7 +954,7 @@ use_pick_axe(struct obj *obj, const struct nh_cmd_arg *arg)
             }
             one_occupation_turn(dig, verbing, occ_dig);
         }
-    } else if (Is_airlevel(&u.uz) || Is_waterlevel(&u.uz)) {
+    } else if (Is_airlevel(level) || Is_waterlevel(level)) {
         /* it must be air -- water checked above */
         pline("You swing your %s through thin air.", aobjnam(obj, NULL));
     } else if (!can_reach_floor()) {
@@ -1175,7 +1175,7 @@ zap_dig(schar dx, schar dy, schar dz)
 
     /* up or down */
     if (dz) {
-        if (!Is_airlevel(&u.uz) && !Is_waterlevel(&u.uz) && !Underwater) {
+        if (!Is_airlevel(level) && !Is_waterlevel(level) && !Underwater) {
             if (dz < 0 || On_stairs(u.ux, u.uy)) {
                 if (On_stairs(u.ux, u.uy))
                     pline("The beam bounces off the %s and hits the %s.",
@@ -1206,7 +1206,7 @@ zap_dig(schar dx, schar dy, schar dz)
 
     /* normal case: digging across the level */
     shopdoor = shopwall = FALSE;
-    maze_dig = level->flags.is_maze_lev && !Is_earthlevel(&u.uz);
+    maze_dig = level->flags.is_maze_lev && !Is_earthlevel(level);
     zx = u.ux + dx;
     zy = u.uy + dy;
     digdepth = rn1(18, 8);

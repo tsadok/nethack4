@@ -743,7 +743,7 @@ resurrect(void)
 void
 wiz_intervene(struct level *lev)
 {
-    int which = Is_astralevel(&lev->z) ? rnd(4) : rn2(6);
+    int which = Is_astralevel(lev) ? rnd(4) : rn2(6);
 
     /* cases 0 and 5 don't apply on the Astral level */
     switch (which) {

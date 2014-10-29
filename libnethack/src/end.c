@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-17 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -98,7 +98,7 @@ add_killer_notes(int how, boolean carried, const char *killer) {
     else if (how == ESCAPED) {
         /* Note: the fake Amulet check relies on bones not having been
            created; this is safe for escapes, but not safe in general */
-        if (Is_astralevel(&u.uz))       /* offered Amulet to wrong deity */
+        if (Is_astralevel(level))       /* offered Amulet to wrong deity */
             killer = msgcat(killer, " (in celestial disgrace)");
         else if (carrying(FAKE_AMULET_OF_YENDOR))
             killer = msgcat(killer, " (with a fake Amulet)");
@@ -857,10 +857,10 @@ display_rip(int how, long umoney, const char *killer)
             /* more conventional demise */
             const char *where = dungeons[u.uz.dnum].dname;
 
-            if (Is_astralevel(&u.uz))
+            if (Is_astralevel(level))
                 where = "The Astral Plane";
             pbuf = msgprintf("You %s in %s", ends[how], where);
-            if (!In_endgame(&u.uz) && !Is_knox(&u.uz))
+            if (!In_endgame(&u.uz) && !Is_knox(level))
                 pbuf = msgprintf("%s on dungeon level %d", pbuf,
                                  In_quest(&u.uz) ?
                                  dunlev(&u.uz) : depth(&u.uz));

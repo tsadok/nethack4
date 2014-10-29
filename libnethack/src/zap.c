@@ -1213,7 +1213,7 @@ poly_obj(struct obj *obj, int id)
         return obj;
     }
 
-    if (obj->otyp == BOULDER && In_sokoban(&u.uz))
+    if (obj->otyp == BOULDER && In_sokoban(level))
         change_luck(-1);        /* Sokoban guilt */
     if (id == STRANGE_OBJECT) { /* preserve symbol */
         int try_limit = 3;
@@ -2394,8 +2394,8 @@ zap_updown(struct obj *obj, schar dz)
             else
                 destroy_drawbridge(xx, yy);
             disclose = TRUE;
-        } else if (striking && dz < 0 && rn2(3) && !Is_airlevel(&u.uz) &&
-                   !Is_waterlevel(&u.uz) && !Underwater && !Is_qstart(&u.uz)) {
+        } else if (striking && dz < 0 && rn2(3) && !Is_airlevel(level) &&
+                   !Is_waterlevel(level) && !Underwater && !Is_qstart(level)) {
             /* similar to zap_dig() */
             pline("A rock is dislodged from the %s and falls on your %s.",
                   ceiling(x, y), body_part(HEAD));
@@ -2424,8 +2424,8 @@ zap_updown(struct obj *obj, schar dz)
         }
         break;
     case SPE_STONE_TO_FLESH:
-        if (Is_airlevel(&u.uz) || Is_waterlevel(&u.uz) || Underwater ||
-            (Is_qstart(&u.uz) && dz < 0)) {
+        if (Is_airlevel(level) || Is_waterlevel(level) || Underwater ||
+            (Is_qstart(level) && dz < 0)) {
             pline("Nothing happens.");
         } else if (dz < 0) {    /* we should do more... */
             pline("Blood drips on your %s.", body_part(FACE));
@@ -2875,7 +2875,7 @@ beam_hit(int ddx, int ddy, int range,   /* direction and range */
                         pline("%s jerks to an abrupt halt.",
                               The(distant_name(obj, xname))); /* lame */
                     range = 0;
-                } else if (In_sokoban(&u.uz) && (t = t_at(level, x, y)) != 0 &&
+                } else if (In_sokoban(level) && (t = t_at(level, x, y)) != 0 &&
                            (t->ttyp == PIT || t->ttyp == SPIKED_PIT ||
                             t->ttyp == HOLE || t->ttyp == TRAPDOOR)) {
                     /* hero falls into the trap, so ball stops */
@@ -3844,7 +3844,7 @@ void
 fracture_rock(struct obj *obj)
 {
     /* A little Sokoban guilt... */
-    if (obj->otyp == BOULDER && In_sokoban(&u.uz) && !flags.mon_moving)
+    if (obj->otyp == BOULDER && In_sokoban(level) && !flags.mon_moving)
         change_luck(-1);
 
     obj->otyp = ROCK;
@@ -4258,13 +4258,13 @@ retry:
         /* The(aobjnam()) is safe since otmp is unidentified -dlc */
         hold_another_object(otmp,
                             Engulfed ? "Oops!  %s out of your reach!"
-                            : (Is_airlevel(&u.uz) || Is_waterlevel(&u.uz) ||
+                            : (Is_airlevel(level) || Is_waterlevel(level) ||
                                level->locations[u.ux][u.uy].typ < IRONBARS ||
                                level->locations[u.ux][u.uy].typ >=
                                ICE) ? "Oops!  %s away from you!" :
                             "Oops!  %s to the floor!",
                             The(aobjnam
-                                (otmp, Is_airlevel(&u.uz) ||
+                                (otmp, Is_airlevel(level) ||
                                  u.uinwater ? "slip" : "drop")), NULL);
         u.ublesscnt += rn1(100, 50);    /* the gods take notice */
     }

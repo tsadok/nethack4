@@ -366,7 +366,7 @@ fall_through(boolean td)
     const char *msgbuf;
 
     /* KMH -- You can't escape the Sokoban level traps */
-    if (Blind && Levitation && !In_sokoban(&u.uz))
+    if (Blind && Levitation && !In_sokoban(level))
         return;
 
     do {
@@ -377,7 +377,7 @@ fall_through(boolean td)
         struct trap *t = t_at(level, u.ux, u.uy);
 
         seetrap(t);
-        if (!In_sokoban(&u.uz)) {
+        if (!In_sokoban(level)) {
             if (t->ttyp == TRAPDOOR)
                 pline("A trap door opens up under you!");
             else
@@ -386,7 +386,7 @@ fall_through(boolean td)
     } else
         pline("The %s opens up under you!", surface(u.ux, u.uy));
 
-    if (In_sokoban(&u.uz) && can_fall_thru(level)) ;
+    if (In_sokoban(level) && can_fall_thru(level)) ;
     /* KMH -- You can't escape the Sokoban level traps */
     else if (Levitation || u.ustuck || !can_fall_thru(level)
              || Flying || is_clinger(youmonst.data)
@@ -411,7 +411,7 @@ fall_through(boolean td)
 
     if (*u.ushops)
         shopdig(1);
-    if (Is_stronghold(&u.uz)) {
+    if (Is_stronghold(level)) {
         find_hell(&dtmp);
     } else {
         dtmp.dnum = u.uz.dnum;
@@ -642,7 +642,7 @@ dotrap(struct trap *trap, unsigned trflags)
     action_interrupted();
 
     /* KMH -- You can't escape the Sokoban level traps */
-    if (In_sokoban(&u.uz) &&
+    if (In_sokoban(level) &&
         (ttype == PIT || ttype == SPIKED_PIT || ttype == HOLE ||
          ttype == TRAPDOOR)) {
         /* The "air currents" message is still appropriate -- even when the
@@ -888,10 +888,10 @@ dotrap(struct trap *trap, unsigned trflags)
     case PIT:
     case SPIKED_PIT:
         /* KMH -- You can't escape the Sokoban level traps */
-        if (!In_sokoban(&u.uz) && (Levitation || Flying))
+        if (!In_sokoban(level) && (Levitation || Flying))
             break;
         seetrap(trap);
-        if (!In_sokoban(&u.uz) && is_clinger(youmonst.data)) {
+        if (!In_sokoban(level) && is_clinger(youmonst.data)) {
             if (trap->tseen) {
                 pline("You see %s %spit below you.", a_your[trap->madeby_u],
                       ttype == SPIKED_PIT ? "spiked " : "");
@@ -902,7 +902,7 @@ dotrap(struct trap *trap, unsigned trflags)
             }
             break;
         }
-        if (!In_sokoban(&u.uz)) {
+        if (!In_sokoban(level)) {
             const char *verbbuf;
 
             if (u.usteed) {
@@ -926,7 +926,7 @@ dotrap(struct trap *trap, unsigned trflags)
         }
         /* wumpus reference */
         if (Role_if(PM_RANGER) && !trap->madeby_u && !trap->once &&
-            In_quest(&u.uz) && Is_qlocate(&u.uz)) {
+            In_quest(&u.uz) && Is_qlocate(level)) {
             pline("Fortunately it has a bottom after all...");
             trap->once = 1;
         } else if (u.umonnum == PM_PIT_VIPER || u.umonnum == PM_PIT_FIEND)
@@ -1735,7 +1735,7 @@ mintrap(struct monst *mtmp)
     } else {
         int tt = trap->ttyp;
         boolean in_sight, tear_web, see_it, inescapable =
-            ((tt == HOLE || tt == PIT) && In_sokoban(&u.uz) && !trap->madeby_u);
+            ((tt == HOLE || tt == PIT) && In_sokoban(level) && !trap->madeby_u);
         const char *fallverb;
 
         /* true when called from dotrap, inescapable is not an option */
@@ -2328,7 +2328,7 @@ float_up(void)
         } else {
             pline("You float up, only your %s is still stuck.", body_part(LEG));
         }
-    } else if (Is_waterlevel(&u.uz))
+    } else if (Is_waterlevel(level))
         pline("It feels as though you've lost some weight.");
     else if (u.uinwater)
         spoteffects(TRUE);
@@ -2339,7 +2339,7 @@ float_up(void)
               mon_nam(u.ustuck));
     else if (Hallucination)
         pline("Up, up, and awaaaay!  You're walking on air!");
-    else if (Is_airlevel(&u.uz))
+    else if (Is_airlevel(level))
         pline("You gain control over your movements.");
     else
         pline("You start to float in the air!");
@@ -2428,17 +2428,17 @@ float_down(long hmask)
     }
     if (!trap) {
         trap = t_at(level, u.ux, u.uy);
-        if (Is_airlevel(&u.uz)) {
+        if (Is_airlevel(level)) {
             if (Flying)
                 pline("You feel less buoyant.");
             else
                 pline("You begin to tumble in place.");
-        } else if (Is_waterlevel(&u.uz) && !no_msg)
+        } else if (Is_waterlevel(level) && !no_msg)
             pline("You feel heavier.");
         /* u.uinwater msgs already in spoteffects()/drown() */
         else if (!u.uinwater && !no_msg) {
             if (!in_steed_dismounting) {
-                boolean sokoban_trap = (In_sokoban(&u.uz) && trap);
+                boolean sokoban_trap = (In_sokoban(level) && trap);
 
                 if (Hallucination)
                     pline("Bummer!  You've %s.",
@@ -2485,7 +2485,7 @@ float_down(long hmask)
                 dotrap(trap, 0);
         }
 
-    if (!Is_airlevel(&u.uz) && !Is_waterlevel(&u.uz) && !Engulfed &&
+    if (!Is_airlevel(level) && !Is_waterlevel(level) && !Engulfed &&
         /* falling through trap door calls goto_level, and goto_level does its
            own pickup() call */
         on_level(&u.uz, &current_dungeon_level))
@@ -2633,7 +2633,7 @@ domagictrap(void)
             else
                 pline("You suddenly yearn for %s.",
                       Hallucination ? "Cleveland" :
-                      (In_quest(&u.uz) || at_dgn_entrance(&u.uz, "The Quest")) ?
+                      (In_quest(&u.uz) || at_dgn_entrance(level, "The Quest")) ?
                       "your nearby homeland" : "your distant homeland");
             break;
         case 16:
@@ -2969,9 +2969,9 @@ drown(void)
 
     if (!u.uinwater) {
         pline("You %s into the water%c",
-              Is_waterlevel(&u.uz) ? "plunge" : "fall", Amphibious ||
+              Is_waterlevel(level) ? "plunge" : "fall", Amphibious ||
               Swimming ? '.' : '!');
-        if (!Swimming && !Is_waterlevel(&u.uz))
+        if (!Swimming && !Is_waterlevel(level))
             pline("You sink like %s.",
                   Hallucination ? "the Titanic" : "a rock");
     }
@@ -2986,7 +2986,7 @@ drown(void)
         if (u.mhmax > i)
             u.mhmax -= i;
         losehp(i, killer_msg(DIED, msgcat("rusted away in ",
-                                          Is_waterlevel(&u.uz) ? "water" :
+                                          Is_waterlevel(level) ? "water" :
                                           a_waterbody(u.ux, u.uy))));
     }
     if (inpool_ok)
@@ -3002,7 +3002,7 @@ drown(void)
         if (Amphibious) {
             if (flags.verbose)
                 pline("But you aren't drowning.");
-            if (!Is_waterlevel(&u.uz)) {
+            if (!Is_waterlevel(level)) {
                 if (Hallucination)
                     pline("Your keel hits the bottom.");
                 else
@@ -3063,7 +3063,7 @@ crawl:
         boolean lost = FALSE;
 
         /* time to do some strip-tease... */
-        boolean succ = Is_waterlevel(&u.uz) ? TRUE : emergency_disrobe(&lost);
+        boolean succ = Is_waterlevel(level) ? TRUE : emergency_disrobe(&lost);
 
         pline("You try to crawl out of the water.");
         if (lost)
@@ -3080,21 +3080,21 @@ crawl:
     pline("You drown.");
     done(DROWNING,
          killer_msg(DROWNING,
-                    Is_waterlevel(&u.uz) ? "the Plane of Water"
+                    Is_waterlevel(level) ? "the Plane of Water"
                                          : a_waterbody(u.ux, u.uy)));
     /* oops, we're still alive.  better get out of the water. */
     while (!safe_teleds(TRUE)) {
         pline("You're still drowning.");
         done(DROWNING,
              killer_msg(DROWNING,
-                        msgcat(Is_waterlevel(&u.uz) ? "the Plane of Water"
+                        msgcat(Is_waterlevel(level) ? "the Plane of Water"
                                : a_waterbody(u.ux, u.uy),
                                " despite being life-saved")));
     }
     if (u.uinwater) {
         u.uinwater = 0;
         pline("You find yourself back %s.",
-              Is_waterlevel(&u.uz) ? "in an air bubble" : "on land");
+              Is_waterlevel(level) ? "in an air bubble" : "on land");
     }
     return TRUE;
 }

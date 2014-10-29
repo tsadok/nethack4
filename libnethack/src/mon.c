@@ -14,7 +14,7 @@ static int select_newcham_form(struct monst *);
 static void kill_eggs(struct obj *);
 
 #define LEVEL_SPECIFIC_NOCORPSE(mdat) \
-         (Is_rogue_level(&u.uz) || \
+         (Is_rogue_level(level) || \
            (level->flags.graveyard && is_undead(mdat) && rn2(3)))
 
 
@@ -435,7 +435,7 @@ minliquid(struct monst *mtmp)
         }
     } else {
         /* but eels have a difficult time outside */
-        if (mtmp->data->mlet == S_EEL && !Is_waterlevel(&u.uz)) {
+        if (mtmp->data->mlet == S_EEL && !Is_waterlevel(level)) {
             if (mtmp->mhp > 1)
                 mtmp->mhp--;
             monflee(mtmp, 2, FALSE, FALSE);
@@ -1109,10 +1109,10 @@ nexttry:       /* eels prefer the water, but if there is no water nearby, they
                 (nodiag ||
                  ((IS_DOOR(nowtyp) &&
                    ((mlevel->locations[x][y].doormask & ~D_BROKEN) ||
-                    Is_rogue_level(&u.uz))) ||
+                    Is_rogue_level(level))) ||
                   (IS_DOOR(ntyp) &&
                    ((mlevel->locations[nx][ny].doormask & ~D_BROKEN) ||
-                    Is_rogue_level(&u.uz))))))
+                    Is_rogue_level(level))))))
                 continue;
             if ((is_pool(mlevel, nx, ny) == wantpool || poolok) &&
                 (lavaok || !is_lava(mlevel, nx, ny))) {
@@ -1220,7 +1220,7 @@ nexttry:       /* eels prefer the water, but if there is no water nearby, they
                              || (!is_flyer(mdat)
                                  && !is_floater(mdat)
                                  && !is_clinger(mdat))
-                             || In_sokoban(&u.uz))
+                             || In_sokoban(level))
                             && (ttmp->ttyp != SLP_GAS_TRAP ||
                                 !resists_sleep(mon))
                             && (ttmp->ttyp != BEAR_TRAP ||

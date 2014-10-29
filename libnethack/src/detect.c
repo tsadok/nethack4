@@ -1000,7 +1000,7 @@ cvt_sdoor_to_door(struct rm *loc, const struct level * lev)
 {
     int newmask = loc->doormask & ~WM_MASK;
 
-    if (Is_rogue_level(&lev->z))
+    if (Is_rogue_level(lev))
         /* rogue didn't have doors, only doorways */
         newmask = D_NODOOR;
     else

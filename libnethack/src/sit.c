@@ -101,8 +101,8 @@ dosit(const struct nh_cmd_arg *arg)
             pline("You sit down.");
             dotrap(trap, 0);
         }
-    } else if (Underwater || Is_waterlevel(&u.uz)) {
-        if (Is_waterlevel(&u.uz))
+    } else if (Underwater || Is_waterlevel(level)) {
+        if (Is_waterlevel(level))
             pline("There are no cushions floating nearby.");
         else
             pline("You sit down on the muddy bottom.");

@@ -121,21 +121,21 @@ hist_lev_name(const struct level *lev, boolean in_or_on)
 {
     const char *hlnbuf;
 
-    if (Is_astralevel(&lev->z))
+    if (Is_astralevel(lev))
         hlnbuf = "on the Astral Plane";
-    else if (Is_waterlevel(&lev->z))
+    else if (Is_waterlevel(lev))
         hlnbuf = "on the Plane of Water";
-    else if (Is_firelevel(&lev->z))
+    else if (Is_firelevel(lev))
         hlnbuf = "on the Plane of Fire";
-    else if (Is_airlevel(&lev->z))
+    else if (Is_airlevel(lev))
         hlnbuf = "on the Plane of Air";
-    else if (Is_earthlevel(&lev->z))
+    else if (Is_earthlevel(lev))
         hlnbuf = "on the Plane of Earth";
-    else if (Is_knox(&lev->z))
+    else if (Is_knox(lev))
         hlnbuf = "in Fort Knox";
-    else if (Is_stronghold(&lev->z))
+    else if (Is_stronghold(lev))
         hlnbuf = "in The Castle";
-    else if (Is_valley(&lev->z))
+    else if (Is_valley(lev))
         hlnbuf = "in The Valley of the Dead";
     else
         hlnbuf = msgprintf("on level %d of %s", lev->z.dlevel,

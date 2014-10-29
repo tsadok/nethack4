@@ -855,8 +855,8 @@ dospinweb(void)
 {
     struct trap *ttmp = t_at(level, u.ux, u.uy);
 
-    if (Levitation || Is_airlevel(&u.uz)
-        || Underwater || Is_waterlevel(&u.uz)) {
+    if (Levitation || Is_airlevel(level)
+        || Underwater || Is_waterlevel(level)) {
         pline("You must be on the ground to spin a web.");
         return 0;
     }

@@ -79,13 +79,13 @@ is_home_elemental(const struct level *lev, const struct permonst * ptr)
     if (ptr->mlet == S_ELEMENTAL)
         switch (monsndx(ptr)) {
         case PM_AIR_ELEMENTAL:
-            return Is_airlevel(&lev->z);
+            return Is_airlevel(lev);
         case PM_FIRE_ELEMENTAL:
-            return Is_firelevel(&lev->z);
+            return Is_firelevel(lev);
         case PM_EARTH_ELEMENTAL:
-            return Is_earthlevel(&lev->z);
+            return Is_earthlevel(lev);
         case PM_WATER_ELEMENTAL:
-            return Is_waterlevel(&lev->z);
+            return Is_waterlevel(lev);
         }
     return FALSE;
 }
@@ -98,16 +98,16 @@ wrong_elem_type(const struct level *lev, const struct permonst *ptr)
 {
     if (ptr->mlet == S_ELEMENTAL) {
         return (boolean) (!is_home_elemental(lev, ptr));
-    } else if (Is_earthlevel(&lev->z)) {
+    } else if (Is_earthlevel(lev)) {
         /* no restrictions? */
-    } else if (Is_waterlevel(&lev->z)) {
+    } else if (Is_waterlevel(lev)) {
         /* just monsters that can swim */
         if (!is_swimmer(ptr))
             return TRUE;
-    } else if (Is_firelevel(&lev->z)) {
+    } else if (Is_firelevel(lev)) {
         if (!pm_resistance(ptr, MR_FIRE))
             return TRUE;
-    } else if (Is_airlevel(&lev->z)) {
+    } else if (Is_airlevel(lev)) {
         if (!(is_flyer(ptr) && ptr->mlet != S_TRAPPER) && !is_floater(ptr)
             && !amorphous(ptr) && !noncorporeal(ptr) && !is_whirly(ptr))
             return TRUE;
@@ -172,7 +172,7 @@ m_initweap(struct level *lev, struct monst *mtmp)
     int mm = monsndx(ptr);
     struct obj *otmp;
 
-    if (Is_rogue_level(&lev->z))
+    if (Is_rogue_level(lev))
         return;
 /*
  * first a few special cases:
@@ -257,7 +257,7 @@ m_initweap(struct level *lev, struct monst *mtmp)
                 break;
             }
             if (mm == PM_ELVENKING) {
-                if (rn2(3) || (in_mklev && Is_earthlevel(&u.uz)))
+                if (rn2(3) || (in_mklev && Is_earthlevel(level)))
                     mongets(mtmp, PICK_AXE);
                 if (!rn2(50))
                     mongets(mtmp, CRYSTAL_BALL);
@@ -536,7 +536,7 @@ m_initinv(struct monst *mtmp)
     const struct permonst *ptr = mtmp->data;
     struct level *lev = mtmp->dlevel;
 
-    if (Is_rogue_level(&lev->z))
+    if (Is_rogue_level(lev))
         return;
 
 /*
@@ -652,7 +652,7 @@ m_initinv(struct monst *mtmp)
         break;
     case S_GIANT:
         if (ptr == &mons[PM_MINOTAUR]) {
-            if (!rn2(3) || (in_mklev && Is_earthlevel(&lev->z)))
+            if (!rn2(3) || (in_mklev && Is_earthlevel(lev)))
                 mongets(mtmp, WAN_DIGGING);
         } else if (is_giant(ptr)) {
             for (cnt = rn2((int)(mtmp->m_lev / 2)); cnt; cnt--) {
@@ -1020,7 +1020,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
     else
         mtmp->female = rn2(2);  /* ignored for neuters */
 
-    if (In_sokoban(&lev->z) && !mindless(ptr))  /* know about traps here */
+    if (In_sokoban(lev) && !mindless(ptr))  /* know about traps here */
         mtmp->mtrapseen = (1L << (PIT - 1)) | (1L << (HOLE - 1));
     if (ptr->msound == MS_LEADER)       /* leader knows about portal */
         mtmp->mtrapseen |= (1L << (MAGIC_PORTAL - 1));
@@ -1105,7 +1105,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
     } else if (mndx == PM_WIZARD_OF_YENDOR) {
         mtmp->iswiz = TRUE;
         flags.no_of_wizards++;
-        if (flags.no_of_wizards == 1 && Is_earthlevel(&lev->z))
+        if (flags.no_of_wizards == 1 && Is_earthlevel(lev))
             mitem = SPE_DIG;
     } else if (mndx == PM_DJINNI) {
         flags.djinni_count++;
@@ -1221,11 +1221,11 @@ rndmonst_special_prob(const struct level *lev, short mndx, void *genflags) {
     uchar prob = default_gen_prob(lev, mndx, genflags);
     const struct permonst *mdat = &mons[mndx];
 
-    if (In_endgame(&lev->z) && !Is_astralevel(&lev->z) &&
+    if (In_endgame(&lev->z) && !Is_astralevel(lev) &&
         wrong_elem_type(lev, mdat))
         return 0;
 
-    if (Is_rogue_level(&lev->z) && !isupper(def_monsyms[(int)(mdat->mlet)]))
+    if (Is_rogue_level(lev) && !isupper(def_monsyms[(int)(mdat->mlet)]))
         return 0;
 
     return prob;
@@ -1804,7 +1804,7 @@ set_mimic_sym(struct monst *mtmp, struct level *lev)
         appear = lev->objects[mx][my]->otyp;
     } else if (IS_DOOR(typ) || IS_WALL(typ) || typ == SDOOR || typ == SCORR) {
         ap_type = M_AP_FURNITURE;
-        if (Is_rogue_level(&lev->z))
+        if (Is_rogue_level(lev))
             appear = S_ndoor;
         /*
          *  If there is a wall to the left that connects to this

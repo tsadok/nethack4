@@ -91,7 +91,7 @@ moverock(schar dx, schar dy)
         rx = u.ux + 2 * dx;     /* boulder destination position */
         ry = u.uy + 2 * dy;
         action_completed();
-        if (Levitation || Is_airlevel(&u.uz)) {
+        if (Levitation || Is_airlevel(level)) {
             if (Blind)
                 feel_location(sx, sy);
             pline("You don't have enough leverage to push %s.",
@@ -108,14 +108,14 @@ moverock(schar dx, schar dy)
         if (isok(rx, ry) && !IS_ROCK(level->locations[rx][ry].typ) &&
             level->locations[rx][ry].typ != IRONBARS &&
             (!IS_DOOR(level->locations[rx][ry].typ) || !(dx && dy) ||
-             (!Is_rogue_level(&u.uz) &&
+             (!Is_rogue_level(level) &&
               (level->locations[rx][ry].doormask & ~D_BROKEN) == D_NODOOR)) &&
             !sobj_at(BOULDER, level, rx, ry)) {
             ttmp = t_at(level, rx, ry);
             mtmp = m_at(level, rx, ry);
 
             /* KMH -- Sokoban doesn't let you push boulders diagonally */
-            if (In_sokoban(&u.uz) && dx && dy) {
+            if (In_sokoban(level) && dx && dy) {
                 if (Blind)
                     feel_location(sx, sy);
                 pline("%s won't roll diagonally on this %s.", The(xname(otmp)),
@@ -294,14 +294,14 @@ moverock(schar dx, schar dy)
             if (throws_rocks(youmonst.data)) {
                 if (u.usteed && P_SKILL(P_RIDING) < P_BASIC) {
                     pline("You aren't skilled enough to %s %s from %s.",
-                          (flags.pickup && !In_sokoban(&u.uz))
+                          (flags.pickup && !In_sokoban(level))
                           ? "pick up" : "push aside", the(xname(otmp)),
                           y_monnam(u.usteed));
                 } else {
                     pline("However, you can easily %s.",
-                          (flags.pickup && !In_sokoban(&u.uz))
+                          (flags.pickup && !In_sokoban(level))
                           ? "pick it up" : "push it aside");
-                    if (In_sokoban(&u.uz))
+                    if (In_sokoban(level))
                         change_luck(-1);        /* Sokoban guilt */
                     break;
                 }
@@ -315,7 +315,7 @@ moverock(schar dx, schar dy)
                  || verysmall(youmonst.data))) {
                 pline
                     ("However, you can squeeze yourself into a small opening.");
-                if (In_sokoban(&u.uz))
+                if (In_sokoban(level))
                     change_luck(-1);    /* Sokoban guilt */
                 break;
             } else
@@ -513,7 +513,7 @@ may_passwall(struct level * lev, xchar x, xchar y)
 boolean
 bad_rock(const struct permonst * mdat, xchar x, xchar y)
 {
-    return (boolean) ((In_sokoban(&u.uz) && sobj_at(BOULDER, level, x, y)) ||
+    return (boolean) ((In_sokoban(level) && sobj_at(BOULDER, level, x, y)) ||
                       (IS_ROCK(level->locations[x][y].typ)
                        && (!tunnels(mdat) || needspick(mdat) ||
                            !may_dig(level, x, y))
@@ -575,10 +575,10 @@ test_move(int ux, int uy, int dx, int dy, int dz, int mode,
                 return FALSE;
         } else {
             if (mode == DO_MOVE) {
-                if (Is_stronghold(&u.uz) && is_db_wall(x, y))
+                if (Is_stronghold(level) && is_db_wall(x, y))
                     pline("The drawbridge is up!");
                 if (passwall && !may_passwall(level, x, y) &&
-                    In_sokoban(&u.uz))
+                    In_sokoban(level))
                     pline("The Sokoban walls resist your ability.");
             }
             return FALSE;
@@ -623,7 +623,7 @@ test_move(int ux, int uy, int dx, int dy, int dz, int mode,
         } else {
         testdiag:
             if (dx && dy && !passwall && ((tmpr->doormask & ~D_BROKEN)
-                                          || Is_rogue_level(&u.uz)
+                                          || Is_rogue_level(level)
                                           || block_door(x, y))) {
                 /* Diagonal moves into a door are not allowed. */
                 if (blind && mode == DO_MOVE)
@@ -635,7 +635,7 @@ test_move(int ux, int uy, int dx, int dy, int dz, int mode,
     if (dx && dy && bad_rock(youmonst.data, ux, y) &&
         bad_rock(youmonst.data, x, uy)) {
         /* Move at a diagonal. */
-        if (In_sokoban(&u.uz)) {
+        if (In_sokoban(level)) {
             if (mode == DO_MOVE)
                 pline("You cannot pass that way.");
             return FALSE;
@@ -683,7 +683,7 @@ test_move(int ux, int uy, int dx, int dy, int dz, int mode,
     /* Now see if other things block our way. */
     if (dx && dy && !passwall &&
         (IS_DOOR(ust->typ) && ((ust->doormask & ~D_BROKEN)
-                               || Is_rogue_level(&u.uz)
+                               || Is_rogue_level(level)
                                || block_entry(x, y))
         )) {
         /* Can't move at a diagonal out of a doorway with door. */
@@ -692,7 +692,7 @@ test_move(int ux, int uy, int dx, int dy, int dz, int mode,
         return FALSE;
     }
 
-    if (sobj_at(BOULDER, level, x, y) && (In_sokoban(&u.uz) || !passwall)) {
+    if (sobj_at(BOULDER, level, x, y) && (In_sokoban(level) || !passwall)) {
         if (!(blind || halluc) && !ITEM_INTERACTIVE(uim) &&
             mode != TEST_TRAV) {
             if (sobj_at(BOULDER, level, x, y) && mode == DO_MOVE)
@@ -702,7 +702,7 @@ test_move(int ux, int uy, int dx, int dy, int dz, int mode,
         if (mode == DO_MOVE) {
             /* tunneling monsters will chew before pushing */
             if (tunnels(youmonst.data) && !needspick(youmonst.data) &&
-                !In_sokoban(&u.uz)) {
+                !In_sokoban(level)) {
                 if (still_chewing(x, y))
                     return FALSE;
             } else if (moverock(dx, dy) < 0)
@@ -711,11 +711,11 @@ test_move(int ux, int uy, int dx, int dy, int dz, int mode,
             struct obj *obj;
 
             /* never travel through boulders in Sokoban */
-            if (In_sokoban(&u.uz))
+            if (In_sokoban(level))
                 return FALSE;
 
             /* don't pick two boulders in a row, unless there's a way thru */
-            if (sobj_at(BOULDER, level, ux, uy) && !In_sokoban(&u.uz)) {
+            if (sobj_at(BOULDER, level, ux, uy) && !In_sokoban(level)) {
                 if (!passwall &&
                     !(tunnels(youmonst.data) && !needspick(youmonst.data)) &&
                     !carrying(PICK_AXE) && !carrying(DWARVISH_MATTOCK) &&
@@ -1206,7 +1206,7 @@ domove(const struct nh_cmd_arg *arg, enum u_interaction_mode uim,
                 action_completed();
                 return 0;
             }
-            if (In_sokoban(&u.uz)) {
+            if (In_sokoban(level)) {
                 pline("You somehow know the layout of this place without "
                       "exploring.");
                 action_completed();
@@ -1247,7 +1247,7 @@ domove(const struct nh_cmd_arg *arg, enum u_interaction_mode uim,
     if (((wtcap = near_capacity()) >= OVERLOADED ||
          (wtcap > SLT_ENCUMBER && (Upolyd ? (u.mh < 5 && u.mh != u.mhmax)
                                    : (u.uhp < 10 && u.uhp != u.uhpmax))))
-        && !Is_airlevel(&u.uz)) {
+        && !Is_airlevel(level)) {
         if (wtcap < OVERLOADED) {
             pline("You don't have enough stamina to move.");
             exercise(A_CON, FALSE);
@@ -1262,7 +1262,7 @@ domove(const struct nh_cmd_arg *arg, enum u_interaction_mode uim,
         u.uy = y = u.ustuck->my;
         mtmp = u.ustuck;
     } else {
-        if (Is_airlevel(&u.uz) && rn2(4) && !Levitation && !Flying) {
+        if (Is_airlevel(level) && rn2(4) && !Levitation && !Flying) {
             switch (rn2(3)) {
             case 0:
                 pline("You tumble in place.");
@@ -1615,8 +1615,8 @@ domove(const struct nh_cmd_arg *arg, enum u_interaction_mode uim,
         action_completed();
         return 1;
     } else if (!youmonst.data->mmove) {
-        pline("You are rooted %s.", Levitation || Is_airlevel(&u.uz) ||
-              Is_waterlevel(&u.uz) ? "in place" : "to the ground");
+        pline("You are rooted %s.", Levitation || Is_airlevel(level) ||
+              Is_waterlevel(level) ? "in place" : "to the ground");
         action_completed();
         return 1;
     }
@@ -1628,7 +1628,7 @@ domove(const struct nh_cmd_arg *arg, enum u_interaction_mode uim,
                 pline("You free your %s.", body_part(LEG));
             } else if (!(--u.utrap)) {
                 pline("You %s to the edge of the pit.",
-                      (In_sokoban(&u.uz) &&
+                      (In_sokoban(level) &&
                        Levitation) ?
                       "struggle against the air currents and float" : u.usteed ?
                       "ride" : "crawl");
@@ -1922,7 +1922,7 @@ domove(const struct nh_cmd_arg *arg, enum u_interaction_mode uim,
     if (hides_under(youmonst.data))
         u.uundetected = OBJ_AT(u.ux, u.uy);
     else if (youmonst.data->mlet == S_EEL)
-        u.uundetected = is_pool(level, u.ux, u.uy) && !Is_waterlevel(&u.uz);
+        u.uundetected = is_pool(level, u.ux, u.uy) && !Is_waterlevel(level);
     else if (turnstate.move.dx || turnstate.move.dy)
         u.uundetected = 0;
 
@@ -2000,14 +2000,14 @@ spoteffects(boolean pick)
         int was_underwater;
 
         if (!is_pool(level, u.ux, u.uy)) {
-            if (Is_waterlevel(&u.uz))
+            if (Is_waterlevel(level))
                 pline("You pop into an air bubble.");
             else if (is_lava(level, u.ux, u.uy))
                 pline("You leave the water...");        /* oops! */
             else
                 pline("You are on solid %s again.",
                       is_ice(level, u.ux, u.uy) ? "ice" : "land");
-        } else if (Is_waterlevel(&u.uz))
+        } else if (Is_waterlevel(level))
             goto stillinwater;
         else if (Levitation)
             pline("You pop out of the water like a cork!");
@@ -2017,7 +2017,7 @@ spoteffects(boolean pick)
             pline("You slowly rise above the surface.");
         else
             goto stillinwater;
-        was_underwater = Underwater && !Is_waterlevel(&u.uz);
+        was_underwater = Underwater && !Is_waterlevel(level);
         u.uinwater = 0; /* leave the water */
         if (was_underwater) {   /* restore vision */
             doredraw();
@@ -2033,7 +2033,7 @@ stillinwater:
                 !is_floater(u.usteed->data) && !is_clinger(u.usteed->data)) {
                 dismount_steed(Underwater ? DISMOUNT_FELL : DISMOUNT_GENERIC);
                 /* dismount_steed() -> float_down() -> pickup() */
-                if (!Is_airlevel(&u.uz) && !Is_waterlevel(&u.uz))
+                if (!Is_airlevel(level) && !Is_waterlevel(level))
                     pick = FALSE;
             } else if (is_lava(level, u.ux, u.uy)) {
                 if (lava_effects())
@@ -2789,7 +2789,7 @@ weight_cap(void)
             carrcap = (carrcap * (long)youmonst.data->cwt / WT_HUMAN);
     }
 
-    if (Levitation || Is_airlevel(&u.uz)        /* pugh@cornell */
+    if (Levitation || Is_airlevel(level)        /* pugh@cornell */
         ||(u.usteed && strongmonst(u.usteed->data)))
         carrcap = MAX_CARR_CAP;
     else {

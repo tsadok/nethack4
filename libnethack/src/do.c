@@ -49,7 +49,7 @@ boulder_hits_pool(struct obj * otmp, int rx, int ry, boolean pushing)
 {
     if (!otmp || otmp->otyp != BOULDER)
         impossible("Not a boulder?");
-    else if (!Is_waterlevel(&u.uz) &&
+    else if (!Is_waterlevel(level) &&
              (is_pool(level, rx, ry) || is_lava(level, rx, ry))) {
         boolean lava = is_lava(level, rx, ry), fills_up;
         const char *what = waterbody_name(rx, ry);
@@ -782,7 +782,7 @@ dodown(enum u_interaction_mode uim)
         }
     }
 
-    if (trap && Is_stronghold(&u.uz)) {
+    if (trap && Is_stronghold(level)) {
         goto_hell(FALSE, TRUE);
     } else {
         at_ladder = (boolean) (level->locations[u.ux][u.uy].typ == LADDER);
@@ -836,32 +836,31 @@ doup(enum u_interaction_mode uim)
 
 
 void
-notify_levelchange(const d_level * dlev)
+notify_levelchange(const struct level *lev)
 {
     int mode;
-    const d_level *z = dlev ? dlev : &u.uz;
 
-    if (In_hell(z))
+    if (In_hell(&lev->z))
         mode = LDM_HELL;
-    else if (Is_qstart(z))
+    else if (Is_qstart(lev))
         mode = LDM_QUESTHOME;
-    else if (Is_qlocate(z))
+    else if (Is_qlocate(lev))
         mode = LDM_QUESTLOCATE;
-    else if (Is_nemesis(z))
+    else if (Is_nemesis(lev))
         mode = LDM_QUESTGOAL;
-    else if (In_quest(z) && z->dlevel > qlocate_level.dlevel)
+    else if (In_quest(&lev->z) && lev->z.dlevel > qlocate_level.dlevel)
         mode = LDM_QUESTFILL2;
-    else if (In_quest(z))
+    else if (In_quest(&lev->z))
         mode = LDM_QUESTFILL1;
-    else if (In_mines(z))
+    else if (In_mines(lev))
         mode = LDM_MINES;
-    else if (In_sokoban(z))
+    else if (In_sokoban(lev))
         mode = LDM_SOKOBAN;
-    else if (Is_rogue_level(z))
+    else if (Is_rogue_level(lev))
         mode = LDM_ROGUE;
-    else if (Is_knox(z))
+    else if (Is_knox(lev))
         mode = LDM_KNOX;
-    else if (Is_astralevel(z))
+    else if (Is_astralevel(lev))
         mode = LDM_ASTRAL;
     else
         mode = LDM_DEFAULT;
@@ -1037,7 +1036,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
                 u_on_newpos(level->dnladder.sx, level->dnladder.sy);
             } else {
                 if (newdungeon) {
-                    if (Is_stronghold(&u.uz)) {
+                    if (Is_stronghold(level)) {
                         xchar x, y;
 
                         do {
@@ -1087,7 +1086,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
             }
         }
     } else {    /* trap door or level_tele or In_endgame */
-        if (was_in_W_tower && On_W_tower_level(&u.uz))
+        if (was_in_W_tower && On_W_tower_level(&level->z))
             /* Stay inside the Wizard's tower when feasible. */
             /* Note: up vs down doesn't really matter in this case. */
             place_lregion(level, level->dndest.nlx, level->dndest.nly,
@@ -1169,7 +1168,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     level->locations[u.ux][u.uy].mem_stepped = 1;
 
     /* initial movement of bubbles just before vision_recalc */
-    if (Is_waterlevel(&u.uz))
+    if (Is_waterlevel(level))
         movebubbles(level);
 
     if (level->flags.forgotten) {
@@ -1177,7 +1176,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
         level->flags.forgotten = FALSE;
     }
 
-    notify_levelchange(NULL);   /* inform window code of the level change */
+    notify_levelchange(level);   /* inform window code of the level change */
 
     /* Reset the screen. */
     vision_reset();     /* reset the blockages */
@@ -1194,7 +1193,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
 
     /* Check whether we just entered Gehennom. */
     if (!In_hell(&orig_d) && Inhell) {
-        if (Is_valley(&u.uz)) {
+        if (Is_valley(level)) {
             pline("You arrive at the Valley of the Dead...");
             pline("The odor of burnt flesh and decay pervades the air.");
             You_hear("groans and moans everywhere.");
@@ -1230,16 +1229,16 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
             pline("%s", mesg);
     }
 
-    if (new && Is_rogue_level(&u.uz))
+    if (new && Is_rogue_level(level))
         pline("You enter what seems to be an older, more primitive world.");
     /* Final confrontation */
     if (In_endgame(&u.uz) && newdungeon && Uhave_amulet)
         resurrect();
-    if (newdungeon && In_V_tower(&u.uz) && In_hell(&orig_d))
+    if (newdungeon && In_V_tower(level) && In_hell(&orig_d))
         pline("The heat and smoke are gone.");
 
     /* the message from your quest leader */
-    if (!In_quest(&orig_d) && at_dgn_entrance(&u.uz, "The Quest") &&
+    if (!In_quest(&orig_d) && at_dgn_entrance(level, "The Quest") &&
         !(u.uevent.qexpelled || u.uevent.qcompleted ||
           u.quest_status.leader_is_dead)) {
 
@@ -1252,7 +1251,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     }
 
     /* once Croesus is dead, his alarm doesn't work any more */
-    if (Is_knox(&u.uz) && (new || !mvitals[PM_CROESUS].died)) {
+    if (Is_knox(level) && (new || !mvitals[PM_CROESUS].died)) {
         pline("You penetrated a high security area!");
         pline("An alarm sounds!");
         for (mtmp = level->monlist; mtmp; mtmp = mtmp->nmon)

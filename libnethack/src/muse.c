@@ -414,13 +414,13 @@ find_defensive(struct monst *mtmp, struct musable *m)
             !mtmp->isshk && !mtmp->isgd && !mtmp->ispriest &&
             !is_floater(mtmp->data)
             /* monsters digging in Sokoban can ruin things */
-            && !In_sokoban(&u.uz)
+            && !In_sokoban(level)
             /* digging wouldn't be effective; assume they know that */
             && !(lev->locations[x][y].wall_info & W_NONDIGGABLE)
             && !(Is_botlevel(&u.uz) || In_endgame(&u.uz))
             && !(is_ice(lev, x, y) || is_pool(lev, x, y) || is_lava(lev, x, y))
             && !(mtmp->data == &mons[PM_VLAD_THE_IMPALER]
-                 && In_V_tower(&u.uz))) {
+                 && In_V_tower(level))) {
             m->defensive = obj;
             m->has_defense = MUSE_WAN_DIGGING;
         }
@@ -1070,8 +1070,8 @@ find_offensive(struct monst * mtmp, struct musable * m)
             && dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) <= 2
             && (mtmp->mx != mtmp->mux || mtmp->my != mtmp->muy)
             && mtmp->mcansee && haseyes(mtmp->data)
-            && !Is_rogue_level(&u.uz)
-            && (!In_endgame(&u.uz) || Is_earthlevel(&u.uz))) {
+            && !Is_rogue_level(level)
+            && (!In_endgame(&u.uz) || Is_earthlevel(level))) {
             m->offensive = obj;
             m->has_offense = MUSE_SCR_EARTH;
         }

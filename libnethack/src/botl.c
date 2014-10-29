@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-10-12 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -148,21 +148,21 @@ describe_level(char *buf)
 {
     int ret = 1;
 
-    if (Is_knox(&u.uz))
+    if (Is_knox(level))
         sprintf(buf, "%s", dungeons[u.uz.dnum].dname);
     else if (In_quest(&u.uz))
         sprintf(buf, "Home:%d", dunlev(&u.uz));
     else if (In_endgame(&u.uz))
-        sprintf(buf, Is_astralevel(&u.uz) ? "Astral Plane" : "End Game");
-    else if (In_mines(&u.uz))
+        sprintf(buf, Is_astralevel(level) ? "Astral Plane" : "End Game");
+    else if (In_mines(level))
         sprintf(buf, "Mines:%d", depth(&u.uz));
-    else if (In_sokoban(&u.uz))
+    else if (In_sokoban(level))
         sprintf(buf, "Sokoban:%d", depth(&u.uz));
-    else if (Is_valley(&u.uz))
+    else if (Is_valley(level))
         sprintf(buf, "Valley:%d", depth(&u.uz));
     else if (In_hell(&u.uz))
         sprintf(buf, "Gehennom:%d", depth(&u.uz));
-    else if (In_V_tower(&u.uz))
+    else if (In_V_tower(level))
         sprintf(buf, "Tower:%d", depth(&u.uz));
     else
         sprintf(buf, "Dungeons:%d", depth(&u.uz)), (ret = 0);

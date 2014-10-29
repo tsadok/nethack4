@@ -184,7 +184,7 @@ describe_bg(int x, int y, int bg, char *buf)
         break;
 
     case S_cloud:
-        strcpy(buf, Is_airlevel(&u.uz) ? "cloudy area" : "fog/vapor cloud");
+        strcpy(buf, Is_airlevel(level) ? "cloudy area" : "fog/vapor cloud");
         break;
 
     default:

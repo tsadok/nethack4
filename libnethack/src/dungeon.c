@@ -1262,16 +1262,16 @@ On_stairs(xchar x, xchar y)
 }
 
 boolean
-Is_botlevel(const d_level * lev)
+Is_botlevel(const d_level *dlev)
 {
-    return (lev->dlevel == dungeons[lev->dnum].num_dunlevs);
+    return (dlev->dlevel == dungeons[dlev->dnum].num_dunlevs);
 }
 
 boolean
 can_dig_down(const struct level * lev)
 {
     return (!lev->flags.hardfloor && !Is_botlevel(&lev->z) &&
-            !Invocation_lev(&lev->z));
+            !Invocation_lev(lev));
 }
 
 /*
@@ -1282,7 +1282,7 @@ can_dig_down(const struct level * lev)
 boolean
 can_fall_thru(const struct level * lev)
 {
-    return (can_dig_down(lev) || Is_stronghold(&lev->z));
+    return (can_dig_down(lev) || Is_stronghold(lev));
 }
 
 /*
@@ -1296,7 +1296,7 @@ Can_rise_up(int x, int y, const struct level *lev)
 {
     /* can't rise up from inside the top of the Wizard's tower */
     /* KMH -- or in sokoban */
-    if (In_endgame(&lev->z) || In_sokoban(&lev->z) ||
+    if (In_endgame(&lev->z) || In_sokoban(lev) ||
         (Is_wiz1_level(&lev->z) && In_W_tower(x, y, lev)))
         return FALSE;
     return (boolean) (lev->z.dlevel > 1 ||
@@ -1366,16 +1366,16 @@ get_level(d_level * newlevel, int levnum)
 
 
 boolean
-In_quest(const d_level * lev)
+In_quest(const d_level *dlev)
 {       /* are you in the quest dungeon? */
-    return (boolean) (lev->dnum == quest_dnum);
+    return (boolean) (dlev->dnum == quest_dnum);
 }
 
 
 boolean
-In_mines(const d_level * lev)
+In_mines(const struct level *lev)
 {       /* are you in the mines dungeon? */
-    return (boolean) (lev->dnum == mines_dnum);
+    return (boolean) (lev->z.dnum == mines_dnum);
 }
 
 /*
@@ -1414,22 +1414,22 @@ dungeon_branch(const char *s)
  * Assumes that end1 is always the "parent".
  */
 boolean
-at_dgn_entrance(const d_level * dlev, const char *s)
+at_dgn_entrance(const struct level *lev, const char *s)
 {
     branch *br;
 
     br = dungeon_branch(s);
-    return (boolean) (on_level(dlev, &br->end1) ? TRUE : FALSE);
+    return (boolean) (on_level(&lev->z, &br->end1) ? TRUE : FALSE);
 }
 
 boolean
-In_V_tower(const d_level * lev)
+In_V_tower(const struct level *lev)
 {       /* is `lev' part of Vlad's tower? */
-    return (boolean) (lev->dnum == tower_dnum);
+    return (boolean) (lev->z.dnum == tower_dnum);
 }
 
 boolean
-On_W_tower_level(const d_level * lev)
+On_W_tower_level(const d_level *lev)
 {       /* is `lev' a level containing the Wizard's tower? */
     return (boolean) (Is_wiz1_level(lev) || Is_wiz2_level(lev) ||
                       Is_wiz3_level(lev));
@@ -1458,9 +1458,9 @@ In_W_tower(int x, int y, const struct level *lev)
 
 
 boolean
-In_hell(const d_level * lev)
+In_hell(const d_level *dlev)
 {       /* are you in one of the Hell levels? */
-    return (boolean) (dungeons[lev->dnum].flags.hellish);
+    return (boolean) (dungeons[dlev->dnum].flags.hellish);
 }
 
 
@@ -1521,10 +1521,10 @@ induced_align(const struct level *lev, int pct)
 
 
 boolean
-Invocation_lev(const d_level * lev)
+Invocation_lev(const struct level *lev)
 {
-    return (boolean) (In_hell(lev) &&
-                      lev->dlevel == (dungeons[lev->dnum].num_dunlevs - 1));
+    return (boolean) (In_hell(&lev->z) &&
+                      lev->z.dlevel == (dungeons[lev->z.dnum].num_dunlevs - 1));
 }
 
 /* use instead of depth() wherever a degree of difficulty is made
@@ -1562,7 +1562,7 @@ lev_by_name(const char *nam)
     /* hell is the old name, and wouldn't match; gehennom would match its
        branch, yielding the castle level instead of the valley of the dead */
     if (!strcmpi(nam, "gehennom") || !strcmpi(nam, "hell")) {
-        if (In_V_tower(&u.uz))
+        if (In_V_tower(level))
             nam = " to Vlad's tower";   /* branch to... */
         else
             nam = "valley";
@@ -1713,7 +1713,7 @@ print_dungeon(boolean bymenu, schar * rlev, xchar * rdgn)
                          &lchoices);
 
             buf = msgprintf("   %s: %d", slev->proto, depth(&slev->dlevel));
-            if (Is_stronghold(&slev->dlevel))
+            if (on_level(&slev->dlevel, &stronghold_level))
                 buf = msgprintf("%s (tune %s)", buf, tune);
             if (bymenu) {
                 /* If other floating branches are added, this will need to
@@ -1785,8 +1785,8 @@ print_dungeon(boolean bymenu, schar * rlev, xchar * rdgn)
      * created by the level compiler (not the dungeon compiler) only exist
      * one per level (currently true, of course).
      */
-    else if (Is_earthlevel(&u.uz) || Is_waterlevel(&u.uz)
-             || Is_firelevel(&u.uz) || Is_airlevel(&u.uz)) {
+    else if (Is_earthlevel(level) || Is_waterlevel(level)
+             || Is_firelevel(level) || Is_airlevel(level)) {
         struct trap *trap;
 
         for (trap = level->lev_traps; trap; trap = trap->ntrap)
@@ -2003,7 +2003,7 @@ overview_print_lev(const struct level *lev)
 
     /* calculate level number */
     i = depthstart + lev->z.dlevel - 1;
-    if (Is_astralevel(&lev->z))
+    if (Is_astralevel(lev))
         buf = "Astral Plane";
     else if (In_endgame(&lev->z))
         /* Negative numbers are mildly confusing, since they are never shown to 
@@ -2235,11 +2235,11 @@ dooverview(const struct nh_cmd_arg *arg)
 
     buf = overview_print_lev(lev);
     pline("Now viewing %s%s.  Press any key to return.",
-          Is_astralevel(&lev->z) ? "the " : "", buf);
-    notify_levelchange(&lev->z);
+          Is_astralevel(lev) ? "the " : "", buf);
+    notify_levelchange(lev);
     flush_screen_nopos();
     win_pause_output(P_MAP);
-    notify_levelchange(NULL);
+    notify_levelchange(level);
     doredraw();
 
     return 0;

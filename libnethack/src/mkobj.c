@@ -108,7 +108,7 @@ mkobj(struct level *lev, char oclass, boolean artif)
 
     if (oclass == RANDOM_CLASS) {
         const struct icp *iprobs =
-            (Is_rogue_level(&lev->z)) ? (const struct icp *)rogueprobs :
+            (Is_rogue_level(lev)) ? (const struct icp *)rogueprobs :
             In_hell(&lev->z) ? (const struct icp *)hellprobs :
             (const struct icp *) mkobjprobs;
 

@@ -1117,15 +1117,15 @@ seffects(struct obj *sobj, boolean * known)
         return 1;
     case SCR_EARTH:
         /* TODO: handle steeds */
-        if (!Is_rogue_level(&u.uz) &&
-            (!In_endgame(&u.uz) || Is_earthlevel(&u.uz))) {
+        if (!Is_rogue_level(level) &&
+            (!In_endgame(&u.uz) || Is_earthlevel(level))) {
             int x, y;
 
             /* Identify the scroll */
             pline("The %s rumbles %s you!", ceiling(u.ux, u.uy),
                   sobj->blessed ? "around" : "above");
             *known = TRUE;
-            if (In_sokoban(&u.uz))
+            if (In_sokoban(level))
                 change_luck(-1);        /* Sokoban guilt */
 
             /* Loop through the surrounding squares */
@@ -1341,7 +1341,7 @@ litroom(boolean on, struct obj *obj)
 
 do_it:
     /* No-op in water - can only see the adjacent squares and that's it! */
-    if (Underwater || Is_waterlevel(&u.uz))
+    if (Underwater || Is_waterlevel(level))
         return;
     /* 
      *  If we are darkening the room and the hero is punished but not
@@ -1351,7 +1351,7 @@ do_it:
     if (Punished && !on && !Blind)
         move_bc(1, 0, uball->ox, uball->oy, uchain->ox, uchain->oy);
 
-    if (Is_rogue_level(&u.uz)) {
+    if (Is_rogue_level(level)) {
         /* Can't use do_clear_area because MAX_RADIUS is too small */
         /* rogue lighting must light the entire room */
         int rnum = level->locations[u.ux][u.uy].roomno - ROOMOFFSET;

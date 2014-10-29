@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-04-25 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) 1989 by Jean-Christophe Collet                   */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -80,7 +80,7 @@ is_moat(struct level * lev, int x, int y)
     if (!isok(x, y))
         return FALSE;
     ltyp = lev->locations[x][y].typ;
-    if (!Is_juiblex_level(&lev->z) &&
+    if (!Is_juiblex_level(lev) &&
         (ltyp == MOAT ||
          (ltyp == DRAWBRIDGE_UP &&
           (lev->locations[x][y].drawbridgemask & DB_UNDER) == DB_MOAT)))
@@ -724,7 +724,7 @@ open_drawbridge(int x, int y)
     newsym(x, y);
     newsym(x2, y2);
     unblock_point(x2, y2);      /* vision */
-    if (Is_stronghold(&u.uz))
+    if (Is_stronghold(level))
         u.uevent.uopened_dbridge = TRUE;
 }
 
@@ -790,7 +790,7 @@ destroy_drawbridge(int x, int y)
     newsym(x2, y2);
     if (!does_block(level, x2, y2))
         unblock_point(x2, y2);  /* vision */
-    if (Is_stronghold(&u.uz))
+    if (Is_stronghold(level))
         u.uevent.uopened_dbridge = TRUE;
 
     set_entity(x2, y2, etmp2);  /* currently only automissers can be here */

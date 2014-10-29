@@ -1905,7 +1905,7 @@ look_here(int obj_cnt,  /* obj_cnt > 0 implies that autopickup is in progess */
         dfeature = NULL;
 
     if (feeling) {
-        boolean drift = Is_airlevel(&u.uz) || Is_waterlevel(&u.uz);
+        boolean drift = Is_airlevel(level) || Is_waterlevel(level);
 
         if (dfeature && !strncmp(dfeature, "altar ", 6)) {
             /* don't say "altar" twice, dfeature has more info */

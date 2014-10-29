@@ -476,7 +476,7 @@ just_reloaded_save:
        the vision system. Do all that stuff now. */
     vision_reset();
     doredraw();
-    notify_levelchange(NULL);
+    notify_levelchange(level);
     bot();
     flush_screen();
 
@@ -843,7 +843,7 @@ you_moved(void)
                 /* for the moment at least, you're in tiptop shape */
                 wtcap = UNENCUMBERED;
             } else if (Upolyd && youmonst.data->mlet == S_EEL &&
-                       !is_pool(level, u.ux, u.uy) && !Is_waterlevel(&u.uz)) {
+                       !is_pool(level, u.ux, u.uy) && !Is_waterlevel(level)) {
                 if (u.mh > 1) {
                     u.mh--;
                 } else if (u.mh < 1)
@@ -1074,7 +1074,7 @@ pre_move_tasks(boolean didmove, boolean loading_game)
 
     /* we need to do this before vision handling; clairvoyance can set
        vision_full_recalc */
-    if (didmove && Clairvoyant && !In_endgame(&u.uz) && !(moves % 15) &&
+    if (didmove && Clairvoyant && !In_endgame(&level->z) && !(moves % 15) &&
         !rn2(2))
         do_vicinity_map();
 

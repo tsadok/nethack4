@@ -494,7 +494,7 @@ hurtle_step(void *arg, int x, int y)
     if ((u.ux - x) && (u.uy - y) && bad_rock(youmonst.data, u.ux, y) &&
         bad_rock(youmonst.data, x, u.uy)) {
         /* Move at a diagonal. */
-        if (In_sokoban(&u.uz)) {
+        if (In_sokoban(level)) {
             pline("You come to an abrupt halt!");
             return FALSE;
         }
@@ -522,7 +522,7 @@ hurtle_step(void *arg, int x, int y)
             dotrap(ttmp, 0);
         } else if ((ttmp->ttyp == PIT || ttmp->ttyp == SPIKED_PIT ||
                     ttmp->ttyp == HOLE || ttmp->ttyp == TRAPDOOR) &&
-                   In_sokoban(&u.uz)) {
+                   In_sokoban(level)) {
             /* Air currents overcome the recoil */
             dotrap(ttmp, 0);
             *range = 0;
@@ -612,7 +612,7 @@ hurtle(int dx, int dy, int range, boolean verbose)
               m_shot.s ? "shoot" : "throw", m_shot.s ? "shot" : "toss");
         m_shot.n = m_shot.i;    /* make current shot be the last */
     }
-    if (In_sokoban(&u.uz))
+    if (In_sokoban(level))
         change_luck(-1);        /* Sokoban guilt */
     uc.x = u.ux;
     uc.y = u.uy;
@@ -875,7 +875,7 @@ throwit(struct obj *obj, long wep_mask, /* used to re-equip returning boomerang
         (Upolyd ? (u.mh < 5 && u.mh != u.mhmax)
          : (u.uhp < 10 && u.uhp != u.uhpmax)) &&
         obj->owt > (unsigned)((Upolyd ? u.mh : u.uhp) * 2) &&
-        !Is_airlevel(&u.uz)) {
+        !Is_airlevel(level)) {
         pline("You have so little stamina, %s drops from your grasp.",
               the(xname(obj)));
         exercise(A_CON, FALSE);
@@ -898,8 +898,8 @@ throwit(struct obj *obj, long wep_mask, /* used to re-equip returning boomerang
             encumber_msg();
             setuwep(obj);
             u.twoweap = twoweap;
-        } else if (dz < 0 && !Is_airlevel(&u.uz) && !Underwater &&
-                   !Is_waterlevel(&u.uz)) {
+        } else if (dz < 0 && !Is_airlevel(level) && !Underwater &&
+                   !Is_waterlevel(level)) {
             toss_up(obj, rn2(5));
         } else {
             hitfloor(obj);
@@ -908,7 +908,7 @@ throwit(struct obj *obj, long wep_mask, /* used to re-equip returning boomerang
         return;
 
     } else if (obj->otyp == BOOMERANG && !Underwater) {
-        if (Is_airlevel(&u.uz) || Levitation)
+        if (Is_airlevel(level) || Levitation)
             hurtle(-dx, -dy, 1, TRUE);
         mon = boomhit(dx, dy);
         if (mon == &youmonst) { /* the thing was caught */
@@ -949,7 +949,7 @@ throwit(struct obj *obj, long wep_mask, /* used to re-equip returning boomerang
                 range /= 2;
         }
 
-        if (Is_airlevel(&u.uz) || Levitation) {
+        if (Is_airlevel(level) || Levitation) {
             /* action, reaction... */
             urange -= range;
             if (urange < 1)
@@ -975,7 +975,7 @@ throwit(struct obj *obj, long wep_mask, /* used to re-equip returning boomerang
                      &obj_destroyed);
 
         /* have to do this after bhit() so u.ux & u.uy are correct */
-        if (Is_airlevel(&u.uz) || Levitation)
+        if (Is_airlevel(level) || Levitation)
             hurtle(-dx, -dy, urange, TRUE);
 
         if (obj_destroyed)
@@ -1722,8 +1722,8 @@ throw_gold(struct obj *obj, schar dx, schar dy, schar dz)
     }
 
     if (dz) {
-        if (dz < 0 && !Is_airlevel(&u.uz) && !Underwater &&
-            !Is_waterlevel(&u.uz)) {
+        if (dz < 0 && !Is_airlevel(level) && !Underwater &&
+            !Is_waterlevel(level)) {
             pline("The gold hits the %s, then falls back on top of your %s.",
                   ceiling(u.ux, u.uy), body_part(HEAD));
             /* some self damage? */

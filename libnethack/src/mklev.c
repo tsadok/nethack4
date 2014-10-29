@@ -565,13 +565,13 @@ makelevel(struct level *lev)
         s_level *slevnum = Is_special(&lev->z);
 
         /* check for special levels */
-        if (slevnum && !Is_rogue_level(&lev->z)) {
+        if (slevnum && !Is_rogue_level(lev)) {
             makemaz(lev, slevnum->proto);
             return;
         } else if (dungeons[lev->z.dnum].proto[0]) {
             makemaz(lev, "");
             return;
-        } else if (In_mines(&lev->z)) {
+        } else if (In_mines(lev)) {
             makemaz(lev, "minefill");
             return;
         } else if (In_quest(&lev->z)) {
@@ -596,7 +596,7 @@ makelevel(struct level *lev)
 
     /* otherwise, fall through - it's a "regular" level. */
 
-    if (Is_rogue_level(&lev->z)) {
+    if (Is_rogue_level(lev)) {
         makeroguerooms(lev);
         makerogueghost(lev);
     } else
@@ -630,7 +630,7 @@ makelevel(struct level *lev)
     branchp = Is_branchlev(&lev->z);    /* possible dungeon branch */
     room_threshold = branchp ? 4 : 3;   /* minimum number of rooms needed to
                                            allow a random special room */
-    if (Is_rogue_level(&lev->z))
+    if (Is_rogue_level(lev))
         goto skip0;
     makecorridors(lev);
     make_niches(lev);
@@ -726,7 +726,7 @@ skip0:
             x = somex(croom);
             mkgold(0L, lev, x, y);
         }
-        if (Is_rogue_level(&lev->z))
+        if (Is_rogue_level(lev))
             goto skip_nonrogue;
         if (!rn2(10))
             mkfount(lev, 0, croom);
@@ -818,10 +818,10 @@ mineralize(struct level *lev)
 
     /* determine if it is even allowed; almost all special levels are excluded
        */
-    if (In_hell(&lev->z) || In_V_tower(&lev->z) || Is_rogue_level(&lev->z) ||
+    if (In_hell(&lev->z) || In_V_tower(lev) || Is_rogue_level(lev) ||
         lev->flags.arboreal || ((sp = Is_special(&lev->z)) != 0 &&
-                                !Is_oracle_level(&lev->z)
-                                && (!In_mines(&lev->z) || sp->flags.town)
+                                !Is_oracle_level(lev)
+                                && (!In_mines(lev) || sp->flags.town)
         ))
         return;
 
@@ -830,7 +830,7 @@ mineralize(struct level *lev)
     gemprob = goldprob / 4;
 
     /* mines have ***MORE*** goodies - otherwise why mine? */
-    if (In_mines(&lev->z)) {
+    if (In_mines(lev)) {
         goldprob *= 2;
         gemprob *= 3;
     } else if (In_quest(&lev->z)) {
@@ -1026,7 +1026,7 @@ place_branch(struct level *lev, branch * br,    /* branch to place */
      * As a special case, we also don't actually put anything into
      * the castle level.
      */
-    if (!br || made_branch || Is_stronghold(&lev->z))
+    if (!br || made_branch || Is_stronghold(lev))
         return;
 
     if (x == COLNO) {   /* find random coordinates for branch */
@@ -1149,7 +1149,7 @@ mktrap(struct level *lev, int num, int mazeflag, struct mkroom *croom,
 
     if (num > 0 && num < TRAPNUM) {
         kind = num;
-    } else if (Is_rogue_level(&lev->z)) {
+    } else if (Is_rogue_level(lev)) {
         switch (rn2(7)) {
         default:
             kind = BEAR_TRAP;
@@ -1583,7 +1583,7 @@ mk_knox_portal(struct level *lev, xchar x, xchar y)
         return;
 
     if (!(lev->z.dnum == oracle_level.dnum      /* in main dungeon */
-          && !at_dgn_entrance(&lev->z, "The Quest")     /* but not Quest's
+          && !at_dgn_entrance(lev, "The Quest")     /* but not Quest's
                                                            entry */
           &&(u_depth = depth(&lev->z)) > 10     /* beneath 10 */
           && u_depth < depth(&medusa_level)))   /* and above Medusa */

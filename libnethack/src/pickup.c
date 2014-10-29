@@ -928,7 +928,7 @@ lift_object(struct obj *obj, struct obj *container, long *cnt_p,
 {
     int result, old_wt, new_wt, prev_encumbr, next_encumbr;
 
-    if (obj->otyp == BOULDER && In_sokoban(&u.uz)) {
+    if (obj->otyp == BOULDER && In_sokoban(level)) {
         pline("You cannot get your %s around this %s.", body_part(HAND),
               xname(obj));
         return -1;
