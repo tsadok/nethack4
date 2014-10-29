@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-05-25 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -996,11 +996,11 @@ do_vicinity_map(void)
 
 /* convert a secret door into a normal door */
 void
-cvt_sdoor_to_door(struct rm *loc, const d_level * dlev)
+cvt_sdoor_to_door(struct rm *loc, const struct level * lev)
 {
     int newmask = loc->doormask & ~WM_MASK;
 
-    if (Is_rogue_level(dlev))
+    if (Is_rogue_level(&lev->z))
         /* rogue didn't have doors, only doorways */
         newmask = D_NODOOR;
     else
@@ -1020,7 +1020,7 @@ findone(int zx, int zy, void *num)
     struct monst *mtmp;
 
     if (level->locations[zx][zy].typ == SDOOR) {
-        cvt_sdoor_to_door(&level->locations[zx][zy], &u.uz);   /* .typ = DOOR */
+        cvt_sdoor_to_door(&level->locations[zx][zy], level);   /* .typ = DOOR */
         magic_map_background(zx, zy, 0);
         newsym(zx, zy);
         (*(int *)num)++;
@@ -1076,7 +1076,7 @@ openone(int zx, int zy, void *num)
         (level->locations[zx][zy].typ == DOOR &&
          (level->locations[zx][zy].doormask & (D_CLOSED | D_LOCKED)))) {
         if (level->locations[zx][zy].typ == SDOOR)
-            cvt_sdoor_to_door(&level->locations[zx][zy], &u.uz); /* typ=DOOR */
+            cvt_sdoor_to_door(&level->locations[zx][zy], level); /* typ=DOOR */
         if (level->locations[zx][zy].doormask & D_TRAPPED) {
             if (distu(zx, zy) < 3)
                 b_trapped("door", 0);
@@ -1200,7 +1200,7 @@ dosearch0(int aflag)
                         if (rnl(7 - fund))
                             continue;
                         /* changes .type to DOOR */
-                        cvt_sdoor_to_door(&level->locations[x][y], &u.uz);
+                        cvt_sdoor_to_door(&level->locations[x][y], level);
                         exercise(A_WIS, TRUE);
                         action_completed();
                         if (Blind && !aflag)

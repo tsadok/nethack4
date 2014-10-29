@@ -399,7 +399,7 @@ stock_room(int shp_indx, struct level *lev, struct mkroom *sroom,
             newsym(sx, sy);
     }
     if (lev->locations[sx][sy].typ == SDOOR) {
-        cvt_sdoor_to_door(&lev->locations[sx][sy], &lev->z);   /* .typ = DOOR */
+        cvt_sdoor_to_door(&lev->locations[sx][sy], lev);   /* .typ = DOOR */
         if (lev == level)
             newsym(sx, sy);
     }

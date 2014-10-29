@@ -233,7 +233,7 @@ extern int trap_detect(struct obj *);
 extern void use_crystal_ball(struct obj *);
 extern void do_mapping(void);
 extern void do_vicinity_map(void);
-extern void cvt_sdoor_to_door(struct rm *loc, const d_level * dlev);
+extern void cvt_sdoor_to_door(struct rm *loc, const struct level * lev);
 extern int findit(void);
 extern int openit(void);
 extern void find_trap(struct trap *);

@@ -296,7 +296,7 @@ use_stethoscope(struct obj *obj, const struct nh_cmd_arg *arg)
     switch (loc->typ) {
     case SDOOR:
         You_hear(hollow_str, "door");
-        cvt_sdoor_to_door(loc, &u.uz);  /* ->typ = DOOR */
+        cvt_sdoor_to_door(loc, level);  /* ->typ = DOOR */
         if (Blind)
             feel_location(rx, ry);
         else

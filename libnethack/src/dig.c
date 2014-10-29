@@ -379,7 +379,7 @@ dig(void)
             }
             digtxt = "You make an opening in the wall.";
         } else if (loc->typ == SDOOR) {
-            cvt_sdoor_to_door(loc, &u.uz);      /* ->typ = DOOR */
+            cvt_sdoor_to_door(loc, level);      /* ->typ = DOOR */
             digtxt = "You break through a secret door!";
             if (!(loc->doormask & D_TRAPPED))
                 loc->doormask = D_BROKEN;
@@ -1081,7 +1081,7 @@ mdig_tunnel(struct monst *mtmp)
 
     here = &level->locations[mtmp->mx][mtmp->my];
     if (here->typ == SDOOR)
-        cvt_sdoor_to_door(here, &mtmp->dlevel->z);      /* ->typ = DOOR */
+        cvt_sdoor_to_door(here, mtmp->dlevel);      /* ->typ = DOOR */
 
     /* Eats away door if present & closed or locked */
     if (closed_door(level, mtmp->mx, mtmp->my)) {
