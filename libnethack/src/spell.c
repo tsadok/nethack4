@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-10 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) M. Stephenson 1988                               */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -176,7 +176,7 @@ deadbook(struct obj *book2, boolean invoked)
     makeknown(SPE_BOOK_OF_THE_DEAD);
     /* KMH -- Need ->known to avoid "_a_ Book of the Dead" */
     book2->known = 1;
-    if (invocation_pos(&u.uz, u.ux, u.uy) && !On_stairs(u.ux, u.uy)) {
+    if (invocation_pos(level, u.ux, u.uy) && !On_stairs(u.ux, u.uy)) {
         struct obj *otmp;
         boolean arti1_primed = FALSE, arti2_primed = FALSE, arti_cursed = FALSE;
 

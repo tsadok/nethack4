@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-17 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -1132,7 +1132,6 @@ occupied(struct level * lev, xchar x, xchar y)
                        || IS_FURNITURE(lev->locations[x][y].typ)
                        || is_lava(lev, x, y)
                        || is_pool(lev, x, y)
-                       || invocation_pos(&lev->z, x, y)
             ));
 }
 
@@ -1405,21 +1404,24 @@ mkgrave(struct level *lev, struct mkroom *croom)
 }
 
 
-/* maze levels have slightly different constraints from normal levels */
-#define x_maze_min 2
-#define y_maze_min 2
 /*
  * Major level transmutation: add a set of stairs (to the Sanctum) after
- * an earthquake that leaves behind a a new topology, centered at inv_pos.
- * Assumes there are no rooms within the invocation area and that inv_pos
- * is not too close to the edge of the map.
+ * an earthquake that leaves behind a a new topology, centered at the invocation
+ * position. Assumes there are no rooms within the invocation area and that
+ * the area fits within the map, as well as that the player is on the invocation
+ * position.
  */
 void
 mkinvokearea(void)
 {
     int dist;
-    xchar xmin = inv_pos.x, xmax = inv_pos.x;
-    xchar ymin = inv_pos.y, ymax = inv_pos.y;
+    if (!invocation_pos(level, u.ux, u.uy)) {
+        impossible("Making invocation area when player not on invocation square.");
+        return;
+    }
+
+    xchar xmin = u.ux, xmax = u.ux;
+    xchar ymin = u.uy, ymax = u.uy;
     xchar i;
 
     pline("The floor shakes violently under you!");
@@ -1479,7 +1481,7 @@ mkinvpos(xchar x, xchar y, int dist)
 
     /* clip at existing map borders if necessary */
     if (!within_bounded_area
-        (x, y, x_maze_min + 1, y_maze_min + 1, x_maze_max - 1,
+        (x, y, 1, 1, x_maze_max - 1,
          y_maze_max - 1)) {
         /* only outermost 2 columns and/or rows may be truncated due to edge */
         if (dist < (7 - 2))

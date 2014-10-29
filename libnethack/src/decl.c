@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-15 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -53,7 +53,6 @@ struct multishot m_shot = { 0, 0, STRANGE_OBJECT, FALSE };
 int branch_id;
 dungeon dungeons[MAXDUNGEON];   /* ini'ed by init_dungeon() */
 s_level *sp_levchn;
-coord inv_pos;  /* vibrating square position */
 
 boolean in_mklev;
 boolean stoned; /* done to monsters hit by 'c' */
@@ -351,7 +350,6 @@ init_data(boolean including_program_state)
     memset(mvitals, 0, sizeof (mvitals));
     memset(spl_book, 0, sizeof (spl_book));
     memset(disco, 0, sizeof (disco));
-    memset(&inv_pos, 0, sizeof (inv_pos));
 
     level = NULL;
     ffruit = NULL;

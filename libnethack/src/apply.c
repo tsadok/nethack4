@@ -784,7 +784,7 @@ use_bell(struct obj **optr)
     boolean wakem = FALSE, learno = FALSE, ordinary =
         (obj->otyp != BELL_OF_OPENING ||
          !obj->spe), invoking = (obj->otyp == BELL_OF_OPENING &&
-                                 invocation_pos(&u.uz, u.ux, u.uy) &&
+                                 invocation_pos(level, u.ux, u.uy) &&
                                  !On_stairs(u.ux, u.uy));
 
     pline("You ring %s.", the(xname(obj)));
@@ -928,7 +928,7 @@ use_candelabrum(struct obj *obj)
         pline("%s's %s burn%s", The(xname(obj)), s,
               (Blind ? "." : " brightly!"));
     }
-    if (!invocation_pos(&u.uz, u.ux, u.uy) || On_stairs(u.ux, u.uy)) {
+    if (!invocation_pos(level, u.ux, u.uy) || On_stairs(u.ux, u.uy)) {
         pline("The %s %s being rapidly consumed!", s, vtense(s, "are"));
         obj->age = (obj->age + 1) / 2;
     } else {

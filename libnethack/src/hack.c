@@ -521,9 +521,10 @@ bad_rock(const struct permonst * mdat, xchar x, xchar y)
 }
 
 boolean
-invocation_pos(const d_level * dlev, xchar x, xchar y)
+invocation_pos(struct level *lev, xchar x, xchar y)
 {
-    return (boolean) (Invocation_lev(dlev) && x == inv_pos.x && y == inv_pos.y);
+    struct trap *tt = t_at(lev, x, y);
+    return tt && tt->ttyp == VIBRATING_SQUARE;
 }
 
 static void
@@ -1963,7 +1964,7 @@ void
 invocation_message(void)
 {
     /* a special clue-msg when on the Invocation position */
-    if (invocation_pos(&u.uz, u.ux, u.uy) && !On_stairs(u.ux, u.uy)) {
+    if (invocation_pos(level, u.ux, u.uy) && !On_stairs(u.ux, u.uy)) {
         const char *buf;
         struct obj *otmp = carrying(CANDELABRUM_OF_INVOCATION);
 

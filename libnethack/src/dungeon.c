@@ -194,9 +194,6 @@ save_dungeon(struct memfile *mf)
 
     for (curr = branches; curr; curr = curr->next)
         save_branch(mf, curr);
-
-    mwrite8(mf, inv_pos.x);
-    mwrite8(mf, inv_pos.y);
 }
 
 
@@ -312,9 +309,6 @@ restore_dungeon(struct memfile *mf)
             branches = curr;
         last = curr;
     }
-
-    inv_pos.x = mread8(mf);
-    inv_pos.y = mread8(mf);
 }
 
 static void
@@ -1785,13 +1779,6 @@ print_dungeon(boolean bymenu, schar * rlev, xchar * rdgn)
         return 0;
     }
 
-    /* I hate searching for the invocation pos while debugging. -dean */
-    if (Invocation_lev(&u.uz)) {
-        add_menutext(&menu, "");
-        buf = msgprintf("Invocation position @ (%d,%d), hero @ (%d,%d)",
-                        inv_pos.x, inv_pos.y, u.ux, u.uy);
-        add_menutext(&menu, buf);
-    }
     /* 
      * The following is based on the assumption that the inter-level portals
      * created by the level compiler (not the dungeon compiler) only exist

@@ -616,7 +616,7 @@ extern void movobj(struct obj *, xchar, xchar);
 extern boolean may_dig(struct level *lev, xchar x, xchar y);
 extern boolean may_passwall(struct level *lev, xchar x, xchar y);
 extern boolean bad_rock(const struct permonst *, xchar, xchar);
-extern boolean invocation_pos(const d_level * dlev, xchar x, xchar y);
+extern boolean invocation_pos(struct level *lev, xchar x, xchar y);
 extern boolean travelling(void);
 extern boolean test_move(
     int, int, int, int, int, int, enum u_interaction_mode,
