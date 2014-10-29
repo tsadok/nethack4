@@ -389,7 +389,7 @@ makemaz(struct level *lev, const char *s)
     maze0xy(&mm);
     walkfrom(lev, mm.x, mm.y);
     /* put a boulder at the maze center */
-    mksobj_at(BOULDER, lev, (int)mm.x, (int)mm.y, TRUE, FALSE);
+    mksobj_at(BOULDER, lev, (int)mm.x, (int)mm.y, mkobj_normal);
 
     wallification(lev, 2, 2, x_maze_max, y_maze_max);
     mazexy(lev, &mm);
@@ -441,11 +441,11 @@ makemaz(struct level *lev, const char *s)
 
     for (x = rn1(8, 11); x; x--) {
         mazexy(lev, &mm);
-        mkobj_at(rn2(2) ? GEM_CLASS : 0, lev, mm.x, mm.y, TRUE);
+        mkobj_at(rn2(2) ? GEM_CLASS : 0, lev, mm.x, mm.y, mkobj_artifact);
     }
     for (x = rn1(10, 2); x; x--) {
         mazexy(lev, &mm);
-        mksobj_at(BOULDER, lev, mm.x, mm.y, TRUE, FALSE);
+        mksobj_at(BOULDER, lev, mm.x, mm.y, mkobj_normal);
     }
     for (x = rn2(3); x; x--) {
         mazexy(lev, &mm);

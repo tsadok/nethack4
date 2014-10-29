@@ -297,7 +297,7 @@ dosit(const struct nh_cmd_arg *arg)
             return 0;
         }
 
-        uegg = mksobj(level, EGG, FALSE, FALSE);
+        uegg = mksobj(level, EGG, mkobj_no_init);
         uegg->spe = 1;
         uegg->quan = 1;
         uegg->owt = weight(uegg);

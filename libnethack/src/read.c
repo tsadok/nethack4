@@ -1142,8 +1142,8 @@ seffects(struct obj *sobj, boolean * known)
 
                             /* Make the object(s) */
                             otmp2 =
-                                mksobj(level, confused ? ROCK : BOULDER, FALSE,
-                                       FALSE);
+                                mksobj(level, confused ? ROCK : BOULDER,
+                                       mkobj_no_init);
                             if (!otmp2)
                                 continue;       /* Shouldn't happen */
                             otmp2->quan = confused ? rn1(5, 2) : 1;
@@ -1203,7 +1203,7 @@ seffects(struct obj *sobj, boolean * known)
                 struct obj *otmp2;
 
                 /* Okay, _you_ write this without repeating the code */
-                otmp2 = mksobj(level, confused ? ROCK : BOULDER, FALSE, FALSE);
+                otmp2 = mksobj(level, confused ? ROCK : BOULDER, mkobj_no_init);
                 if (!otmp2)
                     break;
                 otmp2->quan = confused ? rn1(5, 2) : 1;
@@ -1733,11 +1733,11 @@ punish(struct obj *sobj)
     if (amorphous(youmonst.data) || is_whirly(youmonst.data) ||
         unsolid(youmonst.data)) {
         pline("A ball and chain appears, then falls away.");
-        dropy(mkobj(level, BALL_CLASS, TRUE));
+        dropy(mkobj(level, BALL_CLASS, mkobj_artifact));
         return;
     }
-    uchain = mkobj(level, CHAIN_CLASS, TRUE);
-    uball = mkobj(level, BALL_CLASS, TRUE);
+    uchain = mkobj(level, CHAIN_CLASS, mkobj_artifact);
+    uball = mkobj(level, BALL_CLASS, mkobj_artifact);
     uball->spe = 1;     /* special ball (see save) */
 
     /* 

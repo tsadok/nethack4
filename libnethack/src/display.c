@@ -649,8 +649,9 @@ newsym_core(int x, int y, boolean reroll_hallucinated_appearances)
         impossible("Calling newsym without a valid level.");
     }
 
-    if (in_mklev)
-        return;
+    if (in_mklev) {
+        impossible("Calling newsym during level generation.");
+    }
 
     /* only permit updating the hero when swallowed */
     if (Engulfed) {

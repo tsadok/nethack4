@@ -232,7 +232,7 @@ priestini(struct level *lev, struct mkroom *sroom, int sx, int sy,
         }
         /* 2 to 4 spellbooks */
         for (cnt = rn1(3, 2); cnt > 0; --cnt) {
-            mpickobj(priest, mkobj(level, SPBOOK_CLASS, FALSE));
+            mpickobj(priest, mkobj(level, SPBOOK_CLASS, mkobj_normal));
         }
         /* robe [via makemon()] */
         if (rn2(2) && (otmp = which_armor(priest, os_armc)) != 0) {

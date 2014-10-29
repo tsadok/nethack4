@@ -81,28 +81,27 @@ next_ident(void)
 }
 
 struct obj *
-mkobj_at(char let, struct level *lev, int x, int y, boolean artif)
+mkobj_at(char let, struct level *lev, int x, int y, enum mkobj_flags mkflags)
 {
     struct obj *otmp;
 
-    otmp = mkobj(lev, let, artif);
+    otmp = mkobj(lev, let, mkflags);
     place_object(otmp, lev, x, y);
     return otmp;
 }
 
 struct obj *
-mksobj_at(int otyp, struct level *lev, int x, int y, boolean init,
-          boolean artif)
+mksobj_at(int otyp, struct level *lev, int x, int y, enum mkobj_flags mkflags)
 {
     struct obj *otmp;
 
-    otmp = mksobj(lev, otyp, init, artif);
+    otmp = mksobj(lev, otyp, mkflags);
     place_object(otmp, lev, x, y);
     return otmp;
 }
 
 struct obj *
-mkobj(struct level *lev, char oclass, boolean artif)
+mkobj(struct level *lev, char oclass, enum mkobj_flags mkflags)
 {
     int tprob;
 
@@ -116,11 +115,11 @@ mkobj(struct level *lev, char oclass, boolean artif)
         oclass = iprobs->iclass;
     }
 
-    return mkobj_of_class(lev, oclass, artif);
+    return mkobj_of_class(lev, oclass, mkflags);
 }
 
 struct obj *
-mkobj_of_class(struct level *lev, char oclass, boolean artif)
+mkobj_of_class(struct level *lev, char oclass, enum mkobj_flags mkflags)
 {
     int i, prob = rnd(1000);
 
@@ -173,7 +172,7 @@ mkobj_of_class(struct level *lev, char oclass, boolean artif)
     if (objects[i].oc_class != oclass || !OBJ_NAME(objects[i]))
         panic("probtype error, oclass=%d i=%d", (int)oclass, i);
 
-    return mksobj(lev, i, TRUE, artif);
+    return mksobj(lev, i, mkflags);
 }
 
 static void
@@ -212,7 +211,7 @@ mkbox_cnts(struct obj *box)
 
     for (n = rn2(n + 1); n > 0; n--) {
         if (box->otyp == ICE_BOX) {
-            if (!(otmp = mksobj(box->olev, CORPSE, TRUE, TRUE)))
+            if (!(otmp = mksobj(box->olev, CORPSE, mkobj_artifact)))
                 continue;
             /* Note: setting age to 0 is correct.  Age has a different from
                usual meaning for objects stored in ice boxes. -KAA */
@@ -226,7 +225,7 @@ mkbox_cnts(struct obj *box)
             const struct icp *iprobs = boxiprobs;
 
             for (tprob = rnd(100); (tprob -= iprobs->iprob) > 0; iprobs++) ;
-            if (!(otmp = mkobj(box->olev, iprobs->iclass, TRUE)))
+            if (!(otmp = mkobj(box->olev, iprobs->iclass, mkobj_artifact)))
                 continue;
 
             /* handle a couple of special cases */
@@ -478,7 +477,7 @@ mksobj_basic(struct level *lev, int otyp)
 }
 
 struct obj *
-mksobj(struct level *lev, int otyp, boolean init, boolean artif)
+mksobj(struct level *lev, int otyp, enum mkobj_flags mkflags)
 {
     int mndx, tryct;
     struct obj *otmp;
@@ -487,7 +486,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
     otmp = mksobj_basic(lev, otyp);
     otmp->o_id = next_ident();
 
-    if (init) {
+    if (!(mkflags & mkobj_no_init)) {
 #ifdef INVISIBLE_OBJECTS
         otmp->oinvis = !rn2(1250);
 #endif
@@ -505,7 +504,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
             if (is_poisonable(otmp) && !rn2(100))
                 otmp->opoisoned = 1;
 
-            if (artif && !rn2(20))
+            if ((mkflags & mkobj_artifact) && !rn2(20))
                 otmp = mk_artifact(lev, otmp, (aligntyp) A_NONE);
             break;
         case FOOD_CLASS:
@@ -606,7 +605,8 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
             case SACK:
             case OILSKIN_SACK:
             case BAG_OF_HOLDING:
-                mkbox_cnts(otmp);
+                if (!(mkflags & mkobj_no_contents))
+                    mkbox_cnts(otmp);
                 break;
             case EXPENSIVE_CAMERA:
             case TINNING_KIT:
@@ -686,7 +686,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
                 otmp->spe = rne(3);
             } else
                 blessorcurse(otmp, 10);
-            if (artif && !rn2(40))
+            if ((mkflags & mkobj_artifact) && !rn2(40))
                 otmp = mk_artifact(lev, otmp, (aligntyp) A_NONE);
             /* simulate lacquered armor for samurai */
             if (Role_if(PM_SAMURAI) && otmp->otyp == SPLINT_MAIL &&
@@ -748,7 +748,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
     /* Some things must get done (timers) even if init = 0 */
     switch (otmp->otyp) {
     case CORPSE:
-        start_corpse_timeout(otmp);
+        start_corpse_timeout(otmp, !level->generated);
         break;
     }
 
@@ -770,7 +770,7 @@ mktemp_sobj(struct level *lev, int otyp) {
  * This takes the age of the corpse into consideration as of 3.4.0.
  */
 void
-start_corpse_timeout(struct obj *body)
+start_corpse_timeout(struct obj *body, boolean extra_variance)
 {
     long when;  /* rot away when this old */
     long corpse_age;    /* age of corpse */
@@ -780,13 +780,17 @@ start_corpse_timeout(struct obj *body)
 #define TAINT_AGE (50L) /* age when corpses go bad */
 #define TROLL_REVIVE_CHANCE 37  /* 1/37 chance for 50 turns ~ 75% chance */
 #define ROT_AGE (250L)  /* age when corpses rot away */
+#define MIN_ROT (10)    /* minimum rot duration when timer restarted */
 
     /* lizards and lichen don't rot or revive */
     if (body->corpsenm == PM_LIZARD || body->corpsenm == PM_LICHEN)
         return;
 
     action = ROT_CORPSE;        /* default action: rot away */
-    rot_adjust = in_mklev ? 25 : 10;    /* give some variation */
+    /* Here we add some variation to the timeout. extra_variance is usually true
+     * during level generation so that corpses that start on a level seem less
+     * uniform. */
+    rot_adjust = extra_variance ? 25 : 10;
     corpse_age = moves - body->age;
     if (corpse_age > ROT_AGE)
         when = rot_adjust;
@@ -981,8 +985,8 @@ static const int treefruits[] =
 struct obj *
 rnd_treefruit_at(int x, int y)
 {
-    return mksobj_at(treefruits[rn2(SIZE(treefruits))], level, x, y, TRUE,
-                     FALSE);
+    return mksobj_at(treefruits[rn2(SIZE(treefruits))], level, x, y,
+                     mkobj_normal);
 }
 
 struct obj *
@@ -995,7 +999,7 @@ mkgold(long amount, struct level *lev, int x, int y)
     if (gold) {
         gold->quan += amount;
     } else {
-        gold = mksobj_at(GOLD_PIECE, lev, x, y, TRUE, FALSE);
+        gold = mksobj_at(GOLD_PIECE, lev, x, y, mkobj_normal);
         gold->quan = amount;
     }
     gold->owt = weight(gold);
@@ -1021,18 +1025,18 @@ mkgold(long amount, struct level *lev, int x, int y)
 struct obj *
 mkcorpstat(int objtype, /* CORPSE or STATUE */
            struct monst *mtmp, const struct permonst *ptr, struct level *lev,
-           int x, int y, boolean init)
+           int x, int y, enum mkobj_flags mkflags)
 {
     struct obj *otmp;
 
     if (objtype != CORPSE && objtype != STATUE)
         impossible("making corpstat type %d", objtype);
     if (x == COLNO && y == ROWNO) {     /* special case - random placement */
-        otmp = mksobj(lev, objtype, init, FALSE);
+        otmp = mksobj(lev, objtype, mkflags);
         if (otmp)
             rloco(otmp);
     } else
-        otmp = mksobj_at(objtype, lev, x, y, init, FALSE);
+        otmp = mksobj_at(objtype, lev, x, y, mkflags);
     if (otmp) {
         if (mtmp) {
             struct obj *otmp2;
@@ -1056,7 +1060,7 @@ mkcorpstat(int objtype, /* CORPSE or STATUE */
                 (special_corpse(old_corpsenm) ||
                  special_corpse(otmp->corpsenm))) {
                 obj_stop_timers(otmp);
-                start_corpse_timeout(otmp);
+                start_corpse_timeout(otmp, !lev->generated);
             }
         }
     }
@@ -1145,11 +1149,11 @@ mk_tt_object(struct level *lev, int objtype,    /* CORPSE or STATUE */
              int x, int y)
 {
     struct obj *otmp, *otmp2;
-    boolean initialize_it;
-
     /* player statues never contain books */
-    initialize_it = (objtype != STATUE);
-    if ((otmp = mksobj_at(objtype, lev, x, y, initialize_it, FALSE)) != 0) {
+    enum mkobj_flags mkflags =
+        objtype == STATUE ? mkobj_no_init : mkobj_normal;
+
+    if ((otmp = mksobj_at(objtype, lev, x, y, mkflags))) {
         /* tt_oname will return null if the scoreboard is empty */
         if ((otmp2 = tt_oname(otmp)) != 0)
             otmp = otmp2;
@@ -1164,9 +1168,8 @@ mk_named_object(int objtype,    /* CORPSE or STATUE */
 {
     struct obj *otmp;
 
-    otmp =
-        mkcorpstat(objtype, NULL, ptr, level, x, y,
-                   (boolean) (objtype != STATUE));
+    otmp = mkcorpstat(objtype, NULL, ptr, level, x, y,
+                      objtype == STATUE ? mkobj_no_init : mkobj_normal);
     if (nm)
         otmp = oname(otmp, nm);
     return otmp;

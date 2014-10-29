@@ -220,9 +220,9 @@ mkshobj_at(const struct shclass *shp, struct level *lev, int sx, int sy)
     } else {
         atype = get_shop_item(shp - shtypes);
         if (atype < 0)
-            mksobj_at(-atype, lev, sx, sy, TRUE, TRUE);
+            mksobj_at(-atype, lev, sx, sy, mkobj_artifact);
         else
-            mkobj_at(atype, lev, sx, sy, TRUE);
+            mkobj_at(atype, lev, sx, sy, mkobj_artifact);
     }
 }
 

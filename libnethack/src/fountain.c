@@ -143,7 +143,7 @@ dofindgem(void)
     else
         pline("You feel a gem here!");
     mksobj_at(rnd_class(DILITHIUM_CRYSTAL, LUCKSTONE - 1), level, u.ux, u.uy,
-              FALSE, FALSE);
+              mkobj_no_init);
     SET_FOUNTAIN_LOOTED(u.ux, u.uy);
     newsym(u.ux, u.uy);
     exercise(A_WIS, TRUE);      /* a discovery! */
@@ -540,7 +540,7 @@ drinksink(void)
         break;
     case 4:
         do {
-            otmp = mkobj(level, POTION_CLASS, FALSE);
+            otmp = mkobj(level, POTION_CLASS, mkobj_normal);
             if (otmp->otyp == POT_WATER) {
                 obfree(otmp, NULL);
                 otmp = NULL;
@@ -558,7 +558,7 @@ drinksink(void)
     case 5:
         if (!(level->locations[u.ux][u.uy].looted & S_LRING)) {
             pline("You find a ring in the sink!");
-            mkobj_at(RING_CLASS, level, u.ux, u.uy, TRUE);
+            mkobj_at(RING_CLASS, level, u.ux, u.uy, mkobj_artifact);
             level->locations[u.ux][u.uy].looted |= S_LRING;
             exercise(A_WIS, TRUE);
             newsym(u.ux, u.uy);

@@ -828,7 +828,7 @@ display_rip(int how, long umoney, const char *killer)
                 if (count == 0L)
                     continue;
                 if (objects[typ].oc_class != GEM_CLASS || typ <= LAST_GEM) {
-                    otmp = mksobj(level, typ, FALSE, FALSE);
+                    otmp = mksobj(level, typ, mkobj_no_init);
                     makeknown(otmp->otyp);
                     otmp->known = 1;    /* for fake amulets */
                     otmp->dknown = 1;   /* seen it (blindness fix) */

@@ -499,8 +499,10 @@ vision_recalc(int control)
     int oldseenv;       /* previous seenv value */
 
     turnstate.vision_full_recalc = FALSE;     /* reset flag */
-    if (in_mklev)
+    if (in_mklev) {
+        impossible("vision_recalc during level generation");
         return;
+    }
 
     /* 
      * Either the light sources have been taken care of, or we must

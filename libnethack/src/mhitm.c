@@ -707,7 +707,7 @@ mdamagem(struct monst *magr, struct monst *mdef, const struct attack *mattk)
         num = monsndx(mdef->data);
         if (magr->mtame && !magr->isminion &&
             !(mvitals[num].mvflags & G_NOCORPSE)) {
-            struct obj *virtualcorpse = mksobj(level, CORPSE, FALSE, FALSE);
+            struct obj *virtualcorpse = mksobj(level, CORPSE, mkobj_no_init);
             int nutrit;
 
             virtualcorpse->corpsenm = num;
@@ -950,7 +950,7 @@ mdamagem(struct monst *magr, struct monst *mdef, const struct attack *mattk)
         if (!cancelled && mdef->mspeed != MSLOW) {
             unsigned int oldspeed = mdef->mspeed;
 
-            mon_adjust_speed(mdef, -1, NULL);
+            mon_adjust_speed(mdef, -1, NULL, FALSE);
             mdef->mstrategy &= ~STRAT_WAITFORU;
             if (mdef->mspeed != oldspeed && vis)
                 pline("%s slows down.", Monnam(mdef));

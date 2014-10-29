@@ -95,7 +95,7 @@ mk_mplayer_armor(struct monst *mon, short typ)
 
     if (typ == STRANGE_OBJECT)
         return;
-    obj = mksobj(mon->dlevel, typ, FALSE, FALSE);
+    obj = mksobj(mon->dlevel, typ, mkobj_no_init);
     if (!rn2(3))
         obj->oerodeproof = 1;
     if (!rn2(3))
@@ -250,7 +250,7 @@ mk_mplayer(const struct permonst *ptr, struct level *lev, xchar x, xchar y,
         }
 
         if (weapon != STRANGE_OBJECT) {
-            otmp = mksobj(level, weapon, TRUE, FALSE);
+            otmp = mksobj(level, weapon, mkobj_normal);
             otmp->spe = (special ? rn1(5, 4) : rn2(4));
             if (!rn2(3))
                 otmp->oerodeproof = 1;
@@ -287,7 +287,7 @@ mk_mplayer(const struct permonst *ptr, struct level *lev, xchar x, xchar y,
             mkmonmoney(mtmp, rn2(1000));
             quan = rn2(10);
             while (quan--)
-                mpickobj(mtmp, mkobj(level, RANDOM_CLASS, FALSE));
+                mpickobj(mtmp, mkobj(level, RANDOM_CLASS, mkobj_normal));
         }
         quan = rnd(3);
         while (quan--)

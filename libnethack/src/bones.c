@@ -296,9 +296,7 @@ make_bones:
         /* drop everything */
         drop_upon_death(NULL, NULL);
         /* trick makemon() into allowing monster creation on your location */
-        in_mklev = TRUE;
         mtmp = makemon(&mons[PM_GHOST], level, u.ux, u.uy, MM_NONAME);
-        in_mklev = FALSE;
         if (!mtmp)
             return;
         mtmp = christen_monst(mtmp, u.uplname);
@@ -306,9 +304,7 @@ make_bones:
             corpse = obj_attach_mid(corpse, mtmp->m_id);
     } else {
         /* give your possessions to the monster you become */
-        in_mklev = TRUE;
         mtmp = makemon(&mons[u.ugrave_arise], level, u.ux, u.uy, NO_MM_FLAGS);
-        in_mklev = FALSE;
         if (!mtmp) {
             drop_upon_death(NULL, NULL);
             return;

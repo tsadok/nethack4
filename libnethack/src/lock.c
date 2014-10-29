@@ -265,7 +265,7 @@ forcelock(void)
             }
             if (box->otyp == ICE_BOX && otmp->otyp == CORPSE) {
                 otmp->age = moves - otmp->age;  /* actual age */
-                start_corpse_timeout(otmp);
+                start_corpse_timeout(otmp, FALSE);
             }
             place_object(otmp, level, u.ux, u.uy);
             stackobj(otmp);

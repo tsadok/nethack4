@@ -906,7 +906,7 @@ dokick(const struct nh_cmd_arg *arg)
                     i = 6;
                 while (i--)
                     mksobj_at(rnd_class(DILITHIUM_CRYSTAL, LUCKSTONE - 1),
-                              level, x, y, FALSE, TRUE);
+                              level, x, y, mkobj_no_init | mkobj_artifact);
                 if (Blind)
                     pline("You kick something loose!");
                 else {
@@ -975,7 +975,7 @@ dokick(const struct nh_cmd_arg *arg)
                 if (nfall != nfruit) {
                     /* scatter left some in the tree, but treefruit may not
                        refer to the correct object */
-                    treefruit = mksobj(level, frtype, TRUE, FALSE);
+                    treefruit = mksobj(level, frtype, mkobj_normal);
                     treefruit->quan = nfruit - nfall;
                     pline("%ld %s got caught in the branches.", nfruit - nfall,
                           xname(treefruit));
@@ -1051,7 +1051,7 @@ dokick(const struct nh_cmd_arg *arg)
                 if (!(maploc->looted & S_LRING)) {      /* once per sink */
                     if (!Blind)
                         pline("You see a ring shining in its midst.");
-                    mkobj_at(RING_CLASS, level, x, y, TRUE);
+                    mkobj_at(RING_CLASS, level, x, y, mkobj_artifact);
                     newsym(x, y);
                     exercise(A_DEX, TRUE);
                     exercise(A_WIS, TRUE);      /* a discovery! */

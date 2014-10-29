@@ -591,7 +591,7 @@ tt_oname(struct obj *otmp)
         otmp->owt = weight(otmp);
         otmp = oname(otmp, tt->name);
         if (otmp->otyp == CORPSE)
-            start_corpse_timeout(otmp);
+            start_corpse_timeout(otmp, FALSE);
     }
 
     free(toptenlist);

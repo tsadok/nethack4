@@ -934,7 +934,7 @@ ini_inv(const struct trobj *trop, short nocreate[4])
                         break;
                     }
             }
-            obj = mksobj(level, otyp, TRUE, FALSE);
+            obj = mksobj(level, otyp, mkobj_no_contents);
 
             /* lacquered armour */
             if (obj->otyp == SPLINT_MAIL && Role_if(PM_SAMURAI))
@@ -950,7 +950,7 @@ ini_inv(const struct trobj *trop, short nocreate[4])
              * one will immediately read it and use the iron ball as a
              * weapon.)
              */
-            obj = mkobj(level, trop->trclass, FALSE);
+            obj = mkobj(level, trop->trclass, mkobj_no_contents);
             otyp = obj->otyp;
             while (otyp == WAN_WISHING || otyp == nocreate[0]
                    || otyp == nocreate[1]
@@ -975,7 +975,7 @@ ini_inv(const struct trobj *trop, short nocreate[4])
                         restricted_spell_discipline(otyp)))
                 ) {
                 dealloc_obj(obj);
-                obj = mkobj(level, trop->trclass, FALSE);
+                obj = mkobj(level, trop->trclass, mkobj_no_contents);
                 otyp = obj->otyp;
             }
 

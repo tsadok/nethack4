@@ -161,7 +161,7 @@ makedog(void)
     mtmp = makemon(&mons[pettype], level, u.ux, u.uy, MM_EDOG);
 
     /* Horses already wear a saddle */
-    if (pettype == PM_PONY && ! !(otmp = mksobj(level, SADDLE, TRUE, FALSE))) {
+    if (pettype == PM_PONY && ! !(otmp = mksobj(level, SADDLE, mkobj_normal))) {
         if (mpickobj(mtmp, otmp))
             panic("merged saddle?");
         mtmp->misc_worn_check |= W_MASK(os_saddle);
@@ -391,7 +391,7 @@ mon_arrive(struct monst *mtmp, boolean with_you)
                 }
             }
             mkcorpstat(CORPSE, NULL, mtmp->data, level, xlocale, ylocale,
-                       FALSE);
+                       mkobj_no_init);
             mongone(mtmp);
         }
     }

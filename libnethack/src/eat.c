@@ -2188,7 +2188,7 @@ eat_floorfood:
                 if ((c = yn_function(qbuf, ynqchars, 'n')) == 'y') {
                     u.utrap = u.utraptype = 0;
                     deltrap(level, ttmp);
-                    return mksobj(level, BEARTRAP, TRUE, FALSE);
+                    return mksobj(level, BEARTRAP, mkobj_normal);
                 } else if (c == 'q') {
                     return NULL;
                 }

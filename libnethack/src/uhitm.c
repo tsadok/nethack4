@@ -1602,7 +1602,7 @@ damageum(struct monst *mdef, const struct attack *mattk)
         if (!negated && mdef->mspeed != MSLOW) {
             unsigned int oldspeed = mdef->mspeed;
 
-            mon_adjust_speed(mdef, -1, NULL);
+            mon_adjust_speed(mdef, -1, NULL, FALSE);
             if (mdef->mspeed != oldspeed && canseemon(mdef))
                 pline("%s slows down.", Monnam(mdef));
         }

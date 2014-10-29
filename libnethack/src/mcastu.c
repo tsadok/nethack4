@@ -432,7 +432,7 @@ cast_wizard_spell(struct monst *mtmp, int dmg, int spellnum)
         dmg = 0;
         break;
     case MGC_HASTE_SELF:
-        mon_adjust_speed(mtmp, 1, NULL);
+        mon_adjust_speed(mtmp, 1, NULL, FALSE);
         dmg = 0;
         break;
     case MGC_CURE_SELF:

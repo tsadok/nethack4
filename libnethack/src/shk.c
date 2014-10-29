@@ -3011,7 +3011,7 @@ repair_damage(struct level *lev, struct monst *shkp, struct damage *tmp_dam,
             /* convert to an object */
             otmp =
                 mksobj(lev, (ttmp->ttyp == LANDMINE) ? LAND_MINE : BEARTRAP,
-                       TRUE, FALSE);
+                       mkobj_normal);
             otmp->quan = 1;
             otmp->owt = weight(otmp);
             mpickobj(shkp, otmp);

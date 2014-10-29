@@ -474,10 +474,10 @@ makeniche(struct level *lev, int trap_type)
                     dosdoor(lev, xx, yy, aroom, rn2(5) ? SDOOR : DOOR);
                 else {
                     if (!lev->flags.noteleport)
-                        mksobj_at(SCR_TELEPORTATION, lev, xx, yy + dy, TRUE,
-                                  FALSE);
+                        mksobj_at(SCR_TELEPORTATION, lev, xx, yy + dy,
+                                  mkobj_normal);
                     if (!rn2(3))
-                        mkobj_at(0, lev, xx, yy + dy, TRUE);
+                        mkobj_at(0, lev, xx, yy + dy, mkobj_artifact);
                 }
             }
             return;
@@ -539,7 +539,7 @@ alloc_level(d_level * levnum)
         lev->upstair.sy = lev->dnstair.sy = lev->sstairs.sy =
         lev->upladder.sy = lev->dnladder.sy = ROWNO;
 
-    /* these are not part of the level structure, but are obly used while
+    /* these are not part of the level structure, but are only used while
        making new levels */
     init_rect();
     vault_x = -1;
@@ -744,7 +744,7 @@ skip0:
         if (!rn2(20)) {
             y = somey(croom);
             x = somex(croom);
-            mkcorpstat(STATUE, NULL, NULL, lev, x, y, TRUE);
+            mkcorpstat(STATUE, NULL, NULL, lev, x, y, mkobj_normal);
         }
         /* put box/chest inside; 40% chance for at least 1 box, regardless of
            number of rooms; about 5 - 7.5% for 2 boxes, least likely when few
@@ -756,7 +756,7 @@ skip0:
                replays. */
             y = somey(croom);
             x = somex(croom);
-            mksobj_at((rn2(3)) ? LARGE_BOX : CHEST, lev, x, y, TRUE, FALSE);
+            mksobj_at((rn2(3)) ? LARGE_BOX : CHEST, lev, x, y, mkobj_normal);
         }
 
         /* maybe make some graffiti */
@@ -779,7 +779,7 @@ skip0:
         if (!rn2(3)) {
             y = somey(croom);
             x = somex(croom);
-            mkobj_at(0, lev, x, y, TRUE);
+            mkobj_at(0, lev, x, y, mkobj_artifact);
             tryct = 0;
             while (!rn2(5)) {
                 if (++tryct > 100) {
@@ -788,7 +788,7 @@ skip0:
                 }
                 y = somey(croom);
                 x = somex(croom);
-                mkobj_at(0, lev, x, y, TRUE);
+                mkobj_at(0, lev, x, y, mkobj_artifact);
             }
         }
     }
@@ -814,7 +814,7 @@ mineralize(struct level *lev)
         for (y = 1; y < (ROWNO - 1); y++)
             if ((lev->locations[x][y].typ == POOL && !rn2(10)) ||
                 (lev->locations[x][y].typ == MOAT && !rn2(30)))
-                mksobj_at(KELP_FROND, lev, x, y, TRUE, FALSE);
+                mksobj_at(KELP_FROND, lev, x, y, mkobj_normal);
 
     /* determine if it is even allowed; almost all special levels are excluded
        */
@@ -860,7 +860,7 @@ mineralize(struct level *lev)
                        lev->locations[x + 1][y + 1].typ == STONE &&
                        lev->locations[x - 1][y + 1].typ == STONE) {
                 if (rn2(1000) < goldprob) {
-                    if ((otmp = mksobj(lev, GOLD_PIECE, FALSE, FALSE)) != 0) {
+                    if ((otmp = mksobj(lev, GOLD_PIECE, mkobj_no_init)) != 0) {
                         otmp->ox = x, otmp->oy = y;
                         otmp->quan = 1L + rnd(goldprob * 3);
                         otmp->owt = weight(otmp);
@@ -872,7 +872,7 @@ mineralize(struct level *lev)
                 }
                 if (rn2(1000) < gemprob) {
                     for (cnt = rnd(2 + dunlev(&lev->z) / 3); cnt > 0; cnt--)
-                        if ((otmp = mkobj(lev, GEM_CLASS, FALSE)) != 0) {
+                        if ((otmp = mkobj(lev, GEM_CLASS, mkobj_normal)) != 0) {
                             if (otmp->otyp == ROCK) {
                                 dealloc_obj(otmp);      /* discard it */
                             } else {
@@ -906,6 +906,7 @@ mklev(d_level * levnum)
     makelevel(lev);
     bound_digging(lev);
     mineralize(lev);
+    lev->generated = TRUE;
     in_mklev = FALSE;
     /* has_morgue gets cleared once morgue is entered; graveyard stays set
        (graveyard might already be set even when has_morgue is clear [see
@@ -1387,7 +1388,7 @@ mkgrave(struct level *lev, struct mkroom *croom)
     if (!rn2(3))
         mkgold(0L, lev, m.x, m.y);
     for (tryct = rn2(5); tryct; tryct--) {
-        otmp = mkobj(lev, RANDOM_CLASS, TRUE);
+        otmp = mkobj(lev, RANDOM_CLASS, mkobj_artifact);
         if (!otmp)
             return;
         curse(otmp);
@@ -1398,7 +1399,7 @@ mkgrave(struct level *lev, struct mkroom *croom)
 
     /* Leave a bell, in case we accidentally buried someone alive */
     if (dobell)
-        mksobj_at(BELL, lev, m.x, m.y, TRUE, FALSE);
+        mksobj_at(BELL, lev, m.x, m.y, mkobj_normal);
     return;
 }
 

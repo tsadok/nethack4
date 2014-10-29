@@ -1135,7 +1135,7 @@ mdig_tunnel(struct monst *mtmp)
         here->typ = CORR;
         if (pile && pile < 5)
             mksobj_at((pile == 1) ? BOULDER : ROCK, level, mtmp->mx, mtmp->my,
-                      TRUE, FALSE);
+                      mkobj_normal);
     }
     newsym(mtmp->mx, mtmp->my);
     if (!sobj_at(BOULDER, level, mtmp->mx, mtmp->my))
@@ -1190,7 +1190,7 @@ zap_dig(schar dx, schar dy, schar dz)
                        killer_msg(DIED, msgcat_many(
                                       "collapsing the ceiling on top of ",
                                       uhim(), "self", NULL)));
-                otmp = mksobj_at(ROCK, level, u.ux, u.uy, FALSE, FALSE);
+                otmp = mksobj_at(ROCK, level, u.ux, u.uy, mkobj_no_init);
                 if (otmp) {
                     xname(otmp);        /* set dknown, maybe bknown */
                     stackobj(otmp);

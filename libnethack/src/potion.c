@@ -1096,7 +1096,7 @@ potionhit(struct monst *mon, struct obj *obj, boolean your_fault)
             break;
         case POT_SPEED:
             angermon = FALSE;
-            mon_adjust_speed(mon, 1, obj);
+            mon_adjust_speed(mon, 1, obj, FALSE);
             break;
         case POT_BLINDNESS:
             if (haseyes(mon->data)) {
@@ -1655,7 +1655,7 @@ dodip(const struct nh_cmd_arg *arg)
                 {
                     struct obj *otmp;
 
-                    otmp = mkobj(level, POTION_CLASS, FALSE);
+                    otmp = mkobj(level, POTION_CLASS, mkobj_normal);
                     obj->otyp = otmp->otyp;
                     obfree(otmp, NULL);
                 }

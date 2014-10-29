@@ -900,10 +900,12 @@ create_object(struct level *lev, object * o, struct mkroom *croom)
     struct obj *otmp;
     schar x, y;
     char c;
-    boolean named;      /* has a name been supplied in level description? */
+
 
     if (rn2(100) < o->chance) {
-        named = o->name.str ? TRUE : FALSE;
+        /* has a name been supplied in level description? */
+        boolean named = o->name.str ? TRUE : FALSE;
+        enum mkobj_flags mkflags = named ? mkobj_normal : mkobj_artifact;
 
         x = o->x;
         y = o->y;
@@ -920,9 +922,9 @@ create_object(struct level *lev, object * o, struct mkroom *croom)
             c = 0;
 
         if (!c)
-            otmp = mkobj_at(RANDOM_CLASS, lev, x, y, !named);
+            otmp = mkobj_at(RANDOM_CLASS, lev, x, y, mkflags);
         else if (o->id != -1)
-            otmp = mksobj_at(o->id, lev, x, y, TRUE, !named);
+            otmp = mksobj_at(o->id, lev, x, y, mkflags);
         else {
             /*
              * The special levels are compiled with the default "text" object
@@ -937,7 +939,7 @@ create_object(struct level *lev, object * o, struct mkroom *croom)
             if (oclass == COIN_CLASS)
                 otmp = mkgold(0L, lev, x, y);
             else
-                otmp = mkobj_at(oclass, lev, x, y, !named);
+                otmp = mkobj_at(oclass, lev, x, y, mkflags);
         }
 
         if (o->spe != -127)     /* That means NOT RANDOM! */
@@ -1298,7 +1300,7 @@ dig_corridor(struct level * lev, coord * org, coord * dest, boolean nxcor,
             if (ftyp != CORR || rn2(100)) {
                 crm->typ = ftyp;
                 if (nxcor && !rn2(50))
-                    mksobj_at(BOULDER, lev, xx, yy, TRUE, FALSE);
+                    mksobj_at(BOULDER, lev, xx, yy, mkobj_normal);
             } else {
                 crm->typ = SCORR;
             }
@@ -2611,11 +2613,12 @@ load_maze(struct level *lev, dlb * fd)
         mapfact = (int)((mapcount * 100L) / mapcountmax);
         for (x = rnd((int)(20 * mapfact) / 100); x; x--) {
             maze1xy(lev, &mm, DRY);
-            mkobj_at(rn2(2) ? GEM_CLASS : RANDOM_CLASS, lev, mm.x, mm.y, TRUE);
+            mkobj_at(rn2(2) ? GEM_CLASS : RANDOM_CLASS, lev, mm.x, mm.y,
+                     mkobj_artifact);
         }
         for (x = rnd((int)(12 * mapfact) / 100); x; x--) {
             maze1xy(lev, &mm, DRY);
-            mksobj_at(BOULDER, lev, mm.x, mm.y, TRUE, FALSE);
+            mksobj_at(BOULDER, lev, mm.x, mm.y, mkobj_normal);
         }
         for (x = rn2(2); x; x--) {
             maze1xy(lev, &mm, DRY);
@@ -2793,7 +2796,7 @@ fixup_special(struct level *lev)
         } else {        /* Medusa statues don't contain books */
             y = somey(croom);
             x = somex(croom);
-            otmp = mkcorpstat(STATUE, NULL, NULL, lev, x, y, FALSE);
+            otmp = mkcorpstat(STATUE, NULL, NULL, lev, x, y, mkobj_no_init);
         }
         if (otmp) {
             while (otmp->corpsenm < LOW_PM

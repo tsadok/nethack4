@@ -594,7 +594,7 @@ level_tele_impl(boolean wizard_tele)
                         if (!Uhave_amulet) {
                             struct obj *obj;
 
-                            obj = mksobj(level, AMULET_OF_YENDOR, TRUE, FALSE);
+                            obj = mksobj(level, AMULET_OF_YENDOR, mkobj_normal);
                             if (obj) {
                                 addinv(obj);
                                 dest = msgcat(dest, " with the amulet");
@@ -675,11 +675,9 @@ level_tele_impl(boolean wizard_tele)
     if (newlev < 0 && !force_dest) {
         if (*u.ushops0) {
             /* take unpaid inventory items off of shop bills */
-            in_mklev = TRUE;    /* suppress map update */
             u_left_shop(u.ushops0, TRUE);
             /* you're now effectively out of the shop */
             *u.ushops0 = *u.ushops = '\0';
-            in_mklev = FALSE;
         }
         if (newlev <= -10) {
             pline("You arrive in heaven.");

@@ -816,7 +816,7 @@ use_bell(struct obj **optr)
                 default:
                     break;
                 case 1:
-                    mon_adjust_speed(mtmp, 2, NULL);
+                    mon_adjust_speed(mtmp, 2, NULL, FALSE);
                     break;
                 case 2:
                     pline("You freeze for a moment in surprise.");
@@ -1511,7 +1511,7 @@ use_tinning_kit(struct obj *obj)
     }
     consume_obj_charge(obj, TRUE);
 
-    if ((can = mksobj(level, TIN, FALSE, FALSE)) != 0) {
+    if ((can = mksobj(level, TIN, mkobj_no_init)) != 0) {
         static const char you_buy_it[] = "You tin it, you bought it!";
 
         can->corpsenm = corpse->corpsenm;
@@ -3062,14 +3062,14 @@ doapply(const struct nh_cmd_arg *arg)
 
             consume_obj_charge(obj, TRUE);
             if (!rn2(13)) {
-                otmp = mkobj(level, POTION_CLASS, FALSE);
+                otmp = mkobj(level, POTION_CLASS, mkobj_normal);
                 if (objects[otmp->otyp].oc_magic)
                     do {
                         otmp->otyp = rnd_class(POT_BOOZE, POT_WATER);
                     } while (otmp->otyp == POT_SICKNESS);
                 what = "A potion";
             } else {
-                otmp = mkobj(level, FOOD_CLASS, FALSE);
+                otmp = mkobj(level, FOOD_CLASS, mkobj_normal);
                 if (otmp->otyp == FOOD_RATION && !rn2(7))
                     otmp->otyp = LUMP_OF_ROYAL_JELLY;
                 what = "Some food";

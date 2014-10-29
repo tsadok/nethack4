@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-09-30 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -2132,7 +2132,7 @@ readobjnam(char *bp, struct obj *no_wish, boolean from_user)
             cnt = 5000;
         if (cnt < 1)
             cnt = 1;
-        otmp = mksobj(level, GOLD_PIECE, FALSE, FALSE);
+        otmp = mksobj(level, GOLD_PIECE, mkobj_no_init);
         otmp->quan = cnt;
         otmp->owt = weight(otmp);
         return otmp;
@@ -2485,9 +2485,9 @@ typfnd:
         typ = OIL_LAMP;
 
     if (typ) {
-        otmp = mksobj(level, typ, TRUE, FALSE);
+        otmp = mksobj(level, typ, mkobj_normal);
     } else {
-        otmp = mkobj(level, oclass, FALSE);
+        otmp = mkobj(level, oclass, mkobj_normal);
         if (otmp)
             typ = otmp->otyp;
         else
@@ -2603,7 +2603,7 @@ typfnd:
                     otmp->corpsenm = genus(mntmp, 1);
                 else
                     otmp->corpsenm = mntmp;
-                start_corpse_timeout(otmp);
+                start_corpse_timeout(otmp, FALSE);
             }
             break;
         case FIGURINE:

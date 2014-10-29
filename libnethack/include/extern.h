@@ -983,30 +983,32 @@ extern const char *waterbody_name(xchar, xchar);
 
 extern unsigned next_ident(void);
 extern struct obj *mkobj_at(char let, struct level *lev, int x, int y,
-                            boolean artif);
-extern struct obj *mksobj_at(int, struct level *, int, int, boolean, boolean);
-extern struct obj *mkobj(struct level *lev, char oclass, boolean artif);
-extern struct obj *mkobj_of_class(struct level *lev, char oclass, boolean artif);
+                            enum mkobj_flags mkflags);
+extern struct obj *mksobj_at(int, struct level *, int, int, enum mkobj_flags);
+extern struct obj *mkobj(struct level *lev, char oclass,
+                         enum mkobj_flags mkflags);
+extern struct obj *mkobj_of_class(struct level *lev, char oclass,
+                                  enum mkobj_flags mkflags);
 extern int rndmonnum(const struct level *lev);
 extern struct obj *splitobj(struct obj *, long);
 extern void replace_object(struct obj *, struct obj *);
 extern void bill_dummy_object(struct obj *);
-extern struct obj *mksobj(struct level *lev, int otyp, boolean init,
-                          boolean artif);
+extern struct obj *mksobj(struct level *lev, int otyp,
+                          enum mkobj_flags mkflags);
 extern struct obj *mktemp_sobj(struct level *lev, int otyp);
 extern int bcsign(struct obj *);
 extern int weight(struct obj *);
 extern struct obj *mkgold(long amount, struct level *lev, int x, int y);
 extern struct obj *mkcorpstat(int objtype, struct monst *mtmp,
                               const struct permonst *ptr, struct level *lev,
-                              int x, int y, boolean init);
+                              int x, int y, enum mkobj_flags mkflags);
 extern struct obj *obj_attach_mid(struct obj *, unsigned);
 extern struct monst *get_mtraits(struct obj *, boolean);
 extern struct obj *mk_tt_object(struct level *lev, int objtype, int x, int y);
 extern struct obj *mk_named_object(int, const struct permonst *, int, int,
                                    const char *);
 extern struct obj *rnd_treefruit_at(int x, int y);
-extern void start_corpse_timeout(struct obj *);
+extern void start_corpse_timeout(struct obj *body, boolean extra_variance);
 extern void bless(struct obj *);
 extern void unbless(struct obj *);
 extern void curse(struct obj *);
@@ -1929,7 +1931,7 @@ extern boolean worn_blocked(int);
 extern int worn_warntype(void);
 
 extern void mon_set_minvis(struct monst *);
-extern void mon_adjust_speed(struct monst *, int, struct obj *);
+extern void mon_adjust_speed(struct monst *, int, struct obj *, boolean);
 extern void update_mon_intrinsics(struct monst *, struct obj *, boolean,
                                   boolean);
 extern int find_mac(struct monst *);

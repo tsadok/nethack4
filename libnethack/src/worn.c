@@ -140,17 +140,16 @@ mon_set_minvis(struct monst *mon)
 void
 mon_adjust_speed(struct monst *mon, int adjust, /* positive => increase speed,
                                                    negative => decrease */
-                 struct obj *obj)
+                 struct obj *obj, boolean quiet)
 {       /* item to make known if effect can be seen */
     struct obj *otmp;
-    boolean give_msg = !in_mklev, petrify = FALSE;
+    boolean petrify = FALSE;
     unsigned int oldspeed = mon->mspeed;
     int oldmoverate = mcalcmove(mon);
 
     switch (adjust) {
     case 2:
         mon->permspeed = MFAST;
-        give_msg = FALSE;       /* special case monster creation */
         break;
     case 1:
         if (mon->permspeed == MSLOW)
@@ -167,8 +166,8 @@ mon_adjust_speed(struct monst *mon, int adjust, /* positive => increase speed,
             mon->permspeed = MSLOW;
         break;
     case -2:
+        /* not currently used */
         mon->permspeed = MSLOW;
-        give_msg = FALSE;       /* (not currently used) */
         break;
     case -3:   /* petrification */
         /* take away intrinsic speed but don't reduce normal speed */
@@ -186,7 +185,7 @@ mon_adjust_speed(struct monst *mon, int adjust, /* positive => increase speed,
     else
         mon->mspeed = mon->permspeed;
 
-    if (give_msg && (mon->mspeed != oldspeed || petrify) && canseemon(mon)) {
+    if (!quiet && (mon->mspeed != oldspeed || petrify) && canseemon(mon)) {
         /* fast to slow (skipping intermediate state) or vice versa */
         const char *howmuch =
             (mon->mspeed + oldspeed == MFAST + MSLOW) ? "much " : "";
@@ -231,15 +230,8 @@ update_mon_intrinsics(struct monst *mon, struct obj *obj, boolean on,
             mon->minvis = !mon->invis_blkd;
             break;
         case FAST:
-            {
-                boolean save_in_mklev = in_mklev;
-
-                if (silently)
-                    in_mklev = TRUE;
-                mon_adjust_speed(mon, 0, obj);
-                in_mklev = save_in_mklev;
-                break;
-            }
+            mon_adjust_speed(mon, 0, obj, TRUE);
+            break;
             /* properties handled elsewhere */
         case ANTIMAGIC:
         case REFLECTING:
@@ -273,15 +265,8 @@ update_mon_intrinsics(struct monst *mon, struct obj *obj, boolean on,
             mon->minvis = mon->perminvis;
             break;
         case FAST:
-            {
-                boolean save_in_mklev = in_mklev;
-
-                if (silently)
-                    in_mklev = TRUE;
-                mon_adjust_speed(mon, 0, obj);
-                in_mklev = save_in_mklev;
-                break;
-            }
+            mon_adjust_speed(mon, 0, obj, TRUE);
+            break;
         case FIRE_RES:
         case COLD_RES:
         case SLEEP_RES:

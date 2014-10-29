@@ -294,9 +294,8 @@ maketrap(struct level *lev, int x, int y, int typ)
             struct monst *mtmp;
             struct obj *otmp, *statue;
 
-            statue =
-                mkcorpstat(STATUE, NULL, &mons[rndmonnum(lev)], lev, x, y,
-                           FALSE);
+            statue = mkcorpstat(STATUE, NULL, &mons[rndmonnum(lev)], lev, x, y,
+                                mkobj_no_init);
             mtmp = makemon(&mons[statue->corpsenm], lev, COLNO, ROWNO, NO_MM_FLAGS);
             if (!mtmp)
                 break;  /* should never happen */
@@ -686,7 +685,7 @@ dotrap(struct trap *trap, unsigned trflags)
         trap->once = 1;
         seetrap(trap);
         pline("An arrow shoots out at you!");
-        otmp = mksobj(level, ARROW, TRUE, FALSE);
+        otmp = mksobj(level, ARROW, mkobj_normal);
         otmp->quan = 1L;
         otmp->owt = weight(otmp);
         otmp->opoisoned = 0;
@@ -713,7 +712,7 @@ dotrap(struct trap *trap, unsigned trflags)
         trap->once = 1;
         seetrap(trap);
         pline("A little dart shoots out at you!");
-        otmp = mksobj(level, DART, TRUE, FALSE);
+        otmp = mksobj(level, DART, mkobj_normal);
         otmp->quan = 1L;
         otmp->owt = weight(otmp);
         if (!rn2(6))
@@ -744,7 +743,7 @@ dotrap(struct trap *trap, unsigned trflags)
 
             trap->once = 1;
             seetrap(trap);
-            otmp = mksobj_at(ROCK, level, u.ux, u.uy, TRUE, FALSE);
+            otmp = mksobj_at(ROCK, level, u.ux, u.uy, mkobj_normal);
             otmp->quan = 1L;
             otmp->owt = weight(otmp);
 
@@ -1647,7 +1646,7 @@ mkroll_launch(struct trap *ttmp, struct level *lev, xchar x, xchar y,
         cc.x = bcc.x = x;
         cc.y = bcc.y = y;
     } else {
-        otmp = mksobj(lev, otyp, TRUE, FALSE);
+        otmp = mksobj(lev, otyp, mkobj_normal);
         otmp->quan = ocount;
         otmp->owt = weight(otmp);
         place_object(otmp, lev, cc.x, cc.y);
@@ -1774,7 +1773,7 @@ mintrap(struct monst *mtmp)
                 break;
             }
             trap->once = 1;
-            otmp = mksobj(lev, ARROW, TRUE, FALSE);
+            otmp = mksobj(lev, ARROW, mkobj_normal);
             otmp->quan = 1L;
             otmp->owt = weight(otmp);
             otmp->opoisoned = 0;
@@ -1794,7 +1793,7 @@ mintrap(struct monst *mtmp)
                 break;
             }
             trap->once = 1;
-            otmp = mksobj(lev, DART, TRUE, FALSE);
+            otmp = mksobj(lev, DART, mkobj_normal);
             otmp->quan = 1L;
             otmp->owt = weight(otmp);
             if (!rn2(6))
@@ -1815,7 +1814,7 @@ mintrap(struct monst *mtmp)
                 break;
             }
             trap->once = 1;
-            otmp = mksobj(lev, ROCK, TRUE, FALSE);
+            otmp = mksobj(lev, ROCK, mkobj_normal);
             otmp->quan = 1L;
             otmp->owt = weight(otmp);
             if (in_sight)
@@ -2263,7 +2262,7 @@ minstapetrify(struct monst *mon, boolean byplayer)
 
     /* give a "<mon> is slowing down" message and also remove intrinsic speed
        (comparable to similar effect on the hero) */
-    mon_adjust_speed(mon, -3, NULL);
+    mon_adjust_speed(mon, -3, NULL, FALSE);
 
     if (cansee(mon->mx, mon->my))
         pline("%s turns to stone.", Monnam(mon));
@@ -3173,7 +3172,7 @@ untrap_prob(struct trap *ttmp)
 void
 cnv_trap_obj(struct level *lev, int otyp, int cnt, struct trap *ttmp)
 {
-    struct obj *otmp = mksobj(lev, otyp, TRUE, FALSE);
+    struct obj *otmp = mksobj(lev, otyp, mkobj_normal);
 
     otmp->quan = cnt;
     otmp->owt = weight(otmp);

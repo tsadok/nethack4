@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-04-05 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright 1988, 1989 by Ken Arromdee                           */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -318,27 +318,27 @@ makerogueghost(struct level *lev)
     christen_monst(ghost, roguename());
 
     if (rn2(4)) {
-        ghostobj = mksobj_at(FOOD_RATION, lev, x, y, FALSE, FALSE);
+        ghostobj = mksobj_at(FOOD_RATION, lev, x, y, mkobj_no_init);
         ghostobj->quan = (long)rnd(7);
         ghostobj->owt = weight(ghostobj);
     }
     if (rn2(2)) {
-        ghostobj = mksobj_at(MACE, lev, x, y, FALSE, FALSE);
+        ghostobj = mksobj_at(MACE, lev, x, y, mkobj_no_init);
         ghostobj->spe = rnd(3);
         if (rn2(4))
             curse(ghostobj);
     } else {
-        ghostobj = mksobj_at(TWO_HANDED_SWORD, lev, x, y, FALSE, FALSE);
+        ghostobj = mksobj_at(TWO_HANDED_SWORD, lev, x, y, mkobj_no_init);
         ghostobj->spe = rnd(5) - 2;
         if (rn2(4))
             curse(ghostobj);
     }
-    ghostobj = mksobj_at(BOW, lev, x, y, FALSE, FALSE);
+    ghostobj = mksobj_at(BOW, lev, x, y, mkobj_no_init);
     ghostobj->spe = 1;
     if (rn2(4))
         curse(ghostobj);
 
-    ghostobj = mksobj_at(ARROW, lev, x, y, FALSE, FALSE);
+    ghostobj = mksobj_at(ARROW, lev, x, y, mkobj_no_init);
     ghostobj->spe = 0;
     ghostobj->quan = (long)rn1(10, 25);
     ghostobj->owt = weight(ghostobj);
@@ -346,14 +346,14 @@ makerogueghost(struct level *lev)
         curse(ghostobj);
 
     if (rn2(2)) {
-        ghostobj = mksobj_at(RING_MAIL, lev, x, y, FALSE, FALSE);
+        ghostobj = mksobj_at(RING_MAIL, lev, x, y, mkobj_no_init);
         ghostobj->spe = rn2(3);
         if (!rn2(3))
             ghostobj->oerodeproof = TRUE;
         if (rn2(4))
             curse(ghostobj);
     } else {
-        ghostobj = mksobj_at(PLATE_MAIL, lev, x, y, FALSE, FALSE);
+        ghostobj = mksobj_at(PLATE_MAIL, lev, x, y, mkobj_no_init);
         ghostobj->spe = rnd(5) - 2;
         if (!rn2(3))
             ghostobj->oerodeproof = TRUE;
@@ -361,7 +361,7 @@ makerogueghost(struct level *lev)
             curse(ghostobj);
     }
     if (rn2(2)) {
-        ghostobj = mksobj_at(FAKE_AMULET_OF_YENDOR, lev, x, y, TRUE, FALSE);
+        ghostobj = mksobj_at(FAKE_AMULET_OF_YENDOR, lev, x, y, mkobj_normal);
         ghostobj->known = TRUE;
     }
 }

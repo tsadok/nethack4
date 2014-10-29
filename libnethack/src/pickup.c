@@ -1718,7 +1718,7 @@ out_container(struct obj *obj)
     if (Icebox && !age_is_relative(obj)) {
         obj->age = moves - obj->age;    /* actual age */
         if (obj->otyp == CORPSE)
-            start_corpse_timeout(obj);
+            start_corpse_timeout(obj, FALSE);
     }
     /* simulated point of time */
 

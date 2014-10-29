@@ -157,7 +157,7 @@ m_initthrow(struct monst *mtmp, int otyp, int oquan)
 {
     struct obj *otmp;
 
-    otmp = mksobj(mtmp->dlevel, otyp, TRUE, FALSE);
+    otmp = mksobj(mtmp->dlevel, otyp, mkobj_normal);
     otmp->quan = (long)rn1(oquan, 3);
     otmp->owt = weight(otmp);
     if (otyp == ORCISH_ARROW)
@@ -257,14 +257,14 @@ m_initweap(struct level *lev, struct monst *mtmp)
                 break;
             }
             if (mm == PM_ELVENKING) {
-                if (rn2(3) || (in_mklev && Is_earthlevel(level)))
+                if (rn2(3) || (!level->generated && Is_earthlevel(level)))
                     mongets(mtmp, PICK_AXE);
                 if (!rn2(50))
                     mongets(mtmp, CRYSTAL_BALL);
             }
         } else if (ptr->msound == MS_PRIEST ||
                    quest_mon_represents_role(ptr, PM_PRIEST)) {
-            otmp = mksobj(lev, MACE, FALSE, FALSE);
+            otmp = mksobj(lev, MACE, mkobj_no_init);
             if (otmp) {
                 otmp->spe = rnd(3);
                 if (!rn2(2))
@@ -279,7 +279,7 @@ m_initweap(struct level *lev, struct monst *mtmp)
             int spe2;
 
             /* create minion stuff; can't use mongets */
-            otmp = mksobj(lev, LONG_SWORD, FALSE, FALSE);
+            otmp = mksobj(lev, LONG_SWORD, mkobj_no_init);
 
             /* maybe make it special */
             if (!rn2(20) || is_lord(ptr))
@@ -294,7 +294,7 @@ m_initweap(struct level *lev, struct monst *mtmp)
 
             otmp = mksobj(lev, !rn2(4) ||
                           is_lord(ptr) ? SHIELD_OF_REFLECTION : LARGE_SHIELD,
-                          FALSE, FALSE);
+                          mkobj_no_init);
             otmp->cursed = FALSE;
             otmp->oerodeproof = TRUE;
             otmp->spe = 0;
@@ -521,7 +521,7 @@ m_initweap(struct level *lev, struct monst *mtmp)
 void
 mkmonmoney(struct monst *mtmp, long amount)
 {
-    struct obj *gold = mksobj(mtmp->dlevel, GOLD_PIECE, FALSE, FALSE);
+    struct obj *gold = mksobj(mtmp->dlevel, GOLD_PIECE, mkobj_no_init);
 
     gold->quan = amount;
     add_to_minv(mtmp, gold);
@@ -652,13 +652,13 @@ m_initinv(struct monst *mtmp)
         break;
     case S_GIANT:
         if (ptr == &mons[PM_MINOTAUR]) {
-            if (!rn2(3) || (in_mklev && Is_earthlevel(lev)))
+            if (!rn2(3) || (!level->generated && Is_earthlevel(lev)))
                 mongets(mtmp, WAN_DIGGING);
         } else if (is_giant(ptr)) {
             for (cnt = rn2((int)(mtmp->m_lev / 2)); cnt; cnt--) {
                 otmp =
                     mksobj(lev, rnd_class(DILITHIUM_CRYSTAL, LUCKSTONE - 1),
-                           FALSE, FALSE);
+                           mkobj_no_init);
                 otmp->quan = (long)rn1(2, 3);
                 otmp->owt = weight(otmp);
                 mpickobj(mtmp, otmp);
@@ -667,7 +667,7 @@ m_initinv(struct monst *mtmp)
         break;
     case S_WRAITH:
         if (ptr == &mons[PM_NAZGUL]) {
-            otmp = mksobj(lev, RIN_INVISIBILITY, FALSE, FALSE);
+            otmp = mksobj(lev, RIN_INVISIBILITY, mkobj_no_init);
             curse(otmp);
             mpickobj(mtmp, otmp);
         }
@@ -677,8 +677,8 @@ m_initinv(struct monst *mtmp)
             mongets(mtmp, (rn2(7) ? ATHAME : WAN_NOTHING));
         else if (ptr == &mons[PM_ARCH_LICH] && !rn2(3)) {
             otmp =
-                mksobj(lev, rn2(3) ? ATHAME : QUARTERSTAFF, TRUE,
-                       rn2(13) ? FALSE : TRUE);
+                mksobj(lev, rn2(3) ? ATHAME : QUARTERSTAFF,
+                       rn2(13) ? mkobj_normal : mkobj_artifact);
             if (otmp->spe < 2)
                 otmp->spe = rnd(3);
             if (!rn2(4))
@@ -692,7 +692,7 @@ m_initinv(struct monst *mtmp)
         break;
     case S_QUANTMECH:
         if (!rn2(20)) {
-            otmp = mksobj(lev, LARGE_BOX, FALSE, FALSE);
+            otmp = mksobj(lev, LARGE_BOX, mkobj_no_init);
             otmp->spe = 1;      /* flag for special box */
             otmp->owt = weight(otmp);
             mpickobj(mtmp, otmp);
@@ -884,7 +884,7 @@ propagate(int mndx, boolean tally, boolean ghostly)
 /*
  * called with [x,y] = coordinates;
  *      [0,0] means anyplace
- *      [u.ux,u.uy] means: near player (if !in_mklev)
+ *      [u.ux,u.uy] means: near player (if on same level as player)
  *
  *      In case we make a monster group, only return the one at [x,y].
  */
@@ -895,7 +895,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
     struct monst *mtmp;
     int mndx, mcham, ct, mitem, xtyp;
     boolean anymon = (!ptr);
-    boolean byyou = (x == u.ux && y == u.uy);
+    boolean byyou = x == u.ux && y == u.uy && lev == level;
     boolean allow_minvent = ((mmflags & NO_MINVENT) == 0);
     boolean countbirth = ((mmflags & MM_NOCOUNTBIRTH) == 0);
     unsigned gpflags = (mmflags & MM_IGNOREWATER) ? MM_IGNOREWATER : 0;
@@ -910,8 +910,8 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
             x = rn2(COLNO);
             y = rn2(ROWNO);
         } while (!goodpos(lev, x, y, ptr ? &fakemon : NULL, gpflags) ||
-                 (!in_mklev && tryct++ < 50 && cansee(x, y)));
-    } else if (byyou && !in_mklev) {
+                 (lev->generated && tryct++ < 50 && cansee(x, y)));
+    } else if (byyou) {
         coord bypos;
 
         if (enexto_core(&bypos, lev, u.ux, u.uy, ptr, gpflags)) {
@@ -920,6 +920,9 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
         } else
             return NULL;
     }
+
+    if (in_mklev && lev == level)
+        impossible("mklev is generating current level");
 
     if (!isok(x, y)) {
         impossible("invalid location in makemon()");
@@ -1051,9 +1054,9 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
         break;
     case S_SPIDER:
     case S_SNAKE:
-        if (in_mklev)
+        if (!lev->generated)
             if (x && y)
-                mkobj_at(0, lev, x, y, TRUE);
+                mkobj_at(0, lev, x, y, mkobj_artifact);
         if (hides_under(ptr) && OBJ_AT_LEV(lev, x, y))
             mtmp->mundetected = TRUE;
         break;
@@ -1086,7 +1089,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
         break;
     case S_BAT:
         if (In_hell(lev) && is_bat(ptr))
-            mon_adjust_speed(mtmp, 2, NULL);
+            mon_adjust_speed(mtmp, 2, NULL, TRUE);
         break;
     }
     if ((ct = emits_light(mtmp->data)) > 0)
@@ -1125,15 +1128,13 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
     if (mitem && allow_minvent)
         mongets(mtmp, mitem);
 
-    if (in_mklev) {
+    if (!lev->generated) {
         if (((is_ndemon(ptr)) || (mndx == PM_WUMPUS) || (mndx == PM_LONG_WORM)
              || (mndx == PM_GIANT_EEL)) && !Uhave_amulet && rn2(5))
             mtmp->msleeping = TRUE;
-    } else {
-        if (byyou && lev == level) {
-            newsym(mtmp->mx, mtmp->my);
-            set_apparxy(mtmp);
-        }
+    } else if (byyou) {
+        newsym(mtmp->mx, mtmp->my);
+        set_apparxy(mtmp);
     }
     if (is_dprince(ptr) && ptr->msound == MS_BRIBE) {
         mtmp->mpeaceful = mtmp->minvis = mtmp->perminvis = 1;
@@ -1177,7 +1178,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
             mtmp->mstrategy |= STRAT_CLOSE;
     }
 
-    if (!in_mklev && lev == level)
+    if (lev == level)
         newsym(mtmp->mx, mtmp->my);     /* make sure the mon shows up */
 
     return mtmp;
@@ -1237,7 +1238,7 @@ const struct permonst *
 rndmonst(const struct level *lev)
 {
     struct default_gen_flags genflags = {
-        .consider_xlvl = !in_mklev,
+        .consider_xlvl = lev->generated,
         .ignore_nogen = FALSE,
         .ignore_uniq = FALSE,
         .ignore_extinct = FALSE,
@@ -1583,7 +1584,7 @@ mongets(struct monst *mtmp, int otyp)
 
     if (!otyp)
         return 0;
-    otmp = mksobj(mtmp->dlevel, otyp, TRUE, FALSE);
+    otmp = mksobj(mtmp->dlevel, otyp, mkobj_normal);
 
     if (otmp) {
         if (mtmp->data->mlet == S_DEMON) {
@@ -1878,7 +1879,7 @@ set_mimic_sym(struct monst *mtmp, struct level *lev)
                 if (s_sym == S_MIMIC_DEF) {
                     appear = STRANGE_OBJECT;
                 } else {
-                    otmp = mkobj(lev, (char)s_sym, FALSE);
+                    otmp = mkobj(lev, (char)s_sym, mkobj_normal);
                     appear = otmp->otyp;
                     /* make sure container contents are free'ed */
                     obfree(otmp, NULL);

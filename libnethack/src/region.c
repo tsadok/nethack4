@@ -773,7 +773,7 @@ create_gas_cloud(struct level *lev, xchar x, xchar y, int radius, int damage)
         tmprect.hy--;
     }
     cloud->ttl = rn1(3, 4);
-    if (!in_mklev && !flags.mon_moving)
+    if (lev->generated && !flags.mon_moving)
         set_heros_fault(cloud); /* assume player has created it */
     cloud->inside_f = INSIDE_GAS_CLOUD;
     cloud->expire_f = EXPIRE_GAS_CLOUD;

@@ -173,7 +173,7 @@ mk_artifact(
         /* make an appropriate object if necessary, then christen it */
     make_artif:
         if (by_align)
-            otmp = mksobj(lev, (int)a->otyp, TRUE, FALSE);
+            otmp = mksobj(lev, (int)a->otyp, mkobj_normal);
         otmp = oname(otmp, a->name);
         otmp->oartifact = m;
         artiexist[m] = TRUE;
@@ -1385,7 +1385,7 @@ arti_invoke(struct obj *obj)
             enlightenment(0);
             break;
         case CREATE_AMMO:{
-                struct obj *otmp = mksobj(level, ARROW, TRUE, FALSE);
+                struct obj *otmp = mksobj(level, ARROW, mkobj_normal);
 
                 if (!otmp)
                     goto nothing_special;

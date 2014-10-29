@@ -1349,8 +1349,8 @@ use_offensive(struct monst *mtmp, struct musable *m)
 
                         /* Make the object(s) */
                         otmp2 =
-                            mksobj(level, confused ? ROCK : BOULDER, FALSE,
-                                   FALSE);
+                            mksobj(level, confused ? ROCK : BOULDER,
+                                   mkobj_no_init);
                         if (!otmp2)
                             continue;   /* Shouldn't happen */
                         otmp2->quan = confused ? rn1(5, 2) : 1;
@@ -1411,7 +1411,7 @@ use_offensive(struct monst *mtmp, struct musable *m)
                 struct obj *otmp2;
 
                 /* Okay, _you_ write this without repeating the code */
-                otmp2 = mksobj(level, confused ? ROCK : BOULDER, FALSE, FALSE);
+                otmp2 = mksobj(level, confused ? ROCK : BOULDER, mkobj_no_init);
                 if (!otmp2)
                     goto xxx_noobj;     /* Shouldn't happen */
                 otmp2->quan = confused ? rn1(5, 2) : 1;
@@ -1742,7 +1742,7 @@ use_misc(struct monst *mtmp, struct musable *m)
     case MUSE_WAN_SPEED_MONSTER:
         mzapmsg(mtmp, otmp, TRUE);
         otmp->spe--;
-        mon_adjust_speed(mtmp, 1, otmp);
+        mon_adjust_speed(mtmp, 1, otmp, FALSE);
         return 2;
     case MUSE_POT_SPEED:
         mquaffmsg(mtmp, otmp);
@@ -1750,7 +1750,7 @@ use_misc(struct monst *mtmp, struct musable *m)
            methods of maintaining speed ratings: player's character becomes
            "very fast" temporarily; monster becomes "one stage faster"
            permanently */
-        mon_adjust_speed(mtmp, 1, otmp);
+        mon_adjust_speed(mtmp, 1, otmp, FALSE);
         m_useup(mtmp, otmp);
         return 2;
     case MUSE_WAN_POLYMORPH:
@@ -2123,7 +2123,7 @@ mon_consume_unstone(struct monst *mon, struct obj *obj, boolean by_you,
     /* give a "<mon> is slowing down" message and also remove intrinsic speed
        (comparable to similar effect on the hero) */
     if (stoning)
-        mon_adjust_speed(mon, -3, NULL);
+        mon_adjust_speed(mon, -3, NULL, FALSE);
 
     if (canseemon(mon)) {
         long save_quan = obj->quan;

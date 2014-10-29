@@ -645,9 +645,14 @@ savelev(struct memfile *mf, xchar levnum)
 
     mfmagic_set(mf, LEVEL_MAGIC);
     mtag(mf, levnum, MTAG_LEVEL);
+    mwrite8(mf, lev->generated);
 
     mwrite8(mf, lev->z.dnum);
     mwrite8(mf, lev->z.dlevel);
+
+    if (!lev->generated)
+        return;
+
     mwrite(mf, lev->levname, sizeof (lev->levname));
 
     mtag(mf, levnum, MTAG_LOCATIONS);

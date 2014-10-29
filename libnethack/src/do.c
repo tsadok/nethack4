@@ -1321,7 +1321,7 @@ final_level(void)
                 mtmp->mhp = mtmp->mhpmax =
                     dice((int)mtmp->m_lev, 10) + 30 + rnd(30);
                 if ((otmp = select_hwep(mtmp)) == 0) {
-                    otmp = mksobj(level, SILVER_SABER, FALSE, FALSE);
+                    otmp = mksobj(level, SILVER_SABER, mkobj_no_init);
                     if (mpickobj(mtmp, otmp))
                         panic("merged weapon?");
                 }

@@ -1111,6 +1111,7 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
         panic("Unsupported: trying to restore level %d which already exists.\n",
               levnum);
     lev = levels[levnum] = alloc_level(NULL);
+    lev->generated = mread8(mf);
 
     if (ghostly) {
         /* A bones level may move from its original location. We need to make
@@ -1130,6 +1131,9 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
         lev->z.dnum = mread8(mf);
         lev->z.dlevel = mread8(mf);
     }
+
+    if (!lev->generated)
+        return lev;
 
     /* FIXME: This is a total kludge. Fix. */
     if (Is_waterlevel(lev))

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-10-18 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Benson I. Margulies, Mike Stephenson, Steve Linhart, 1989. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -645,7 +645,7 @@ gcrownu(void)
         !carrying(SPE_FINGER_OF_DEATH)) {
         class_gift = SPE_FINGER_OF_DEATH;
     make_splbk:
-        obj = mksobj(level, class_gift, TRUE, FALSE);
+        obj = mksobj(level, class_gift, mkobj_normal);
         bless(obj);
         obj->bknown = TRUE;
         at_your_feet("A spellbook");
@@ -689,7 +689,7 @@ gcrownu(void)
             pline("Your %s goes snicker-snack!", xname(obj));
             obj->dknown = TRUE;
         } else if (!already_exists) {
-            obj = mksobj(level, LONG_SWORD, FALSE, FALSE);
+            obj = mksobj(level, LONG_SWORD, mkobj_no_init);
             obj = oname(obj, artiname(ART_VORPAL_BLADE));
             obj->spe = 1;
             at_your_feet("A sword");
@@ -711,7 +711,7 @@ gcrownu(void)
                 pline("Your %s hums ominously!", swordbuf);
                 obj->dknown = TRUE;
             } else if (!already_exists) {
-                obj = mksobj(level, RUNESWORD, FALSE, FALSE);
+                obj = mksobj(level, RUNESWORD, mkobj_no_init);
                 obj = oname(obj, artiname(ART_STORMBRINGER));
                 at_your_feet(An(swordbuf));
                 obj->spe = 1;
@@ -980,7 +980,7 @@ pleased(aligntyp g_align)
                 /* not yet known spells given preference over already known
                    ones */
                 /* Also, try to grant a spell for which there is a skill slot */
-                otmp = mkobj(level, SPBOOK_CLASS, TRUE);
+                otmp = mkobj(level, SPBOOK_CLASS, mkobj_artifact);
                 while (--trycnt > 0) {
                     if (otmp->otyp != SPE_BLANK_PAPER) {
                         for (sp_no = 0; sp_no < MAXSPELL; sp_no++)

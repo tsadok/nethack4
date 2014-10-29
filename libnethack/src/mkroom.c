@@ -270,19 +270,19 @@ fill_zoo(struct level *lev, struct mkroom *sroom)
                 if (!rn2(5))
                     mk_tt_object(lev, CORPSE, sx, sy);
                 if (!rn2(10))   /* lots of treasure buried with dead */
-                    mksobj_at((rn2(3)) ? LARGE_BOX : CHEST, lev, sx, sy, TRUE,
-                              FALSE);
+                    mksobj_at((rn2(3)) ? LARGE_BOX : CHEST, lev, sx, sy,
+                              mkobj_normal);
                 if (!rn2(5))
                     make_grave(lev, sx, sy, NULL);
                 break;
             case BEEHIVE:
                 if (!rn2(3))
-                    mksobj_at(LUMP_OF_ROYAL_JELLY, lev, sx, sy, TRUE, FALSE);
+                    mksobj_at(LUMP_OF_ROYAL_JELLY, lev, sx, sy, mkobj_normal);
                 break;
             case BARRACKS:
                 if (!rn2(20))   /* the payroll and some loot */
-                    mksobj_at((rn2(3)) ? LARGE_BOX : CHEST, lev, sx, sy, TRUE,
-                              FALSE);
+                    mksobj_at((rn2(3)) ? LARGE_BOX : CHEST, lev, sx, sy,
+                              mkobj_normal);
                 break;
             case COCKNEST:
                 if (!rn2(3)) {
@@ -290,15 +290,15 @@ fill_zoo(struct level *lev, struct mkroom *sroom)
 
                     if (sobj) {
                         for (i = rn2(5); i; i--)
-                            add_to_container(sobj,
-                                             mkobj(lev, RANDOM_CLASS, FALSE));
+                            add_to_container(sobj, mkobj(lev, RANDOM_CLASS,
+                                                         mkobj_normal));
                         sobj->owt = weight(sobj);
                     }
                 }
                 break;
             case ANTHOLE:
                 if (!rn2(3))
-                    mkobj_at(FOOD_CLASS, lev, sx, sy, FALSE);
+                    mkobj_at(FOOD_CLASS, lev, sx, sy, mkobj_normal);
                 break;
             }
         }
@@ -311,7 +311,7 @@ fill_zoo(struct level *lev, struct mkroom *sroom)
         mkgold((long)rn1(50 * level_difficulty(lev), 10), lev, mm.x,
                mm.y);
         /* the royal coffers */
-        chest = mksobj_at(CHEST, lev, mm.x, mm.y, TRUE, FALSE);
+        chest = mksobj_at(CHEST, lev, mm.x, mm.y, mkobj_normal);
         chest->spe = 2;     /* so it can be found later */
     }
 }

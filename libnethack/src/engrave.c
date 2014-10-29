@@ -385,7 +385,7 @@ make_engr_at(struct level *lev, int x, int y, const char *s, long e_time,
     while (ep->engr_txt[0] == ' ')
         ep->engr_txt++;
     /* engraving Elbereth shows wisdom */
-    if (!in_mklev && !strcmp(s, "Elbereth"))
+    if (lev->generated && !strcmp(s, "Elbereth"))
         exercise(A_WIS, TRUE);
     ep->engr_time = e_time;
     ep->engr_type = e_type > 0 ? e_type : rnd(N_ENGRAVE - 1);

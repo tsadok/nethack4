@@ -125,7 +125,7 @@ bhitm(struct monst *mtmp, struct obj *otmp)
     case WAN_SLOW_MONSTER:
     case SPE_SLOW_MONSTER:
         if (!resist(mtmp, otmp->oclass, 0, NOTELL)) {
-            mon_adjust_speed(mtmp, -1, otmp);
+            mon_adjust_speed(mtmp, -1, otmp, FALSE);
             m_dowear(mtmp, FALSE);      /* might want speed boots */
             if (Engulfed && (mtmp == u.ustuck) && is_whirly(mtmp->data)) {
                 pline("You disrupt %s!", mon_nam(mtmp));
@@ -136,7 +136,7 @@ bhitm(struct monst *mtmp, struct obj *otmp)
         break;
     case WAN_SPEED_MONSTER:
         if (!resist(mtmp, otmp->oclass, 0, NOTELL)) {
-            mon_adjust_speed(mtmp, 1, otmp);
+            mon_adjust_speed(mtmp, 1, otmp, FALSE);
             m_dowear(mtmp, FALSE);      /* might want speed boots */
         }
         break;
@@ -634,7 +634,7 @@ revive(struct obj *obj)
             mtmp = makemon(&mons[montype], level, x, y, NO_MINVENT | MM_NOWAIT);
             if (mtmp) {
                 mtmp->mhp = mtmp->mhpmax = 100;
-                mon_adjust_speed(mtmp, 2, NULL);        /* MFAST */
+                mon_adjust_speed(mtmp, 2, NULL, TRUE);        /* MFAST */
             }
         } else {
             if (obj->oxlth && (obj->oattached == OATTACHED_MONST)) {
@@ -1224,12 +1224,12 @@ poly_obj(struct obj *obj, int id)
         do {
             if (otmp)
                 delobj(otmp);
-            otmp = mkobj(level, obj->oclass, FALSE);
+            otmp = mkobj(level, obj->oclass, mkobj_normal);
         } while (--try_limit > 0 &&
                  objects[obj->otyp].oc_magic != objects[otmp->otyp].oc_magic);
     } else {
         /* literally replace obj with this new thing */
-        otmp = mksobj(level, id, FALSE, FALSE);
+        otmp = mksobj(level, id, mkobj_no_init);
         /* Actually more things use corpsenm but they polymorph differently */
 #define USES_CORPSENM(typ) ((typ)==CORPSE || (typ)==STATUE || (typ)==FIGURINE)
         if (USES_CORPSENM(obj->otyp) && USES_CORPSENM(id))
@@ -2401,7 +2401,7 @@ zap_updown(struct obj *obj, schar dz)
                   ceiling(x, y), body_part(HEAD));
             losehp(rnd((uarmh && is_metallic(uarmh)) ? 2 : 6),
                    killer_msg(DIED, "smashing up the ceiling"));
-            if ((otmp = mksobj_at(ROCK, level, x, y, FALSE, FALSE)) != 0) {
+            if ((otmp = mksobj_at(ROCK, level, x, y, mkobj_no_init)) != 0) {
                 xname(otmp);    /* set dknown, maybe bknown */
                 stackobj(otmp);
             }
