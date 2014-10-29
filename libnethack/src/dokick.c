@@ -1198,7 +1198,7 @@ drop_to(coord * cc, schar loc)
             cc->x = valley_level.dnum;
             cc->y = valley_level.dlevel;
             break;
-        } else if (In_endgame(&level->z) || Is_botlevel(&level->z)) {
+        } else if (In_endgame(level) || Is_botlevel(&level->z)) {
             cc->y = cc->x = -1;
             break;
         }       /* else fall to the next cases */
@@ -1532,7 +1532,7 @@ down_gate(xchar x, xchar y)
 
     gate_str = 0;
     /* this matches the player restriction in goto_level() */
-    if (on_level(&level->z, &qstart_level) && !ok_to_quest(FALSE))
+    if (Is_qstart(level) && !ok_to_quest(FALSE))
         return MIGR_NOWHERE;
 
     if ((level->dnstair.sx == x && level->dnstair.sy == y) ||

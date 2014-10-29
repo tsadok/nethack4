@@ -1002,7 +1002,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
         mtmp->m_lev = mtmp->mhp / 4;    /* approximation */
     } else if (ptr->mlet == S_DRAGON && mndx >= PM_GRAY_DRAGON) {
         /* adult dragons */
-        mtmp->mhpmax = mtmp->mhp = (int)(In_endgame(&lev->z) ? (8 * mtmp->m_lev)
+        mtmp->mhpmax = mtmp->mhp = (int)(In_endgame(lev) ? (8 * mtmp->m_lev)
                                          : (4 * mtmp->m_lev +
                                             dice((int)mtmp->m_lev, 4)));
     } else if (!mtmp->m_lev) {
@@ -1085,7 +1085,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
             mtmp->mpeaceful = TRUE;
         break;
     case S_BAT:
-        if (In_hell(&lev->z) && is_bat(ptr))
+        if (In_hell(lev) && is_bat(ptr))
             mon_adjust_speed(mtmp, 2, NULL);
         break;
     }
@@ -1221,7 +1221,7 @@ rndmonst_special_prob(const struct level *lev, short mndx, void *genflags) {
     uchar prob = default_gen_prob(lev, mndx, genflags);
     const struct permonst *mdat = &mons[mndx];
 
-    if (In_endgame(&lev->z) && !Is_astralevel(lev) &&
+    if (In_endgame(lev) && !Is_astralevel(lev) &&
         wrong_elem_type(lev, mdat))
         return 0;
 
@@ -1429,7 +1429,7 @@ default_gen_prob(const struct level *lev, short mndx, void *dat) {
     if (mvitals[mndx].mvflags & G_GENO)
         return 0;
 
-    if (In_hell(&lev->z)) {
+    if (In_hell(lev)) {
         if (mons[mndx].geno & G_NOHELL)
             return 0;
         if (mons[mndx].maligntyp > A_NEUTRAL)

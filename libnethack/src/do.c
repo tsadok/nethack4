@@ -738,7 +738,7 @@ dodown(enum u_interaction_mode uim)
               is_animal(u.ustuck->data) ? "swallowed" : "engulfed");
         return 1;
     }
-    if (on_level(&valley_level, &level->z) && !u.uevent.gehennom_entered) {
+    if (Is_valley(level) && !u.uevent.gehennom_entered) {
         pline("You are standing at the gate to Gehennom.");
         pline("Unspeakable cruelty and harm lurk down there.");
         if (yn("Are you sure you want to enter?") != 'y')
@@ -840,7 +840,7 @@ notify_levelchange(const struct level *lev)
 {
     int mode;
 
-    if (In_hell(&lev->z))
+    if (In_hell(lev))
         mode = LDM_HELL;
     else if (Is_qstart(lev))
         mode = LDM_QUESTHOME;
@@ -848,9 +848,9 @@ notify_levelchange(const struct level *lev)
         mode = LDM_QUESTLOCATE;
     else if (Is_nemesis(lev))
         mode = LDM_QUESTGOAL;
-    else if (In_quest(&lev->z) && lev->z.dlevel > qlocate_level.dlevel)
+    else if (In_quest(lev) && lev->z.dlevel > qlocate_level.dlevel)
         mode = LDM_QUESTFILL2;
-    else if (In_quest(&lev->z))
+    else if (In_quest(lev))
         mode = LDM_QUESTFILL1;
     else if (In_mines(lev))
         mode = LDM_MINES;
@@ -884,11 +884,11 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     struct level *origlev;
     boolean at_trapdoor = ((t_at(level, u.ux, u.uy)) &&
                            (t_at(level, u.ux, u.uy))->ttyp == TRAPDOOR);
-    d_level orig_d;
 
     if (dunlev(newlevel) > dunlevs_in_dungeon(newlevel))
         newlevel->dlevel = dunlevs_in_dungeon(newlevel);
-    if (newdungeon && In_endgame(newlevel)) {   /* 1st Endgame Level !!! */
+    if (newdungeon && newlevel->dnum == astral_level.dnum) {
+        /* 1st Endgame Level !!! */
         if (Uhave_amulet)
             assign_level(newlevel, &earth_level);
         else
@@ -917,7 +917,9 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
             if (diff != 0) {
                 assign_rnd_level(newlevel, &level->z, diff);
                 /* if inside the tower, stay inside */
-                if (was_in_W_tower && !On_W_tower_level(newlevel))
+                if (was_in_W_tower && !on_level(newlevel, &wiz1_level) &&
+                    !on_level(newlevel, &wiz2_level) &&
+                    !on_level(newlevel, &wiz3_level))
                     diff = 0;
             }
             if (diff == 0)
@@ -1015,7 +1017,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     turnstate.vision_full_recalc = FALSE;
     flush_screen_disable();     /* ensure all map flushes are postponed */
 
-    if (portal && !In_endgame(&level->z)) {
+    if (portal && !In_endgame(level)) {
         /* find the portal on the new level */
         struct trap *ttrap;
 
@@ -1027,7 +1029,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
             panic("goto_level: no corresponding portal!");
         seetrap(ttrap);
         u_on_newpos(ttrap->tx, ttrap->ty);
-    } else if (at_stairs && !In_endgame(&level->z)) {
+    } else if (at_stairs && !In_endgame(level)) {
         if (up) {
             if (at_ladder) {
                 u_on_newpos(level->dnladder.sx, level->dnladder.sy);
@@ -1083,7 +1085,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
             }
         }
     } else {    /* trap door or level_tele or In_endgame */
-        if (was_in_W_tower && On_W_tower_level(&level->z))
+        if (was_in_W_tower && On_W_tower_level(level))
             /* Stay inside the Wizard's tower when feasible. */
             /* Note: up vs down doesn't really matter in this case. */
             place_lregion(level, level->dndest.nlx, level->dndest.nly,
@@ -1189,7 +1191,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     check_special_room(FALSE);
 
     /* Check whether we just entered Gehennom. */
-    if (!In_hell(&orig_d) && Inhell) {
+    if (!In_hell(origlev) && Inhell) {
         if (Is_valley(level)) {
             pline("You arrive at the Valley of the Dead...");
             pline("The odor of burnt flesh and decay pervades the air.");
@@ -1229,13 +1231,13 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     if (new && Is_rogue_level(level))
         pline("You enter what seems to be an older, more primitive world.");
     /* Final confrontation */
-    if (In_endgame(&level->z) && newdungeon && Uhave_amulet)
+    if (In_endgame(level) && newdungeon && Uhave_amulet)
         resurrect();
-    if (newdungeon && In_V_tower(level) && In_hell(&orig_d))
+    if (newdungeon && In_V_tower(level) && In_hell(origlev))
         pline("The heat and smoke are gone.");
 
     /* the message from your quest leader */
-    if (!In_quest(&orig_d) && at_dgn_entrance(level, "The Quest") &&
+    if (!In_quest(origlev) && at_dgn_entrance(level, "The Quest") &&
         !(u.uevent.qexpelled || u.uevent.qcompleted ||
           u.quest_status.leader_is_dead)) {
 
@@ -1256,7 +1258,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
                 mtmp->msleeping = 0;
     }
 
-    if (on_level(&level->z, &astral_level))
+    if (Is_astralevel(level))
         final_level();
     else
         onquest(origlev);

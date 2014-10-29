@@ -926,7 +926,7 @@ dotrap(struct trap *trap, unsigned trflags)
         }
         /* wumpus reference */
         if (Role_if(PM_RANGER) && !trap->madeby_u && !trap->once &&
-            In_quest(&level->z) && Is_qlocate(level)) {
+            In_quest(level) && Is_qlocate(level)) {
             pline("Fortunately it has a bottom after all...");
             trap->once = 1;
         } else if (u.umonnum == PM_PIT_VIPER || u.umonnum == PM_PIT_FIEND)
@@ -1501,7 +1501,7 @@ launch_obj(short otyp, int x1, int y1, int x2, int y2, int style)
                         int newlev = random_teleport_level();
                         d_level dest;
 
-                        if (newlev == depth(&level->z) || In_endgame(&level->z))
+                        if (newlev == depth(&level->z) || In_endgame(level))
                             continue;
                         get_level(&dest, newlev);
                         deliver_object(singleobj, dest.dnum, dest.dlevel,
@@ -2626,14 +2626,14 @@ domagictrap(void)
                      "distant howling.");
             break;
         case 15:
-            if (on_level(&level->z, &qstart_level))
+            if (Is_qstart(level))
                 pline("You feel %slike the prodigal son.",
                       (u.ufemale ||
                        (Upolyd && is_neuter(youmonst.data))) ? "oddly " : "");
             else
                 pline("You suddenly yearn for %s.",
                       Hallucination ? "Cleveland" :
-                      (In_quest(&level->z) || at_dgn_entrance(level, "The Quest")) ?
+                      (In_quest(level) || at_dgn_entrance(level, "The Quest")) ?
                       "your nearby homeland" : "your distant homeland");
             break;
         case 16:

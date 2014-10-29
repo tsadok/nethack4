@@ -2599,7 +2599,7 @@ newcham(struct monst *mtmp, const struct permonst *mdat,
             mtmp->female = !mtmp->female;
     }
 
-    if (In_endgame(&mtmp->dlevel->z) && is_mplayer(olddata)) {
+    if (In_endgame(mtmp->dlevel) && is_mplayer(olddata)) {
         /* mplayers start out as "Foo the Bar", but some of the titles are
            inappropriate when polymorphed, particularly into the opposite sex.
            players don't use ranks when polymorphed, so dropping the rank for

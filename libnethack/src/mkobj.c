@@ -109,7 +109,7 @@ mkobj(struct level *lev, char oclass, boolean artif)
     if (oclass == RANDOM_CLASS) {
         const struct icp *iprobs =
             (Is_rogue_level(lev)) ? (const struct icp *)rogueprobs :
-            In_hell(&lev->z) ? (const struct icp *)hellprobs :
+            In_hell(lev) ? (const struct icp *)hellprobs :
             (const struct icp *) mkobjprobs;
 
         for (tprob = rnd(100); (tprob -= iprobs->iprob) > 0; iprobs++) ;
@@ -272,7 +272,7 @@ rndmonnum(const struct level *lev)
     do {
         i = rn1(SPECIAL_PM - LOW_PM, LOW_PM);
         ptr = &mons[i];
-    } while ((ptr->geno & G_NOGEN) || (!In_hell(&lev->z) && (ptr->geno & G_HELL)));
+    } while ((ptr->geno & G_NOGEN) || (!In_hell(lev) && (ptr->geno & G_HELL)));
 
     return i;
 }
@@ -690,7 +690,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
                 otmp = mk_artifact(lev, otmp, (aligntyp) A_NONE);
             /* simulate lacquered armor for samurai */
             if (Role_if(PM_SAMURAI) && otmp->otyp == SPLINT_MAIL &&
-                In_quest(&level->z)) {
+                In_quest(level)) {
                 otmp->oerodeproof = otmp->rknown = 1;
             }
             break;

@@ -1296,8 +1296,8 @@ Can_rise_up(int x, int y, const struct level *lev)
 {
     /* can't rise up from inside the top of the Wizard's tower */
     /* KMH -- or in sokoban */
-    if (In_endgame(&lev->z) || In_sokoban(lev) ||
-        (Is_wiz1_level(&lev->z) && In_W_tower(x, y, lev)))
+    if (In_endgame(lev) || In_sokoban(lev) ||
+        (Is_wiz1_level(lev) && In_W_tower(x, y, lev)))
         return FALSE;
     return (boolean) (lev->z.dlevel > 1 ||
                       (dungeons[lev->z.dnum].entry_lev == 1 &&
@@ -1366,9 +1366,9 @@ get_level(d_level * newlevel, int levnum)
 
 
 boolean
-In_quest(const d_level *dlev)
+In_quest(const struct level *lev)
 {       /* are you in the quest dungeon? */
-    return (boolean) (dlev->dnum == quest_dnum);
+    return (boolean) (lev->z.dnum == quest_dnum);
 }
 
 
@@ -1429,7 +1429,7 @@ In_V_tower(const struct level *lev)
 }
 
 boolean
-On_W_tower_level(const d_level *lev)
+On_W_tower_level(const struct level *lev)
 {       /* is `lev' a level containing the Wizard's tower? */
     return (boolean) (Is_wiz1_level(lev) || Is_wiz2_level(lev) ||
                       Is_wiz3_level(lev));
@@ -1439,7 +1439,7 @@ On_W_tower_level(const d_level *lev)
 boolean
 In_W_tower(int x, int y, const struct level *lev)
 {
-    if (!On_W_tower_level(&lev->z))
+    if (!On_W_tower_level(lev))
         return FALSE;
     /* 
      * Both of the exclusion regions for arriving via level teleport
@@ -1458,9 +1458,9 @@ In_W_tower(int x, int y, const struct level *lev)
 
 
 boolean
-In_hell(const d_level *dlev)
+In_hell(const struct level *lev)
 {       /* are you in one of the Hell levels? */
-    return (boolean) (dungeons[dlev->dnum].flags.hellish);
+    return (boolean) (dungeons[lev->z.dnum].flags.hellish);
 }
 
 
@@ -1523,7 +1523,7 @@ induced_align(const struct level *lev, int pct)
 boolean
 Invocation_lev(const struct level *lev)
 {
-    return (boolean) (In_hell(&lev->z) &&
+    return (boolean) (In_hell(lev) &&
                       lev->z.dlevel == (dungeons[lev->z.dnum].num_dunlevs - 1));
 }
 
@@ -1533,7 +1533,7 @@ Invocation_lev(const struct level *lev)
 xchar
 level_difficulty(const struct level *lev)
 {
-    if (In_endgame(&lev->z))
+    if (In_endgame(lev))
         return (xchar) (depth(&sanctum_level) + u.ulevel/2);
     else if (Uhave_amulet)
         return deepest_lev_reached(FALSE);
@@ -1976,7 +1976,7 @@ overview_print_dun(const struct level *lev)
 
     entry_depth = depthstart + dungeons[dnum].entry_lev - 1;
     reached_depth = depthstart + dungeons[dnum].dunlev_ureached - 1;
-    if (entry_depth == reached_depth || In_endgame(&lev->z))
+    if (entry_depth == reached_depth || In_endgame(lev))
         /* Suppress the negative numbers in the endgame. */
         rv = msgcat(dungeons[dnum].dname, ":");
     else {
@@ -2005,7 +2005,7 @@ overview_print_lev(const struct level *lev)
     i = depthstart + lev->z.dlevel - 1;
     if (Is_astralevel(lev))
         buf = "Astral Plane";
-    else if (In_endgame(&lev->z))
+    else if (In_endgame(lev))
         /* Negative numbers are mildly confusing, since they are never shown to 
            the player, except in wizard mode.  We could show "Level -1" for the 
            earth plane, for example.  Instead, show "Plane 1" for the earth

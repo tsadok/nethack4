@@ -407,7 +407,7 @@ tele_impl(boolean wizard_tele, boolean run_next_to_u)
     if (!Blinded)
         make_blinded(0L, FALSE);
 
-    if ((Uhave_amulet || On_W_tower_level(&level->z)) && !rn2(3)) {
+    if ((Uhave_amulet || On_W_tower_level(level)) && !rn2(3)) {
         pline("You feel disoriented for a moment.");
         return 1;
     }
@@ -552,7 +552,7 @@ level_tele_impl(boolean wizard_tele)
     boolean force_dest = FALSE;
     const char *buf, *killer = NULL;
 
-    if ((Uhave_amulet || In_endgame(&level->z) || In_sokoban(level))
+    if ((Uhave_amulet || In_endgame(level) || In_sokoban(level))
         && !wizard_tele) {
         pline("You feel very disoriented for a moment.");
         return;
@@ -588,7 +588,8 @@ level_tele_impl(boolean wizard_tele)
                 if ((newlev = (int)print_dungeon(TRUE, &destlev, &destdnum))) {
                     newlevel.dnum = destdnum;
                     newlevel.dlevel = destlev;
-                    if (In_endgame(&newlevel) && !In_endgame(&level->z)) {
+                    if (newlevel.dlevel == astral_level.dnum &&
+                        !In_endgame(level)) {
                         const char *dest = "Destination is earth level";
                         if (!Uhave_amulet) {
                             struct obj *obj;
@@ -642,7 +643,7 @@ level_tele_impl(boolean wizard_tele)
            consequently it should be incremented to the value of the logical
            depth of the target level. we let negative values requests fall into 
            the "heaven" loop. */
-        if (In_quest(&level->z) && newlev > 0)
+        if (In_quest(level) && newlev > 0)
             newlev = newlev + dungeons[level->z.dnum].depth_start - 1;
     } else {    /* involuntary level tele */
     random_levtport:
@@ -658,7 +659,7 @@ level_tele_impl(boolean wizard_tele)
         return;
     }
 
-    if (In_endgame(&level->z)) {    /* must already be wizard */
+    if (In_endgame(level)) {    /* must already be wizard */
         int llimit = dunlevs_in_dungeon(&level->z);
 
         if (newlev >= 0 || newlev <= -llimit) {
@@ -742,7 +743,7 @@ level_tele_impl(boolean wizard_tele)
                 pline("Sorry...");
             }
         /* no teleporting out of quest dungeon */
-        if (In_quest(&level->z) && newlev < depth(&qstart_level))
+        if (In_quest(level) && newlev < depth(&qstart_level))
             newlev = depth(&qstart_level);
         /* the player thinks of levels purely in logical terms, so we must
            translate newlev to a number relative to the current dungeon. */
@@ -771,7 +772,7 @@ domagicportal(struct trap *ttmp)
     /* prevent the poor shnook, whose amulet was stolen while in the endgame,
        from accidently triggering the portal to the next level, and thus losing 
        the game */
-    if (In_endgame(&level->z) && !Uhave_amulet) {
+    if (In_endgame(level) && !Uhave_amulet) {
         pline("You feel dizzy for a moment, but nothing happens...");
         return;
     }
@@ -785,7 +786,7 @@ domagicportal(struct trap *ttmp)
 void
 tele_trap(struct trap *trap)
 {
-    if (In_endgame(&level->z) || Antimagic) {
+    if (In_endgame(level) || Antimagic) {
         if (Antimagic)
             shieldeff(u.ux, u.uy);
         pline("You feel a wrenching sensation.");
@@ -808,7 +809,7 @@ level_tele_trap(struct trap *trap)
     if (Antimagic) {
         shieldeff(u.ux, u.uy);
     }
-    if (Antimagic || In_endgame(&level->z)) {
+    if (Antimagic || In_endgame(level)) {
         pline("You feel a wrenching sensation.");
         return;
     }
@@ -841,7 +842,7 @@ rloc_pos_ok(int x, int y,       /* coordinates of candidate location */
     yy = mtmp->my;
     if (!xx) {
         /* no current location (migrating monster arrival) */
-        if (level->dndest.nlx && On_W_tower_level(&level->z))
+        if (level->dndest.nlx && On_W_tower_level(level))
             return ((yy & 2) != 0) ^    /* inside xor not within */
                 !within_bounded_area(x, y, level->dndest.nlx, level->dndest.nly,
                                      level->dndest.nhx, level->dndest.nhy);
@@ -1054,7 +1055,7 @@ mlevel_tele_trap(struct monst *mtmp, struct trap *trap, boolean force_it,
                 get_level(&tolevel, depth(&level->z) + 1);
             }
         } else if (tt == MAGIC_PORTAL) {
-            if (In_endgame(&level->z) &&
+            if (In_endgame(level) &&
                 (mon_has_amulet(mtmp) ||
                  is_home_elemental(mtmp->dlevel, mptr))) {
                 if (in_sight && mptr->mlet != S_ELEMENTAL) {
@@ -1069,7 +1070,7 @@ mlevel_tele_trap(struct monst *mtmp, struct trap *trap, boolean force_it,
         } else {        /* (tt == LEVEL_TELEP) */
             int nlev;
 
-            if (mon_has_amulet(mtmp) || In_endgame(&level->z)) {
+            if (mon_has_amulet(mtmp) || In_endgame(level)) {
                 if (in_sight)
                     pline("%s seems very disoriented for a moment.",
                           Monnam(mtmp));
@@ -1169,7 +1170,7 @@ random_teleport_level(void)
     if (!rn2(5) || Is_knox(level))
         return cur_depth;
 
-    if (In_endgame(&level->z))      /* only happens in wizmode */
+    if (In_endgame(level))      /* only happens in wizmode */
         return cur_depth;
 
     /* What I really want to do is as follows: -- If in a dungeon that goes
@@ -1186,7 +1187,7 @@ random_teleport_level(void)
        explicitly handle quest here too, to fix the problem of monsters
        sometimes level teleporting out of it into main dungeon. Also prevent
        monsters reaching the Sanctum prior to invocation. */
-    min_depth = In_quest(&level->z) ? dungeons[level->z.dnum].depth_start : 1;
+    min_depth = In_quest(level) ? dungeons[level->z.dnum].depth_start : 1;
     max_depth =
         dunlevs_in_dungeon(&level->z) + (dungeons[level->z.dnum].depth_start - 1);
     /* can't reach the Sanctum if the invocation hasn't been performed */

@@ -122,7 +122,7 @@ mk_mplayer(const struct permonst *ptr, struct level *lev, xchar x, xchar y,
     if (MON_AT(lev, x, y))
         rloc(m_at(lev, x, y), FALSE);   /* insurance */
 
-    if (!In_endgame(&level->z))
+    if (!In_endgame(level))
         special = FALSE;
 
     if ((mtmp = makemon(ptr, lev, x, y, MM_ADJACENTOK)) != 0) {

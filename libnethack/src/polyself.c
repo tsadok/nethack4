@@ -444,7 +444,7 @@ polymon(int mntmp, boolean noisy)
        level of you as a monster" for a polymorphed character. */
     mlvl = (int)mons[mntmp].mlevel;
     if (youmonst.data->mlet == S_DRAGON && mntmp >= PM_GRAY_DRAGON) {
-        u.mhmax = In_endgame(&level->z) ? (8 * mlvl) : (4 * mlvl + dice(mlvl, 4));
+        u.mhmax = In_endgame(level) ? (8 * mlvl) : (4 * mlvl + dice(mlvl, 4));
     } else if (is_golem(youmonst.data)) {
         u.mhmax = golemhp(mntmp);
     } else {

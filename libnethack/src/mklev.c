@@ -574,7 +574,7 @@ makelevel(struct level *lev)
         } else if (In_mines(lev)) {
             makemaz(lev, "minefill");
             return;
-        } else if (In_quest(&lev->z)) {
+        } else if (In_quest(lev)) {
             char fillname[9];
             s_level *loc_levnum;
 
@@ -586,7 +586,7 @@ makelevel(struct level *lev)
                    (lev->z.dlevel < loc_levnum->dlevel.dlevel) ? "a" : "b");
             makemaz(lev, fillname);
             return;
-        } else if (In_hell(&lev->z) ||
+        } else if (In_hell(lev) ||
                    (rn2(5) && lev->z.dnum == medusa_level.dnum &&
                     depth(&lev->z) > depth(&medusa_level))) {
             makemaz(lev, "");
@@ -808,7 +808,7 @@ mineralize(struct level *lev)
 
 
     /* Place kelp, except on the plane of water */
-    if (In_endgame(&lev->z))
+    if (In_endgame(lev))
         return;
     for (x = 1; x < (COLNO - 1); x++)
         for (y = 1; y < (ROWNO - 1); y++)
@@ -818,7 +818,7 @@ mineralize(struct level *lev)
 
     /* determine if it is even allowed; almost all special levels are excluded
        */
-    if (In_hell(&lev->z) || In_V_tower(lev) || Is_rogue_level(lev) ||
+    if (In_hell(lev) || In_V_tower(lev) || Is_rogue_level(lev) ||
         lev->flags.arboreal || ((sp = Is_special(&lev->z)) != 0 &&
                                 !Is_oracle_level(lev)
                                 && (!In_mines(lev) || sp->flags.town)
@@ -833,7 +833,7 @@ mineralize(struct level *lev)
     if (In_mines(lev)) {
         goldprob *= 2;
         gemprob *= 3;
-    } else if (In_quest(&lev->z)) {
+    } else if (In_quest(lev)) {
         goldprob /= 4;
         gemprob /= 6;
     }
@@ -1173,7 +1173,7 @@ mktrap(struct level *lev, int num, int mazeflag, struct mkroom *croom,
             kind = RUST_TRAP;
             break;
         }
-    } else if (In_hell(&lev->z) && !rn2(5)) {
+    } else if (In_hell(lev) && !rn2(5)) {
         /* bias the frequency of fire traps in Gehennom */
         kind = FIRE_TRAP;
     } else {
@@ -1214,7 +1214,7 @@ mktrap(struct level *lev, int num, int mazeflag, struct mkroom *croom,
                     kind = NO_TRAP;
                 break;
             case FIRE_TRAP:
-                if (!In_hell(&lev->z))
+                if (!In_hell(lev))
                     kind = NO_TRAP;
                 break;
             case TELEP_TRAP:

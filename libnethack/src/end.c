@@ -860,9 +860,9 @@ display_rip(int how, long umoney, const char *killer)
             if (Is_astralevel(level))
                 where = "The Astral Plane";
             pbuf = msgprintf("You %s in %s", ends[how], where);
-            if (!In_endgame(&level->z) && !Is_knox(level))
+            if (!In_endgame(level) && !Is_knox(level))
                 pbuf = msgprintf("%s on dungeon level %d", pbuf,
-                                 In_quest(&level->z) ?
+                                 In_quest(level) ?
                                  dunlev(&level->z) : depth(&level->z));
         }
 

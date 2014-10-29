@@ -642,7 +642,7 @@ domonnoise(struct monst *mtmp)
         /* else FALLTHRU */
     case MS_HUMANOID:
         if (!mtmp->mpeaceful) {
-            if (In_endgame(&level->z) && is_mplayer(ptr)) {
+            if (In_endgame(level) && is_mplayer(ptr)) {
                 mplayer_talk(mtmp);
                 break;
             } else

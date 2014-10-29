@@ -417,7 +417,7 @@ find_defensive(struct monst *mtmp, struct musable *m)
             && !In_sokoban(level)
             /* digging wouldn't be effective; assume they know that */
             && !(lev->locations[x][y].wall_info & W_NONDIGGABLE)
-            && !(Is_botlevel(&level->z) || In_endgame(&level->z))
+            && !(Is_botlevel(&level->z) || In_endgame(level))
             && !(is_ice(lev, x, y) || is_pool(lev, x, y) || is_lava(lev, x, y))
             && !(mtmp->data == &mons[PM_VLAD_THE_IMPALER]
                  && In_V_tower(level))) {
@@ -564,7 +564,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
                 mtmp->mtrapseen |= (1 << (TELEP_TRAP - 1));
             return 2;
         }
-        if ((On_W_tower_level(&level->z)) && !rn2(3)) {
+        if ((On_W_tower_level(level)) && !rn2(3)) {
             if (vismon)
                 pline("%s seems disoriented for a moment.", Monnam(mtmp));
             return 2;
@@ -598,7 +598,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
                 int nlev;
                 d_level flev;
 
-                if (mon_has_amulet(mtmp) || In_endgame(&level->z)) {
+                if (mon_has_amulet(mtmp) || In_endgame(level)) {
                     if (vismon)
                         pline("%s seems very disoriented for a moment.",
                               Monnam(mtmp));
@@ -1071,7 +1071,7 @@ find_offensive(struct monst * mtmp, struct musable * m)
             && (mtmp->mx != mtmp->mux || mtmp->my != mtmp->muy)
             && mtmp->mcansee && haseyes(mtmp->data)
             && !Is_rogue_level(level)
-            && (!In_endgame(&level->z) || Is_earthlevel(level))) {
+            && (!In_endgame(level) || Is_earthlevel(level))) {
             m->offensive = obj;
             m->has_offense = MUSE_SCR_EARTH;
         }

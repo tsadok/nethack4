@@ -287,7 +287,7 @@ chat_with_leader(void)
             qt_pager(QT_NEXTLEADER);
         /* the quest leader might have passed through the portal into the
            regular dungeon; none of the remaining make sense there */
-        if (!on_level(&level->z, &qstart_level))
+        if (!Is_qstart(level))
             return;
 
         if (not_capable()) {
@@ -326,7 +326,7 @@ leader_speaks(struct monst *mtmp)
     }
     /* the quest leader might have passed through the portal into the regular
        dungeon; if so, mustn't perform "backwards expulsion" */
-    if (!on_level(&level->z, &qstart_level))
+    if (!Is_qstart(level))
         return;
 
     if (Qstat(pissed_off)) {

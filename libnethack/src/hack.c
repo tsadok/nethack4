@@ -210,7 +210,7 @@ moverock(schar dx, schar dy)
                     seetrap(ttmp);
                     continue;
                 case LEVEL_TELEP:
-                    if (In_endgame(&level->z)) {
+                    if (In_endgame(level)) {
                         pline ("%s strains, but fails to escape the plane.",
                             msgupcasefirst(the(xname(otmp))));
                         deltrap(level, ttmp);

@@ -150,9 +150,9 @@ describe_level(char *buf)
 
     if (Is_knox(level))
         sprintf(buf, "%s", dungeons[level->z.dnum].dname);
-    else if (In_quest(&level->z))
+    else if (In_quest(level))
         sprintf(buf, "Home:%d", dunlev(&level->z));
-    else if (In_endgame(&level->z))
+    else if (In_endgame(level))
         sprintf(buf, Is_astralevel(level) ? "Astral Plane" : "End Game");
     else if (In_mines(level))
         sprintf(buf, "Mines:%d", depth(&level->z));
@@ -160,7 +160,7 @@ describe_level(char *buf)
         sprintf(buf, "Sokoban:%d", depth(&level->z));
     else if (Is_valley(level))
         sprintf(buf, "Valley:%d", depth(&level->z));
-    else if (In_hell(&level->z))
+    else if (In_hell(level))
         sprintf(buf, "Gehennom:%d", depth(&level->z));
     else if (In_V_tower(level))
         sprintf(buf, "Tower:%d", depth(&level->z));

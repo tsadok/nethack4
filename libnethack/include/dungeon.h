@@ -127,11 +127,12 @@ struct overview_info {
 # define Is_oracle_level(x)     (on_level(&(x)->z, &oracle_level))
 # define Is_valley(x)           (on_level(&(x)->z, &valley_level))
 # define Is_juiblex_level(x)    (on_level(&(x)->z, &juiblex_level))
+# define Is_orcus_level(x)      (on_level(&(x)->z, &orcus_level))
 # define Is_asmo_level(x)       (on_level(&(x)->z, &asmodeus_level))
 # define Is_baal_level(x)       (on_level(&(x)->z, &baalzebub_level))
-# define Is_wiz1_level(x)       (on_level((x), &wiz1_level))
-# define Is_wiz2_level(x)       (on_level((x), &wiz2_level))
-# define Is_wiz3_level(x)       (on_level((x), &wiz3_level))
+# define Is_wiz1_level(x)       (on_level(&(x)->z, &wiz1_level))
+# define Is_wiz2_level(x)       (on_level(&(x)->z, &wiz2_level))
+# define Is_wiz3_level(x)       (on_level(&(x)->z, &wiz3_level))
 # define Is_sanctum(x)          (on_level(&(x)->z, &sanctum_level))
 # define Is_portal_level(x)     (on_level(&(x)->z, &portal_level))
 # define Is_rogue_level(x)      (on_level(&(x)->z, &rogue_level))
@@ -143,8 +144,8 @@ struct overview_info {
 # define Is_knox(x)             (on_level(&(x)->z, &knox_level))
 
 # define In_sokoban(x)          ((x)->z.dnum == sokoban_dnum)
-# define Inhell                 In_hell(&level->z)  /* now gehennom */
-# define In_endgame(x)          ((x)->dnum == astral_level.dnum)
+# define Inhell                 In_hell(level)  /* now gehennom */
+# define In_endgame(x)          ((x)->z.dnum == astral_level.dnum)
 
 # define within_bounded_area(X,Y,LX,LY,HX,HY)                   \
     ((X) >= (LX) && (X) <= (HX) && (Y) >= (LY) && (Y) <= (HY))

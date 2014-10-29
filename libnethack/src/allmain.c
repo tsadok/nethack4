@@ -1074,7 +1074,7 @@ pre_move_tasks(boolean didmove, boolean loading_game)
 
     /* we need to do this before vision handling; clairvoyance can set
        vision_full_recalc */
-    if (didmove && Clairvoyant && !In_endgame(&level->z) && !(moves % 15) &&
+    if (didmove && Clairvoyant && !In_endgame(level) && !(moves % 15) &&
         !rn2(2))
         do_vicinity_map();
 

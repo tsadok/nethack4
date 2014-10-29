@@ -1368,8 +1368,9 @@ arti_invoke(struct obj *obj)
                     newlev.dlevel = dungeons[i].entry_lev;
                 else
                     newlev.dlevel = dungeons[i].dunlev_ureached;
-                if (Uhave_amulet || In_endgame(&level->z) || In_endgame(&newlev)
-                    || newlev.dnum == level->z.dnum) {
+                if (Uhave_amulet || In_endgame(level) ||
+                    newlev.dnum == astral_level.dnum ||
+                    newlev.dnum == level->z.dnum) {
                     pline("You feel very disoriented for a moment.");
                 } else {
                     if (!Blind)

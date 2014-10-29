@@ -341,8 +341,8 @@ morguemon(const struct level *lev)
     int i = rn2(100), hd = rn2(level_difficulty(lev));
 
     if (hd > 10 && i < 10)
-        return (In_hell(&lev->z) ||
-                In_endgame(&lev->z)) ? mkclass(lev, S_DEMON, 0)
+        return (In_hell(lev) ||
+                In_endgame(lev)) ? mkclass(lev, S_DEMON, 0)
                     : &mons[ndemon(lev, A_NONE)];
     if (hd > 8 && i > 85)
         return mkclass(lev, S_VAMPIRE, 0);

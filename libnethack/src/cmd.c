@@ -1326,7 +1326,7 @@ nh_get_object_commands(int *count, char invlet)
 
     /* sacrifice object */
     if (IS_ALTAR(level->locations[u.ux][u.uy].typ) && !Engulfed) {
-        if (In_endgame(&level->z) &&
+        if (In_endgame(level) &&
             (obj->otyp == AMULET_OF_YENDOR ||
              obj->otyp == FAKE_AMULET_OF_YENDOR))
             SET_OBJ_CMD('S', "sacrifice", "Sacrifice %s at this altar", 0);

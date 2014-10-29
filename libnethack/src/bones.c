@@ -18,7 +18,7 @@ make_bones_id(char *buf, d_level * dlev)
     s_level *sptr;
 
     sprintf(buf, "%c%s", dungeons[dlev->dnum].boneid,
-            In_quest(dlev) ? urole.filecode : "0");
+            dlev->dnum == quest_dnum ? urole.filecode : "0");
     if ((sptr = Is_special(dlev)) != 0)
         sprintf(buf + 2, ".%c", sptr->boneid);
     else
@@ -40,7 +40,7 @@ no_bones_level(d_level * lev)
                       || Is_botlevel(lev)
                       || (Is_branchlev(lev) && lev->dlevel > 1)
                       /* no bones in the invocation level */
-                      || (In_hell(lev) &&
+                      || (dungeons[lev->dnum].flags.hellish &&
                           lev->dlevel == dunlevs_in_dungeon(lev) - 1)
                       /* no bones on the first level */
                       /* TODO: remove hardcoding in dungeon rewrite */

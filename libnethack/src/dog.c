@@ -308,7 +308,7 @@ mon_arrive(struct monst *mtmp, boolean with_you)
         xlocale = level->sstairs.sx, ylocale = level->sstairs.sy;
         break;
     case MIGR_PORTAL:
-        if (In_endgame(&level->z)) {
+        if (In_endgame(level)) {
             /* there is no arrival portal for endgame levels */
             /* BUG[?]: for simplicity, this code relies on the fact that we
                know that the current endgame levels always build upwards and

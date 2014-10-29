@@ -630,7 +630,7 @@ x_monnam(const struct monst *mtmp,
             buf = msgcat(buf, name);
             name_at_start = TRUE;
         }
-    } else if (is_mplayer(mdat) && !In_endgame(&level->z)) {
+    } else if (is_mplayer(mdat) && !In_endgame(level)) {
         buf = msgcat(buf, msglowercase(rank_of((int)mtmp->m_lev, monsndx(mdat),
                                                (boolean) mtmp->female)));
         name_at_start = FALSE;
