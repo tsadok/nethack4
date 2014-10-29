@@ -658,7 +658,7 @@ extern void historic_event(boolean hidden, const char *fmt, ...)
 extern void save_history(struct memfile *mf);
 extern void restore_history(struct memfile *mf);
 extern void free_history(void);
-extern const char *hist_lev_name(const d_level * l, boolean in_or_on);
+extern const char *hist_lev_name(const struct level *lev, boolean in_or_on);
 
 /* ### invent.c ### */
 

@@ -1975,7 +1975,7 @@ xkilled(struct monst *mtmp, int dest)
     if ((mtmp->data->geno & G_UNIQ)) {
         historic_event(FALSE, "killed %s %s.",
                        x_monnam(mtmp, ARTICLE_NONE, NULL, EXACT_NAME, TRUE),
-                       hist_lev_name(&u.uz, TRUE));
+                       hist_lev_name(level, TRUE));
     }
 
     mdat = mtmp->data;  /* note: mondead can change mtmp->data */

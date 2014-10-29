@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Derrick Sund, 2014-06-01 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Daniel Thaler, 2011.                             */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -117,29 +117,29 @@ free_history(void)
  *   - level 12 in The Dungeons of Doom
  * */
 const char *
-hist_lev_name(const d_level * l, boolean in_or_on)
+hist_lev_name(const struct level *lev, boolean in_or_on)
 {
     const char *hlnbuf;
 
-    if (Is_astralevel(l))
+    if (Is_astralevel(&lev->z))
         hlnbuf = "on the Astral Plane";
-    else if (Is_waterlevel(l))
+    else if (Is_waterlevel(&lev->z))
         hlnbuf = "on the Plane of Water";
-    else if (Is_firelevel(l))
+    else if (Is_firelevel(&lev->z))
         hlnbuf = "on the Plane of Fire";
-    else if (Is_airlevel(l))
+    else if (Is_airlevel(&lev->z))
         hlnbuf = "on the Plane of Air";
-    else if (Is_earthlevel(l))
+    else if (Is_earthlevel(&lev->z))
         hlnbuf = "on the Plane of Earth";
-    else if (Is_knox(l))
+    else if (Is_knox(&lev->z))
         hlnbuf = "in Fort Knox";
-    else if (Is_stronghold(l))
+    else if (Is_stronghold(&lev->z))
         hlnbuf = "in The Castle";
-    else if (Is_valley(l))
+    else if (Is_valley(&lev->z))
         hlnbuf = "in The Valley of the Dead";
     else
-        hlnbuf = msgprintf("on level %d of %s", l->dlevel,
-                           dungeons[l->dnum].dname);
+        hlnbuf = msgprintf("on level %d of %s", lev->z.dlevel,
+                           dungeons[lev->z.dnum].dname);
 
     if (!in_or_on)
         hlnbuf += 3;
