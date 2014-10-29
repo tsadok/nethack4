@@ -1,11 +1,5 @@
 About this document:
-<<<<<<< HEAD
-Last modified by Sean Hunt, 2014-08-25
-||||||| parent of 92d6a6e... Implement most of the plane of water.
-Last modified by Sean Hunt, 2014-08-21
-=======
-Last modified by Sean Hunt, 2014-08-22
->>>>>>> 92d6a6e... Implement most of the plane of water.
+Last modified by Sean Hunt, 2014-10-29
 
 Copyright (C) 2013 Sean Hunt
 
