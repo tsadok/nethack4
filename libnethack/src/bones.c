@@ -459,6 +459,10 @@ getbones(d_level * levnum)
             trickery(errbuf);
         } else {
             struct monst *mtmp;
+
+            /* Special levels might move around. */
+            assign_level(&levels[ledger_no(levnum)]->z, levnum);
+
             struct level *lev = getlev(&mf, ledger_no(levnum), TRUE);
 
             /* Note that getlev() now keeps tabs on unique monsters such as

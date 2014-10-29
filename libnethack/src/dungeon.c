@@ -288,12 +288,18 @@ void
 restore_dungeon(struct memfile *mf)
 {
     branch *curr, *last;
-    int count, i;
+    int count, i, j;
 
     mfmagic_check(mf, DGN_MAGIC);
     n_dgns = mread32(mf);
-    for (i = 0; i < n_dgns; i++)
+    for (i = 0; i < n_dgns; i++) {
         restore_dungeon_struct(mf, &dungeons[i]);
+        for (j = 0; j < dungeons[i].num_dunlevs; ++j) {
+            levels[dungeons[i].ledger_start + j] =
+                alloc_level(&(struct d_level){.dnum = i, .dlevel = j + 1});
+        }
+    }
+
     restore_dungeon_topology(mf);
     mread(mf, tune, sizeof tune);
 
@@ -816,6 +822,11 @@ init_dungeons(void)
             dungeons[i].dunlev_ureached = 0;
         }
 
+        int j;
+        for (j = 0; j < dungeons[i].num_dunlevs; ++j)
+            levels[dungeons[i].ledger_start + j] =
+                alloc_level(&(struct d_level){.dnum = i, .dlevel = j + 1});
+
         dungeons[i].flags.hellish = ! !(pd.tmpdungeon[i].flags & HELLISH);
         dungeons[i].flags.maze_like = ! !(pd.tmpdungeon[i].flags & MAZELIKE);
         dungeons[i].flags.rogue_like = ! !(pd.tmpdungeon[i].flags & ROGUELIKE);
@@ -1058,7 +1069,7 @@ deepest_lev_reached(boolean noquest)
 xchar
 ledger_no(const d_level * lev)
 {
-    return (xchar) (lev->dlevel + dungeons[lev->dnum].ledger_start);
+    return (xchar) (lev->dlevel + dungeons[lev->dnum].ledger_start - 1);
 }
 
 /*
@@ -1075,7 +1086,7 @@ xchar
 maxledgerno(void)
 {
     return (xchar) (dungeons[n_dgns - 1].ledger_start +
-                    dungeons[n_dgns - 1].num_dunlevs);
+                    dungeons[n_dgns - 1].num_dunlevs - 1);
 }
 
 /* return the dungeon that this ledgerno exists in */
@@ -1086,8 +1097,8 @@ ledger_to_dnum(xchar ledgerno)
 
     /* find i such that (i->base + 1) <= ledgerno <= (i->base + i->count) */
     for (i = 0; i < n_dgns; i++)
-        if (dungeons[i].ledger_start < ledgerno &&
-            ledgerno <= dungeons[i].ledger_start + dungeons[i].num_dunlevs)
+        if (dungeons[i].ledger_start <= ledgerno &&
+            ledgerno < dungeons[i].ledger_start + dungeons[i].num_dunlevs)
             return (xchar) i;
 
     panic("level number out of range [ledger_to_dnum(%d)]", (int)ledgerno);
@@ -1577,7 +1588,9 @@ lev_by_name(const char *nam)
              || (level->z.dnum == medusa_level.dnum &&
                  dlev.dnum == valley_level.dnum)) &&
             /* either wizard mode or else seen and not forgotten */
-            (wizard || (levels[idx] && !levels[idx]->flags.forgotten))) {
+            /* FIXME: This assumes all generated levels have been seen. That's
+             * false. */
+            (wizard || (levels[idx]->generated && !levels[idx]->flags.forgotten))) {
             lev = depth(&slev->dlevel);
         }
     } else {    /* not a specific level; try branch names */
@@ -1587,12 +1600,14 @@ lev_by_name(const char *nam)
             idx = find_branch(p + 4, NULL);
 
         if (idx >= 0) {
+            /* FIXME: WTF */
             idxtoo = (idx >> 8) & 0x00FF;
             idx &= 0x00FF;
             if (        /* either wizard mode, or else _both_ sides of branch
                            seen */
-                   wizard || ((levels[idx] && !levels[idx]->flags.forgotten) &&
-                              (levels[idxtoo] &&
+                   wizard || ((levels[idx]->generated &&
+                               !levels[idx]->flags.forgotten) &&
+                              (levels[idxtoo]->generated &&
                                !levels[idxtoo]->flags.forgotten))) {
                 if (ledger_to_dnum(idxtoo) == level->z.dnum)
                     idx = idxtoo;
@@ -1881,7 +1896,7 @@ overview_scan(const struct level *lev, struct overview_info *oi)
                 if (lev->sstairs.sx == x && lev->sstairs.sy == y &&
                     lev->sstairs.tolev.dnum != lev->z.dnum) {
                     oi->branch = TRUE;
-                    if (levels[ledger_no(&lev->sstairs.tolev)]) {
+                    if (levels[ledger_no(&lev->sstairs.tolev)]->generated) {
                         oi->branch_dst_known = TRUE;
                         oi->branch_dst = lev->sstairs.tolev;
                     } else {
@@ -1951,7 +1966,7 @@ overview_scan(const struct level *lev, struct overview_info *oi)
     for (trap = lev->lev_traps; trap; trap = trap->ntrap)
         if (trap->tseen && trap->ttyp == MAGIC_PORTAL) {
             oi->portal = TRUE;
-            if (levels[ledger_no(&trap->dst)]) {
+            if (levels[ledger_no(&trap->dst)]->generated) {
                 oi->portal_dst_known = TRUE;
                 oi->portal_dst = trap->dst;
             } else {
@@ -2187,7 +2202,7 @@ dooverview(const struct nh_cmd_arg *arg)
 
     dnum = -1;
     for (i = 0; i <= maxledgerno(); i++) {
-        if (!levels[i])
+        if (!levels[i]->generated)
             continue;
         overview_scan(levels[i], &oinfo);
 

@@ -588,7 +588,7 @@ level_tele_impl(boolean wizard_tele)
                 if ((newlev = (int)print_dungeon(TRUE, &destlev, &destdnum))) {
                     newlevel.dnum = destdnum;
                     newlevel.dlevel = destlev;
-                    if (newlevel.dlevel == astral_level.dnum &&
+                    if (newlevel.dnum == astral_level.dnum &&
                         !In_endgame(level)) {
                         const char *dest = "Destination is earth level";
                         if (!Uhave_amulet) {

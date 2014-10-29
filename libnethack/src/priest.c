@@ -227,12 +227,12 @@ priestini(struct level *lev, struct mkroom *sroom, int sx, int sy,
 
         /* now his/her goodies... */
         if (sanctum && CONST_EPRI(priest)->shralign == A_NONE &&
-            Is_sanctum(level)) {
+            Is_sanctum(lev)) {
             mongets(priest, AMULET_OF_YENDOR);
         }
         /* 2 to 4 spellbooks */
         for (cnt = rn1(3, 2); cnt > 0; --cnt) {
-            mpickobj(priest, mkobj(level, SPBOOK_CLASS, mkobj_normal));
+            mpickobj(priest, mkobj(lev, SPBOOK_CLASS, mkobj_normal));
         }
         /* robe [via makemon()] */
         if (rn2(2) && (otmp = which_armor(priest, os_armc)) != 0) {
@@ -740,13 +740,32 @@ clearpriests(void)
     }
 }
 
+void
+savepriest(struct memfile *mf, struct monst *mtmp, struct level *lev)
+{
+    if (lev)
+        mwrite8(mf, !!(on_level(&(CONST_EPRI(mtmp)->shrlevel), &lev->z)));
+    else
+        /* Monster is migrating. Just write something, since this isn't a bones
+         * anyway. */
+        mwrite8(mf, 0);
+}
+
 /* munge priest-specific structure when restoring -dlc */
 void
-restpriest(struct monst *mtmp, boolean ghostly)
+restpriest(struct memfile *mf, struct monst *mtmp, boolean ghostly,
+           struct level *lev)
 {
-    if (level->z.dlevel) {
-        if (ghostly)
-            assign_level(&(EPRI(mtmp)->shrlevel), &level->z);
+    /* If the priest came from a different shrine level, update that now. */
+    boolean same_lev = mread8(mf);
+
+    struct d_level *dlev = &(EPRI(mtmp)->shrlevel);
+
+    if (ghostly) {
+        if (same_lev)
+            assign_level(dlev, &lev->z);
+        else
+            assign_level(dlev, &(d_level){.dnum = -1, .dlevel = -1});
     }
 }
 

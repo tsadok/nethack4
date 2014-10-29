@@ -257,7 +257,7 @@ m_initweap(struct level *lev, struct monst *mtmp)
                 break;
             }
             if (mm == PM_ELVENKING) {
-                if (rn2(3) || (!level->generated && Is_earthlevel(level)))
+                if (rn2(3) || (!lev->generated && Is_earthlevel(lev)))
                     mongets(mtmp, PICK_AXE);
                 if (!rn2(50))
                     mongets(mtmp, CRYSTAL_BALL);
@@ -652,7 +652,7 @@ m_initinv(struct monst *mtmp)
         break;
     case S_GIANT:
         if (ptr == &mons[PM_MINOTAUR]) {
-            if (!rn2(3) || (!level->generated && Is_earthlevel(lev)))
+            if (!rn2(3) || (!lev->generated && Is_earthlevel(lev)))
                 mongets(mtmp, WAN_DIGGING);
         } else if (is_giant(ptr)) {
             for (cnt = rn2((int)(mtmp->m_lev / 2)); cnt; cnt--) {

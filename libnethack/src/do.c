@@ -895,7 +895,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
             return;
     }
     new_ledger = ledger_no(newlevel);
-    if (new_ledger <= 0) {
+    if (new_ledger < 0) {
         /* The caller should be doing this themselves. */
         impossible("Escaping via goto_level?");
         done(ESCAPED, NULL);
@@ -982,10 +982,11 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
             dunlev_reached(&level->z) = dunlev(&level->z);
     }
 
+    flush_screen_disable();     /* ensure all map flushes are postponed */
     origlev = level;
     level = NULL;
 
-    if (!levels[new_ledger]) {
+    if (!levels[new_ledger]->generated) {
         /* entering this level for first time; make it now */
         level = mklev(newlevel);
         historic_event(FALSE, "reached %s.", hist_lev_name(level, FALSE));
@@ -1006,6 +1007,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
         }
     }
 
+
     /* some timers and lights might need to be transferred to the new level if
        they are attached to objects the hero is carrying */
     transfer_timers(origlev, level, 0);
@@ -1015,7 +1017,6 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     vision_reset();     /* clear old level's line-of-sight */
     /* don't let that reenable vision yet */
     turnstate.vision_full_recalc = FALSE;
-    flush_screen_disable();     /* ensure all map flushes are postponed */
 
     if (portal && !In_endgame(level)) {
         /* find the portal on the new level */

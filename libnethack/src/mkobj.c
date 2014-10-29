@@ -690,7 +690,7 @@ mksobj(struct level *lev, int otyp, enum mkobj_flags mkflags)
                 otmp = mk_artifact(lev, otmp, (aligntyp) A_NONE);
             /* simulate lacquered armor for samurai */
             if (Role_if(PM_SAMURAI) && otmp->otyp == SPLINT_MAIL &&
-                In_quest(level)) {
+                In_quest(lev)) {
                 otmp->oerodeproof = otmp->rknown = 1;
             }
             break;
@@ -748,7 +748,7 @@ mksobj(struct level *lev, int otyp, enum mkobj_flags mkflags)
     /* Some things must get done (timers) even if init = 0 */
     switch (otmp->otyp) {
     case CORPSE:
-        start_corpse_timeout(otmp, !level->generated);
+        start_corpse_timeout(otmp, !lev->generated);
         break;
     }
 

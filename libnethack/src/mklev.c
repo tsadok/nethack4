@@ -894,13 +894,15 @@ mklev(d_level * levnum)
     int ln = ledger_no(levnum);
     struct level *lev;
 
-    if (levels[ln])
+    if (levels[ln]->generated)
         return levels[ln];
 
     if (getbones(levnum))
         return levels[ln];      /* initialized in getbones->getlev */
 
-    lev = levels[ln] = alloc_level(levnum);
+    lev = levels[ln];
+    if (!on_level(levnum, &lev->z))
+        panic("mklev: dungeon structure corrupted");
 
     in_mklev = TRUE;
     makelevel(lev);

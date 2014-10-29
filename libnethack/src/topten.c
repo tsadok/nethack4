@@ -848,6 +848,8 @@ nh_get_topten(int *out_len, char *statusbuf, const char *volatile player,
 
     if (!game_inited) {
         free_dungeon();
+        for (i = 0; i <= maxledgerno(); i++)
+            freelev(i);
         dlb_cleanup();
     }
 

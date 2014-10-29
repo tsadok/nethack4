@@ -307,9 +307,9 @@ restmonchn(struct memfile *mf, struct level *lev, boolean ghostly)
         }
 
         if (mtmp->isshk)
-            restshk(mtmp, ghostly);
+            restshk(mf, mtmp, ghostly, lev);
         if (mtmp->ispriest)
-            restpriest(mtmp, ghostly);
+            restpriest(mf, mtmp, ghostly, lev);
 
         mtmp2 = mtmp;
     }
@@ -834,7 +834,6 @@ restore_flags(struct memfile *mf, struct flag *f)
 int
 dorecover(struct memfile *mf)
 {
-    int count;
     xchar ltmp;
     struct obj *otmp;
     struct monst *mtmp;
@@ -872,10 +871,10 @@ dorecover(struct memfile *mf)
     restlevchn(mf);
 
     /* restore levels */
-    count = mread32(mf);
-    for (; count; count--) {
-        ltmp = mread8(mf);
+    for (ltmp = 0; ltmp <= maxledgerno(); ltmp++) {
         getlev(mf, ltmp, FALSE);
+        if (!ltmp == ledger_no(&levels[ltmp]->z))
+            panic("dungeon structure corrupt when restoring");
     }
 
     d_level dlev;
@@ -1107,30 +1106,22 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
     /* for bones files, there is fruit chain data before the level data */
     mfmagic_check(mf, LEVEL_MAGIC);
 
-    if (levels[levnum])
-        panic("Unsupported: trying to restore level %d which already exists.\n",
-              levnum);
-    lev = levels[levnum] = alloc_level(NULL);
+    lev = levels[levnum];
     lev->generated = mread8(mf);
 
+    /* Special levels might move around in bones; in this case, the caller
+     * should have set the level's d_level already, and we'll just skip over it
+     * since it might be wrong. */
     if (ghostly) {
-        /* A bones level may move from its original location. We need to make
-         * sure it's set to the correct new location. */
-        lev->z.dnum = ledger_to_dnum(levnum);
-        if (mread8(mf) != lev->z.dnum)
-            panic("Restoring level into wrong dungeon!");
-        lev->z.dlevel = ledger_to_dlev(levnum);
-        (void) mread8(mf); /* ignore the dlevel in the bones file */
-
-        if (!on_level(&u.uz, &lev->z))
-            panic("Restoring the wrong level.");
+        mread8(mf);
+        mread8(mf);
     } else {
-        /* SAVEBREAK: Eliminate this branch, which is only necessary to maintain
-         * compatibility with bones files loaded incorrectly and avoid desyncing
-         * them. */
         lev->z.dnum = mread8(mf);
         lev->z.dlevel = mread8(mf);
     }
+
+    if (ghostly && !lev->generated)
+        panic("bones contained unfinished level");
 
     if (!lev->generated)
         return lev;

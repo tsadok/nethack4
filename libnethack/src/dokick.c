@@ -1463,7 +1463,7 @@ deliver_object(struct obj *obj, xchar dnum, xchar dlevel, int where)
     int nx, ny;
 
     lev = levels[ledger_no(&levnum)];
-    if (!lev)
+    if (!lev->generated)
         lev = mklev(&levnum);
 
     obj_extract_self(obj);

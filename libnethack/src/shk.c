@@ -163,6 +163,12 @@ shkgone(struct monst *mtmp)
 {
     struct eshk *eshk = ESHK(mtmp);
     struct level *shoplev = levels[ledger_no(&eshk->shoplevel)];
+
+    if (!shoplev->generated) {
+        impossible("Shopkeeper's home level not generated!");
+        return;
+    }
+
     struct mkroom *sroom = &shoplev->rooms[eshk->shoproom - ROOMOFFSET];
     struct obj *otmp;
     char *p;
@@ -207,16 +213,33 @@ replshk(struct monst *mtmp, struct monst *mtmp2)
     }
 }
 
+void
+saveshk(struct memfile *mf, struct monst *shkp, struct level *lev)
+{
+    if (lev)
+        mwrite8(mf, !!(on_level(&(CONST_ESHK(shkp)->shoplevel), &lev->z)));
+    else
+        /* Monster is migrating. Just write something, since this isn't a bones
+         * anyway. */
+        mwrite8(mf, 0);
+}
+
 /* do shopkeeper specific structure munging -dlc */
 void
-restshk(struct monst *shkp, boolean ghostly)
+restshk(struct memfile *mf, struct monst *shkp, boolean ghostly,
+        struct level *lev)
 {
     struct eshk *eshkp = ESHK(shkp);
 
     /* shoplevel can change as dungeons move around */
-    /* paybill() guarantees that non-homed shk's will be gone */
+    boolean same_lev = mread8(mf);
     if (ghostly) {
-        assign_level(&eshkp->shoplevel, &level->z);
+        if (same_lev)
+            assign_level(&eshkp->shoplevel, &level->z);
+        else
+            assign_level(&eshkp->shoplevel,
+                         &(d_level){.dnum = -1, .dlevel = -1});
+
         if (ANGRY(shkp) && strncmpi(eshkp->customer, u.uplname, PL_NSIZ))
             pacify_shk(shkp);
     }
@@ -1745,7 +1768,7 @@ find_oid(unsigned id)
 
     /* search all levels */
     for (i = 0; i <= maxledgerno(); i++)
-        if (levels[i] && (obj = find_oid_lev(levels[i], id)))
+        if (levels[i]->generated && (obj = find_oid_lev(levels[i], id)))
             return obj;
 
     /* not found at all */
@@ -2902,6 +2925,11 @@ remove_damage(struct monst *shkp, boolean croaked)
     boolean saw_untrap = FALSE;
     uchar saw_walls = 0;
     struct level *lev = levels[ledger_no(&ESHK(shkp)->shoplevel)];
+    
+    if (!lev->generated) {
+        impossible("Shopkeeper has no home level to repair!");
+        return;
+    }
 
     tmp_dam = lev->damagelist;
     tmp2_dam = 0;

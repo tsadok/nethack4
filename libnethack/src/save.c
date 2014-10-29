@@ -20,7 +20,7 @@ static void savedamage(struct memfile *mf, struct level *lev);
 static void freedamage(struct level *lev);
 static void saveobjchn(struct memfile *mf, struct obj *);
 static void free_objchn(struct obj *otmp);
-static void savemonchn(struct memfile *mf, struct monst *);
+static void savemonchn(struct memfile *mf, struct level *lev, struct monst *);
 static void free_monchn(struct monst *mon);
 static void savetrapchn(struct memfile *mf, struct trap *, struct level *lev);
 static void freetrapchn(struct trap *trap);
@@ -88,7 +88,6 @@ GEN_SAVE_DECODE(32, 0xFFFFFFFF)
 void
 savegame(struct memfile *mf)
 {
-    int count = 0;
     xchar ltmp;
 
     /* no tag useful here as store_version adds one */
@@ -109,16 +108,10 @@ savegame(struct memfile *mf)
     savelevchn(mf);
 
     /* store levels */
-    mtag(mf, 0, MTAG_LEVELS);
-    for (ltmp = 1; ltmp <= maxledgerno(); ltmp++)
-        if (levels[ltmp])
-            count++;
-    mwrite32(mf, count);
-    for (ltmp = 1; ltmp <= maxledgerno(); ltmp++) {
+    for (ltmp = 0; ltmp <= maxledgerno(); ltmp++) {
         if (!levels[ltmp])
-            continue;
+            panic("No level when attempting to save!");
         mtag(mf, ltmp, MTAG_LEVELS);
-        mwrite8(mf, ltmp);      /* level number */
         savelev(mf, ltmp);      /* actual level */
     }
 
@@ -303,7 +296,7 @@ savegamestate(struct memfile *mf)
     save_light_sources(mf, level, RANGE_GLOBAL);
 
     saveobjchn(mf, invent);
-    savemonchn(mf, migrating_mons);
+    savemonchn(mf, NULL, migrating_mons);
     save_mvitals(mf);
 
     save_spellbook(mf);
@@ -687,7 +680,7 @@ savelev(struct memfile *mf, xchar levnum)
     save_timers(mf, lev, RANGE_LEVEL);
     save_light_sources(mf, lev, RANGE_LEVEL);
 
-    savemonchn(mf, lev->monlist);
+    savemonchn(mf, lev, lev->monlist);
     save_worm(mf, lev); /* save worm information */
     savetrapchn(mf, lev->lev_traps, lev);
     saveobjchn(mf, lev->objlist);
@@ -707,26 +700,34 @@ freelev(xchar levnum)
 {
     struct level *lev = levels[levnum];
 
-    /* must be freed before mons, objs, and buried objs */
-    free_timers(lev);
-    free_light_sources(lev);
+    if (!lev)
+        return;
 
-    free_monchn(lev->monlist);
-    free_worm(lev);
-    freetrapchn(lev->lev_traps);
-    free_objchn(lev->objlist);
-    free_objchn(lev->buriedobjlist);
-    free_objchn(lev->billobjs);
+    if (lev->generated) {
+        if (lev->mgr)
+            lev->mgr->free_extra(lev);
 
-    lev->monlist = NULL;
-    lev->lev_traps = NULL;
-    lev->objlist = NULL;
-    lev->buriedobjlist = NULL;
-    lev->billobjs = NULL;
+        /* must be freed before mons, objs, and buried objs */
+        free_timers(lev);
+        free_light_sources(lev);
 
-    free_engravings(lev);
-    freedamage(lev);
-    free_regions(lev);
+        free_monchn(lev->monlist);
+        free_worm(lev);
+        freetrapchn(lev->lev_traps);
+        free_objchn(lev->objlist);
+        free_objchn(lev->buriedobjlist);
+        free_objchn(lev->billobjs);
+
+        lev->monlist = NULL;
+        lev->lev_traps = NULL;
+        lev->objlist = NULL;
+        lev->buriedobjlist = NULL;
+        lev->billobjs = NULL;
+
+        free_engravings(lev);
+        freedamage(lev);
+        free_regions(lev);
+    }
 
     free(lev);
     levels[levnum] = NULL;
@@ -850,7 +851,7 @@ free_monchn(struct monst *mon)
 
 
 static void
-savemonchn(struct memfile *mf, struct monst *mtmp)
+savemonchn(struct memfile *mf, struct level *lev, struct monst *mtmp)
 {
     struct monst *mtmp2;
     unsigned int count = 0;
@@ -866,6 +867,12 @@ savemonchn(struct memfile *mf, struct monst *mtmp)
 
         if (mtmp->minvent)
             saveobjchn(mf, mtmp->minvent);
+
+        if (mtmp->isshk)
+            saveshk(mf, mtmp, lev);
+        if (mtmp->ispriest)
+            savepriest(mf, mtmp, lev);
+
         mtmp = mtmp2;
     }
 }
@@ -958,8 +965,7 @@ freefruitchn(void)
 void
 freedynamicdata(void)
 {
-    int i;
-    struct level *lev;
+    xchar i;
 
     if (!objects)
         return; /* no cleanup necessary */
@@ -971,29 +977,8 @@ freedynamicdata(void)
     clear_delayed_killers();
 #define free_animals()   mon_animal_list(FALSE)
 
-    for (i = 0; i < MAXLINFO; i++) {
-        lev = levels[i];
-        levels[i] = NULL;
-        if (!lev)
-            continue;
-
-        /* level-specific data */
-        if (lev->mgr)
-            lev->mgr->free_extra(lev);
-        dmonsfree(lev); /* release dead monsters */
-        free_timers(lev);
-        free_light_sources(lev);
-        free_monchn(lev->monlist);
-        free_worm(lev); /* release worm segment information */
-        freetrapchn(lev->lev_traps);
-        free_objchn(lev->objlist);
-        free_objchn(lev->buriedobjlist);
-        free_objchn(lev->billobjs);
-        free_engravings(lev);
-        freedamage(lev);
-
-        free(lev);
-    }
+    for (i = 0; i <= maxledgerno(); i++)
+        freelev(i);
 
     /* game-state data */
     free_objchn(invent);
