@@ -120,7 +120,7 @@ static void
 m_initgrp(struct monst *mtmp, struct level *lev, int x, int y, int n)
 {
     coord mm;
-    int cnt = rnd(n), dl = level_difficulty(&lev->z);
+    int cnt = rnd(n), dl = level_difficulty(lev);
     struct monst *mon;
 
     /* Tuning: cut down on swarming at low depths */
@@ -699,7 +699,7 @@ m_initinv(struct monst *mtmp)
         }
         break;
     case S_LEPRECHAUN:
-        mkmonmoney(mtmp, (long)dice(level_difficulty(&lev->z), 30));
+        mkmonmoney(mtmp, (long)dice(level_difficulty(lev), 30));
         break;
     case S_DEMON:
         /* moved here from m_initweap() because these don't have AT_WEAP so
@@ -735,7 +735,7 @@ m_initinv(struct monst *mtmp)
         mongets(mtmp, rnd_misc_item(mtmp));
     if (likes_gold(ptr) && !findgold(mtmp->minvent) && !rn2(5))
         mkmonmoney(mtmp,
-                   (long)dice(level_difficulty(&lev->z),
+                   (long)dice(level_difficulty(lev),
                               mtmp->minvent ? 5 : 10));
 }
 
@@ -987,7 +987,7 @@ makemon(const struct permonst *ptr, struct level *lev, int x, int y,
         u.quest_status.leader_m_id = mtmp->m_id;
     mtmp->mnum = mndx;
 
-    mtmp->m_lev = adj_lev(level_difficulty(&lev->z), ptr);
+    mtmp->m_lev = adj_lev(level_difficulty(lev), ptr);
     if (is_golem(ptr)) {
         mtmp->mhpmax = mtmp->mhp = golemhp(mndx);
     } else if (is_rider(ptr)) {
@@ -1262,7 +1262,7 @@ mkclass(const struct level *lev, char class, int spc)
     int first, last, num = 0;
     int mask = (G_NOGEN | G_UNIQ) & ~spc;
 
-    int difficulty = level_difficulty(&lev->z);
+    int difficulty = level_difficulty(lev);
     int maxmlev = difficulty >> 1;
 
     if (class < 1 || class >= MAXMCLASSES) {
@@ -1407,7 +1407,7 @@ align_shift(const struct level *lev, short mndx)
 
 boolean
 out_of_depth(const struct level *lev, short mndx, boolean consider_xlvl) {
-    int dl = level_difficulty(&lev->z);
+    int dl = level_difficulty(lev);
     int minlev = dl / 6;
     int maxlev = consider_xlvl ? (dl + u.ulevel) / 2
                                : (dl <= 10 ? (dl + 1) / 2 : dl - 5);

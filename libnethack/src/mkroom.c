@@ -213,7 +213,7 @@ fill_zoo(struct level *lev, struct mkroom *sroom)
         break;
     case ZOO:
     case LEPREHALL:
-        goldlim = 500 * level_difficulty(&lev->z);
+        goldlim = 500 * level_difficulty(lev);
         break;
     }
     for (sx = sroom->lx; sx <= sroom->hx; sx++)
@@ -262,7 +262,7 @@ fill_zoo(struct level *lev, struct mkroom *sroom)
                 } else
                     i = goldlim;
                 if (i >= goldlim)
-                    i = 5 * level_difficulty(&lev->z);
+                    i = 5 * level_difficulty(lev);
                 goldlim -= i;
                 mkgold((long)rn1(i, 10), lev, sx, sy);
                 break;
@@ -308,7 +308,7 @@ fill_zoo(struct level *lev, struct mkroom *sroom)
 
         lev->locations[tx][ty].typ = THRONE;
         somexy(lev, sroom, &mm);
-        mkgold((long)rn1(50 * level_difficulty(&lev->z), 10), lev, mm.x,
+        mkgold((long)rn1(50 * level_difficulty(lev), 10), lev, mm.x,
                mm.y);
         /* the royal coffers */
         chest = mksobj_at(CHEST, lev, mm.x, mm.y, TRUE, FALSE);
@@ -320,7 +320,7 @@ fill_zoo(struct level *lev, struct mkroom *sroom)
 void
 mkundead(struct level *lev, coord * mm, boolean revive_corpses, int mm_flags)
 {
-    int cnt = (level_difficulty(&lev->z) + 1) / 10 + rnd(5);
+    int cnt = (level_difficulty(lev) + 1) / 10 + rnd(5);
     const struct permonst *mdat;
     struct obj *otmp;
     coord cc;
@@ -338,7 +338,7 @@ mkundead(struct level *lev, coord * mm, boolean revive_corpses, int mm_flags)
 static const struct permonst *
 morguemon(const struct level *lev)
 {
-    int i = rn2(100), hd = rn2(level_difficulty(&lev->z));
+    int i = rn2(100), hd = rn2(level_difficulty(lev));
 
     if (hd > 10 && i < 10)
         return (In_hell(&lev->z) ||
@@ -357,7 +357,7 @@ antholemon(const struct level *lev)
     int mtyp;
 
     /* Same monsters within a level, different ones between levels */
-    switch ((level_difficulty(&lev->z) + ((unsigned)u.ubirthday)) % 3) {
+    switch ((level_difficulty(lev) + ((unsigned)u.ubirthday)) % 3) {
     default:
         mtyp = PM_GIANT_ANT;
         break;
@@ -436,7 +436,7 @@ mktemple(struct level *lev)
     shrine_spot = shrine_pos(lev, (sroom - lev->rooms) + ROOMOFFSET);
     loc = &lev->locations[shrine_spot->x][shrine_spot->y];
     loc->typ = ALTAR;
-    loc->altarmask = induced_align(&lev->z, 80);
+    loc->altarmask = induced_align(lev, 80);
     priestini(lev, sroom, shrine_spot->x, shrine_spot->y, FALSE);
     loc->altarmask |= AM_SHRINE;
 }
@@ -577,7 +577,7 @@ search_special(struct level *lev, schar type)
 const struct permonst *
 courtmon(const struct level *lev)
 {
-    int i = rn2(60) + rn2(3 * level_difficulty(&lev->z));
+    int i = rn2(60) + rn2(3 * level_difficulty(lev));
 
     if (i > 100)
         return mkclass(lev, S_DRAGON, 0);
@@ -617,7 +617,7 @@ squadmon(const struct level *lev)
 {       /* return soldier types. */
     int sel_prob, i, cpro, mndx;
 
-    sel_prob = rnd(80 + level_difficulty(&lev->z));
+    sel_prob = rnd(80 + level_difficulty(lev));
 
     cpro = 0;
     for (i = 0; i < NSTYPES; i++) {

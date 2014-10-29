@@ -478,7 +478,7 @@ extern void get_level(d_level *, int);
 extern boolean Is_botlevel(const d_level *);
 extern boolean can_fall_thru(const struct level *lev);
 extern boolean can_dig_down(const struct level *lev);
-extern boolean Can_rise_up(int, int, const d_level *);
+extern boolean Can_rise_up(int, int, const struct level *lev);
 extern boolean In_quest(const d_level *);
 extern boolean In_mines(const d_level *);
 extern branch *dungeon_branch(const char *);
@@ -486,14 +486,14 @@ extern boolean at_dgn_entrance(const d_level * dlev, const char *s);
 extern boolean In_hell(const d_level *);
 extern boolean In_V_tower(const d_level *);
 extern boolean On_W_tower_level(const d_level *);
-extern boolean In_W_tower(int, int, const d_level *);
+extern boolean In_W_tower(int, int, const struct level *lev);
 extern void find_hell(d_level *);
 extern void goto_hell(boolean, boolean);
 extern void assign_level(d_level * dest, const d_level * src);
 extern void assign_rnd_level(d_level * dest, const d_level * src, int range);
-extern int induced_align(const d_level * dlev, int pct);
+extern int induced_align(const struct level *lev, int pct);
 extern boolean Invocation_lev(const d_level * dlev);
-extern xchar level_difficulty(const d_level * dlev);
+extern xchar level_difficulty(const struct level *lev);
 extern schar lev_by_name(const char *);
 extern schar print_dungeon(boolean, schar *, xchar *);
 extern int donamelevel(const struct nh_cmd_arg *);
@@ -1394,7 +1394,7 @@ extern void restpriest(struct monst *, boolean);
 
 /* ### quest.c ### */
 
-extern void onquest(const d_level *orig_level);
+extern void onquest(const struct level *orig_level);
 extern void nemdead(void);
 extern void artitouch(void);
 extern boolean ok_to_quest(boolean verbose);

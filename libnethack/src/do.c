@@ -878,7 +878,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     xchar new_ledger;
     boolean up = (depth(newlevel) < depth(&u.uz)), newdungeon =
         (u.uz.dnum != newlevel->dnum), was_in_W_tower =
-        In_W_tower(u.ux, u.uy, &u.uz), familiar = FALSE;
+        In_W_tower(u.ux, u.uy, level), familiar = FALSE;
     boolean new = FALSE;        /* made a new level? */
     struct monst *mtmp, *mtmp2;
     struct obj *otmp;
@@ -1263,7 +1263,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     if (on_level(&u.uz, &astral_level))
         final_level();
     else
-        onquest(&orig_d);
+        onquest(origlev);
 
     if (*level->levname)
         pline("You named this level: %s.", level->levname);

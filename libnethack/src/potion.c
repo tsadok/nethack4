@@ -761,7 +761,7 @@ peffects(struct obj *otmp)
             unkn++;
             /* they went up a level */
             if ((ledger_no(&u.uz) == 1 && Uhave_amulet) ||
-                Can_rise_up(u.ux, u.uy, &u.uz)) {
+                Can_rise_up(u.ux, u.uy, level)) {
                 const char *riseup = "You rise up, through the %s!";
 
                 if (ledger_no(&u.uz) == 1) {

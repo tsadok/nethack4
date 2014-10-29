@@ -362,14 +362,14 @@ dosdoor(struct level *lev, xchar x, xchar y, struct mkroom *aroom, int type)
                 lev->locations[x][y].doormask = D_CLOSED;
 
             if (lev->locations[x][y].doormask != D_ISOPEN && !shdoor &&
-                level_difficulty(&lev->z) >= 5 && !rn2(25))
+                level_difficulty(lev) >= 5 && !rn2(25))
                 lev->locations[x][y].doormask |= D_TRAPPED;
         } else
             lev->locations[x][y].doormask = (shdoor ? D_ISOPEN : D_NODOOR);
         if (lev->locations[x][y].doormask & D_TRAPPED) {
             struct monst *mtmp;
 
-            if (level_difficulty(&lev->z) >= 9 && !rn2(5) &&
+            if (level_difficulty(lev) >= 9 && !rn2(5) &&
                 !((mvitals[PM_SMALL_MIMIC].mvflags & G_GONE) &&
                   (mvitals[PM_LARGE_MIMIC].mvflags & G_GONE) &&
                   (mvitals[PM_GIANT_MIMIC].mvflags & G_GONE))) {
@@ -389,7 +389,7 @@ dosdoor(struct level *lev, xchar x, xchar y, struct mkroom *aroom, int type)
         else
             lev->locations[x][y].doormask = D_CLOSED;
 
-        if (!shdoor && level_difficulty(&lev->z) >= 4 && !rn2(20))
+        if (!shdoor && level_difficulty(lev) >= 4 && !rn2(20))
             lev->locations[x][y].doormask |= D_TRAPPED;
     }
 
@@ -716,7 +716,7 @@ skip0:
                 maketrap(lev, x, y, WEB);
         }
         /* put traps and mimics inside */
-        x = 8 - (level_difficulty(&lev->z) / 6);
+        x = 8 - (level_difficulty(lev) / 6);
         if (x <= 1)
             x = 2;
         while (!rn2(x))
@@ -1177,7 +1177,7 @@ mktrap(struct level *lev, int num, int mazeflag, struct mkroom *croom,
         /* bias the frequency of fire traps in Gehennom */
         kind = FIRE_TRAP;
     } else {
-        unsigned lvl = level_difficulty(&lev->z);
+        unsigned lvl = level_difficulty(lev);
 
         do {
             kind = rnd(TRAPNUM - 1);

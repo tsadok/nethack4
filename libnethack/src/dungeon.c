@@ -1292,17 +1292,18 @@ can_fall_thru(const struct level * lev)
  * Checks for amulets and such must be done elsewhere.
  */
 boolean
-Can_rise_up(int x, int y, const d_level * lev)
+Can_rise_up(int x, int y, const struct level *lev)
 {
     /* can't rise up from inside the top of the Wizard's tower */
     /* KMH -- or in sokoban */
-    if (In_endgame(lev) || In_sokoban(lev) ||
-        (Is_wiz1_level(lev) && In_W_tower(x, y, lev)))
+    if (In_endgame(&lev->z) || In_sokoban(&lev->z) ||
+        (Is_wiz1_level(&lev->z) && In_W_tower(x, y, lev)))
         return FALSE;
-    return (boolean) (lev->dlevel > 1 ||
-                      (dungeons[lev->dnum].entry_lev == 1 && ledger_no(lev) != 1
-                       && isok(level->sstairs.sx, level->sstairs.sy) &&
-                       level->sstairs.up));
+    return (boolean) (lev->z.dlevel > 1 ||
+                      (dungeons[lev->z.dnum].entry_lev == 1 &&
+                       ledger_no(&lev->z) != 1 &&
+                       isok(lev->sstairs.sx, level->sstairs.sy) &&
+                       lev->sstairs.up));
 }
 
 /*
@@ -1436,20 +1437,20 @@ On_W_tower_level(const d_level * lev)
 
 /* is <x,y> of `lev' inside the Wizard's tower? */
 boolean
-In_W_tower(int x, int y, const d_level * lev)
+In_W_tower(int x, int y, const struct level *lev)
 {
-    if (!On_W_tower_level(lev))
+    if (!On_W_tower_level(&lev->z))
         return FALSE;
     /* 
      * Both of the exclusion regions for arriving via level teleport
      * (from above or below) define the tower's boundary.
      *      assert( updest.nIJ == dndest.nIJ for I={l|h},J={x|y} );
      */
-    if (level->dndest.nlx > 0)
-        return (boolean) within_bounded_area(x, y, level->dndest.nlx,
-                                             level->dndest.nly,
-                                             level->dndest.nhx,
-                                             level->dndest.nhy);
+    if (lev->dndest.nlx > 0)
+        return (boolean) within_bounded_area(x, y, lev->dndest.nlx,
+                                             lev->dndest.nly,
+                                             lev->dndest.nhx,
+                                             lev->dndest.nhy);
     else
         impossible("No boundary for Wizard's Tower?");
     return FALSE;
@@ -1501,18 +1502,18 @@ assign_rnd_level(d_level * dest, const d_level * src, int range)
 
 
 int
-induced_align(const d_level * dlev, int pct)
+induced_align(const struct level *lev, int pct)
 {
-    s_level *lev = Is_special(dlev);
+    s_level *slev = Is_special(&lev->z);
     aligntyp al;
 
-    if (lev && lev->flags.align)
+    if (slev && slev->flags.align)
         if (rn2(100) < pct)
-            return lev->flags.align;
+            return slev->flags.align;
 
-    if (dungeons[dlev->dnum].flags.align)
+    if (dungeons[lev->z.dnum].flags.align)
         if (rn2(100) < pct)
-            return dungeons[dlev->dnum].flags.align;
+            return dungeons[lev->z.dnum].flags.align;
 
     al = rn2(3) - 1;
     return Align2amask(al);
@@ -1530,14 +1531,14 @@ Invocation_lev(const d_level * lev)
  * dependent on the location in the dungeon (eg. monster creation).
  */
 xchar
-level_difficulty(const d_level * dlev)
+level_difficulty(const struct level *lev)
 {
-    if (In_endgame(dlev))
+    if (In_endgame(&lev->z))
         return (xchar) (depth(&sanctum_level) + u.ulevel/2);
     else if (Uhave_amulet)
         return deepest_lev_reached(FALSE);
     else
-        return (xchar) depth(dlev);
+        return (xchar) depth(&lev->z);
 }
 
 /* Take one word and try to match it to a level.

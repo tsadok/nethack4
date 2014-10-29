@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-05-01 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright Scott R. Turner, srt@ucla, 10/27/86                  */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -57,7 +57,7 @@ dowaterdemon(void)
 
             /* Give those on low levels a (slightly) better chance of survival
                */
-            if (rnd(100) > (80 + level_difficulty(&u.uz))) {
+            if (rnd(100) > (80 + level_difficulty(level))) {
                 pline("Grateful for %s release, %s grants you a wish!",
                       mhis(mtmp), mhe(mtmp));
                 makewish();

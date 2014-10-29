@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-25 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright 1991, M. Stephenson */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -12,8 +12,8 @@
 
 #define Qstat(x)        (u.quest_status.x)
 
-static void on_start(const d_level * orig_lev);
-static void on_locate(const d_level * orig_lev);
+static void on_start(const struct level *orig_lev);
+static void on_locate(const struct level *orig_lev);
 static void on_goal(void);
 static boolean not_capable(void);
 static int is_pure(boolean);
@@ -27,13 +27,13 @@ static void nemesis_speaks(void);
 
 
 static void
-on_start(const d_level * orig_lev)
+on_start(const struct level * orig_lev)
 {
     if (!Qstat(first_start)) {
         qt_pager(QT_FIRSTTIME);
         Qstat(first_start) = TRUE;
-    } else if ((orig_lev->dnum != u.uz.dnum) ||
-               (orig_lev->dlevel < u.uz.dlevel)) {
+    } else if ((orig_lev->z.dnum != u.uz.dnum) ||
+               (orig_lev->z.dlevel < u.uz.dlevel)) {
         if (Qstat(not_ready) <= 2)
             qt_pager(QT_NEXTTIME);
         else
@@ -42,12 +42,12 @@ on_start(const d_level * orig_lev)
 }
 
 static void
-on_locate(const d_level * orig_lev)
+on_locate(const struct level * orig_lev)
 {
     if (!Qstat(first_locate)) {
         qt_pager(QT_FIRSTLOCATE);
         Qstat(first_locate) = TRUE;
-    } else if (orig_lev->dlevel < u.uz.dlevel && !Qstat(killed_nemesis))
+    } else if (orig_lev->z.dlevel < u.uz.dlevel && !Qstat(killed_nemesis))
         qt_pager(QT_NEXTLOCATE);
 }
 
@@ -67,16 +67,16 @@ on_goal(void)
 }
 
 void
-onquest(const d_level * orig_lev)
+onquest(const struct level *orig_lev)
 {
-    if (u.uevent.qcompleted || on_level(orig_lev, &u.uz))
+    if (u.uevent.qcompleted || on_level(&orig_lev->z, &u.uz))
         return;
     if (!Is_special(&u.uz))
         return;
 
     if (Is_qstart(&u.uz))
         on_start(orig_lev);
-    else if (Is_qlocate(&u.uz) && u.uz.dlevel > orig_lev->dlevel)
+    else if (Is_qlocate(&u.uz) && u.uz.dlevel > orig_lev->z.dlevel)
         on_locate(orig_lev);
     else if (Is_nemesis(&u.uz))
         on_goal();

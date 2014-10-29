@@ -3668,7 +3668,7 @@ untrap(const struct nh_cmd_arg *arg, boolean force)
                             ch *= 2;
                         if (!force &&
                             (confused || Fumbling ||
-                             rnd(75 + level_difficulty(&u.uz) / 2) > ch)) {
+                             rnd(75 + level_difficulty(level) / 2) > ch)) {
                             chest_trap(otmp, FINGER, TRUE);
                         } else {
                             pline("You disarm it!");
@@ -3728,7 +3728,7 @@ untrap(const struct nh_cmd_arg *arg, boolean force)
             exercise(A_DEX, TRUE);
             if (!force &&
                 (confused || Fumbling ||
-                 rnd(75 + level_difficulty(&u.uz) / 2) > ch)) {
+                 rnd(75 + level_difficulty(level) / 2) > ch)) {
                 pline("You set it off!");
                 b_trapped("door", FINGER);
                 level->locations[x][y].doormask = D_NODOOR;
@@ -4003,7 +4003,7 @@ delfloortrap(struct level *lev, struct trap *ttmp)
 void
 b_trapped(const char *item, int bodypart)
 {
-    int lvl = level_difficulty(&u.uz);
+    int lvl = level_difficulty(level);
     int dmg = rnd(5 + (lvl < 5 ? lvl : 2 + lvl / 2));
 
     pline("KABOOM!!  %s was booby-trapped!", The(item));

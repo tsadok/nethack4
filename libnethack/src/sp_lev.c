@@ -773,7 +773,7 @@ create_monster(struct level *lev, monster * m, struct mkroom *croom)
             Align2amask(u.ualignbase[A_ORIGINAL]) :
             (m->align == AM_SPLEV_NONCO) ?
             Align2amask(noncoalignment(u.ualignbase[A_ORIGINAL])) :
-            (m->align <= -11) ? induced_align(&lev->z, 80) :
+            (m->align <= -11) ? induced_align(lev, 80) :
             (m->align < 0 ? ralign[-m->align - 1] : m->align);
 
         if (!class)
@@ -1122,7 +1122,7 @@ create_altar(struct level *lev, altar * a, struct mkroom *croom)
     amask = (a->align == AM_SPLEV_CO) ? Align2amask(u.ualignbase[A_ORIGINAL]) :
         (a->align == AM_SPLEV_NONCO) ?
         Align2amask(noncoalignment(u.ualignbase[A_ORIGINAL])) :
-        (a->align == -11) ? induced_align(&lev->z, 80) :
+        (a->align == -11) ? induced_align(lev, 80) :
         (a->align < 0 ? ralign[-a->align - 1] : a->align);
 
     lev->locations[x][y].typ = ALTAR;

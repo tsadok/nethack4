@@ -637,7 +637,7 @@ migrate_to_level(struct monst *mtmp, xchar tolev,       /* destination level */
 
     /* set migration data */
     xyflags = (depth(&new_lev) < depth(&u.uz)); /* 1 => up */
-    if (In_W_tower(mtmp->mx, mtmp->my, &u.uz))
+    if (In_W_tower(mtmp->mx, mtmp->my, level))
         xyflags |= 2;
     mtmp->wormno = num_segs;
     mtmp->mlstmv = moves;

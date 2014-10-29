@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-17 */
+/* Last modified by Sean Hunt, 2014-10-29 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -233,7 +233,7 @@ mkbox_cnts(struct obj *box)
             if (otmp->oclass == COIN_CLASS) {
                 /* 2.5 x level's usual amount; weight adjusted below */
                 otmp->quan =
-                    (long)(rnd(level_difficulty(&box->olev->z) + 2) * rnd(75));
+                    (long)(rnd(level_difficulty(box->olev) + 2) * rnd(75));
                 otmp->owt = weight(otmp);
             } else
                 while (otmp->otyp == ROCK) {
@@ -732,7 +732,7 @@ mksobj(struct level *lev, int otyp, boolean init, boolean artif)
                 /* possibly overridden by mkcorpstat() */
                 otmp->corpsenm = rndmonnum(lev);
                 if (!verysmall(&mons[otmp->corpsenm]) &&
-                    rn2(level_difficulty(&lev->z) / 2 + 10) > 10)
+                    rn2(level_difficulty(lev) / 2 + 10) > 10)
                     add_to_container(otmp, mkobj(lev, SPBOOK_CLASS, FALSE));
             }
             break;
@@ -991,7 +991,7 @@ mkgold(long amount, struct level *lev, int x, int y)
     struct obj *gold = gold_at(lev, x, y);
 
     if (amount <= 0L)
-        amount = (long)(1 + rnd(level_difficulty(&lev->z) + 2) * rnd(30));
+        amount = (long)(1 + rnd(level_difficulty(lev) + 2) * rnd(30));
     if (gold) {
         gold->quan += amount;
     } else {
