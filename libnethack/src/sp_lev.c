@@ -214,7 +214,7 @@ is_ok_location(struct level *lev, schar x, schar y, int humidity)
 {
     int typ;
 
-    if (Is_waterlevel(lev))
+    if (lev == sp_lev(sl_water))
         return TRUE;    /* accept any spot */
 
     if (t_at(lev, x, y))
@@ -1008,7 +1008,7 @@ create_object(struct level *lev, object * o, struct mkroom *croom)
         /* Medusa level special case: statues are petrified monsters, so they
            are not stone-resistant and have monster inventory.  They also lack
            other contents, but that can be specified as an empty container. */
-        if (o->id == STATUE && Is_medusa_level(lev) &&
+        if (o->id == STATUE && lev == sp_lev(sl_medusa) &&
             o->corpsenm == NON_PM) {
             struct monst *was = NULL;
             struct obj *obj;
@@ -2765,7 +2765,7 @@ fixup_special(struct level *lev)
         sokoban_detect(lev);
 
     /* Still need to add some stuff to level file */
-    if (Is_medusa_level(lev)) {
+    if (lev == sp_lev(sl_medusa)) {
         struct obj *otmp;
         int tryct;
 
@@ -2801,11 +2801,11 @@ fixup_special(struct level *lev)
                 otmp->owt = weight(otmp);
             }
         }
-    } else if (Is_wiz1_level(lev)) {
+    } else if (lev == sp_lev(sl_wiztower1)) {
         croom = search_special(lev, MORGUE);
 
         create_secret_door(lev, croom, W_SOUTH | W_EAST | W_WEST);
-    } else if (Is_knox(lev)) {
+    } else if (lev == sp_lev(sl_fort_ludios)) {
         /* using an unfilled morgue for rm id */
         croom = search_special(lev, MORGUE);
         /* avoid inappropriate morgue-related messages */
@@ -2821,7 +2821,7 @@ fixup_special(struct level *lev)
     } else if (Role_if(PM_PRIEST) && In_quest(lev)) {
         /* less chance for undead corpses (lured from lower morgues) */
         lev->flags.graveyard = 1;
-    } else if (Is_stronghold(lev)) {
+    } else if (lev == sp_lev(sl_castle)) {
         lev->flags.graveyard = 1;
 
         /* ensure that the wand of wishing chest is not trapped */
@@ -2835,11 +2835,11 @@ fixup_special(struct level *lev)
                 }
             }
         }
-    } else if (Is_sanctum(lev)) {
+    } else if (lev == sp_lev(sl_sanctum)) {
         croom = search_special(lev, TEMPLE);
 
         create_secret_door(lev, croom, W_ANY);
-    } else if (Is_orcus_level(lev)) {
+    } else if (lev == sp_lev(sl_orcus)) {
         struct monst *mtmp, *mtmp2;
 
         /* it's a ghost town, get rid of shopkeepers */

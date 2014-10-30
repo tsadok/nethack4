@@ -98,7 +98,7 @@ add_killer_notes(int how, boolean carried, const char *killer) {
     else if (how == ESCAPED) {
         /* Note: the fake Amulet check relies on bones not having been
            created; this is safe for escapes, but not safe in general */
-        if (Is_astralevel(level))       /* offered Amulet to wrong deity */
+        if (level == sp_lev(sl_astral))       /* offered Amulet to wrong deity */
             killer = msgcat(killer, " (in celestial disgrace)");
         else if (carrying(FAKE_AMULET_OF_YENDOR))
             killer = msgcat(killer, " (with a fake Amulet)");
@@ -562,9 +562,9 @@ calc_score(int how, boolean show, long umoney)
     /* Exploration. This is based on the ratio of the Sanctum depth to the
        deepest level reached, and is based on the square root of the ratio. */
     category_raw = deepest_lev_reached(FALSE);
-    category_ratio = category_raw * 100.0 / depth(&sanctum_level);
+    category_ratio = category_raw * 100.0 / depth(&sp_lev(sl_sanctum)->z);
     category_points = isqrt(((category_raw - 1) * max_squared) /
-                            (depth(&sanctum_level) - 1));
+                            (depth(&sp_lev(sl_sanctum)->z) - 1));
     total += category_points;
 
     if (show) {
@@ -857,10 +857,10 @@ display_rip(int how, long umoney, const char *killer)
             /* more conventional demise */
             const char *where = dungeons[level->z.dnum].dname;
 
-            if (Is_astralevel(level))
+            if (level == sp_lev(sl_astral))
                 where = "The Astral Plane";
             pbuf = msgprintf("You %s in %s", ends[how], where);
-            if (!In_endgame(level) && !Is_knox(level))
+            if (!In_endgame(level) && level != sp_lev(sl_fort_ludios))
                 pbuf = msgprintf("%s on dungeon level %d", pbuf,
                                  In_quest(level) ?
                                  dunlev(level) : depth(&level->z));

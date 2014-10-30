@@ -13,7 +13,6 @@ static void restore_autopickup_rules(struct memfile *mf,
                                      struct nh_autopickup_rules *r);
 static void restore_utracked(struct memfile *mf, struct you *you);
 static void find_lev_obj(struct level *lev);
-static void restlevchn(struct memfile *mf);
 static void restdamage(struct memfile *mf, struct level *lev, boolean ghostly);
 static void restobjchn(struct memfile *mf, struct level *lev,
                        boolean ghostly, boolean frozen, struct obj **chain);
@@ -107,32 +106,6 @@ inven_inuse(boolean quietly)
                 pline("Finishing off %s...", xname(otmp));
             useup(otmp);
         }
-    }
-}
-
-static void
-restlevchn(struct memfile *mf)
-{
-    int cnt;
-    s_level *tmplev, *x;
-
-    sp_levchn = NULL;
-    cnt = mread32(mf);
-    for (; cnt > 0; cnt--) {
-        tmplev = malloc(sizeof (s_level));
-        tmplev->flags = restore_d_flags(mf);
-        restore_dlevel(mf, &tmplev->dlevel);
-        mread(mf, tmplev->proto, sizeof (tmplev->proto));
-        tmplev->boneid = mread8(mf);
-        tmplev->rndlevs = mread8(mf);
-
-        if (!sp_levchn)
-            sp_levchn = tmplev;
-        else {
-            for (x = sp_levchn; x->next; x = x->next) ;
-            x->next = tmplev;
-        }
-        tmplev->next = NULL;
     }
 }
 
@@ -834,7 +807,6 @@ restore_flags(struct memfile *mf, struct flag *f)
 int
 dorecover(struct memfile *mf)
 {
-    xchar ltmp;
     struct obj *otmp;
     struct monst *mtmp;
 
@@ -866,16 +838,7 @@ dorecover(struct memfile *mf)
     dealloc_monst(mtmp);
     set_uasmon();       /* fix up youmonst.data */
 
-    /* restore dungeon */
     restore_dungeon(mf);
-    restlevchn(mf);
-
-    /* restore levels */
-    for (ltmp = 0; ltmp <= maxledgerno(); ltmp++) {
-        getlev(mf, levels[ltmp], FALSE);
-        if (!ltmp == ledger_no(&levels[ltmp]->z))
-            panic("dungeon structure corrupt when restoring");
-    }
 
     d_level dlev;
     restore_dlevel(mf, &dlev);
@@ -1114,9 +1077,9 @@ getlev(struct memfile *mf, struct level *lev, boolean ghostly)
         return;
 
     /* FIXME: This is a total kludge. Fix. */
-    if (Is_waterlevel(lev))
+    if (lev == sp_lev(sl_water))
         lev->mgr = &waterlevel_manager;
-    if (Is_firelevel(lev))
+    if (lev == sp_lev(sl_fire))
         lev->mgr = &firelevel_manager;
 
     mread(mf, lev->levname, sizeof (lev->levname));

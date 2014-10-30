@@ -148,17 +148,17 @@ describe_level(char *buf)
 {
     int ret = 1;
 
-    if (Is_knox(level))
+    if (level == sp_lev(sl_fort_ludios))
         sprintf(buf, "%s", dungeons[level->z.dnum].dname);
     else if (In_quest(level))
         sprintf(buf, "Home:%d", dunlev(level));
     else if (In_endgame(level))
-        sprintf(buf, Is_astralevel(level) ? "Astral Plane" : "End Game");
+        sprintf(buf, level == sp_lev(sl_astral) ? "Astral Plane" : "End Game");
     else if (In_mines(level))
         sprintf(buf, "Mines:%d", depth(&level->z));
     else if (In_sokoban(level))
         sprintf(buf, "Sokoban:%d", depth(&level->z));
-    else if (Is_valley(level))
+    else if (level == sp_lev(sl_valley))
         sprintf(buf, "Valley:%d", depth(&level->z));
     else if (In_hell(level))
         sprintf(buf, "Gehennom:%d", depth(&level->z));

@@ -2375,7 +2375,7 @@ zap_updown(struct obj *obj, schar dz)
                    (x == level->dnstair.sx && y == level->dnstair.sy) &&
                    /* can't use the stairs down to quest level 2 until leader
                       "unlocks" them; give feedback if you try */
-                   Is_qstart(level) && !ok_to_quest(FALSE)) {
+                   level == sp_lev(sl_quest_start) && !ok_to_quest(FALSE)) {
             pline("The stairs seem to ripple momentarily.");
             disclose = TRUE;
         }
@@ -2394,8 +2394,9 @@ zap_updown(struct obj *obj, schar dz)
             else
                 destroy_drawbridge(xx, yy);
             disclose = TRUE;
-        } else if (striking && dz < 0 && rn2(3) && !Is_airlevel(level) &&
-                   !Is_waterlevel(level) && !Underwater && !Is_qstart(level)) {
+        } else if (striking && dz < 0 && rn2(3) && level != sp_lev(sl_air) &&
+                   level != sp_lev(sl_water) && !Underwater &&
+                   level != sp_lev(sl_quest_start)) {
             /* similar to zap_dig() */
             pline("A rock is dislodged from the %s and falls on your %s.",
                   ceiling(x, y), body_part(HEAD));
@@ -2424,8 +2425,8 @@ zap_updown(struct obj *obj, schar dz)
         }
         break;
     case SPE_STONE_TO_FLESH:
-        if (Is_airlevel(level) || Is_waterlevel(level) || Underwater ||
-            (Is_qstart(level) && dz < 0)) {
+        if (level == sp_lev(sl_air) || level == sp_lev(sl_water) || Underwater ||
+            (level == sp_lev(sl_quest_start) && dz < 0)) {
             pline("Nothing happens.");
         } else if (dz < 0) {    /* we should do more... */
             pline("Blood drips on your %s.", body_part(FACE));
@@ -4258,13 +4259,13 @@ retry:
         /* The(aobjnam()) is safe since otmp is unidentified -dlc */
         hold_another_object(otmp,
                             Engulfed ? "Oops!  %s out of your reach!"
-                            : (Is_airlevel(level) || Is_waterlevel(level) ||
+                            : (level == sp_lev(sl_air) || level == sp_lev(sl_water) ||
                                level->locations[u.ux][u.uy].typ < IRONBARS ||
                                level->locations[u.ux][u.uy].typ >=
                                ICE) ? "Oops!  %s away from you!" :
                             "Oops!  %s to the floor!",
                             The(aobjnam
-                                (otmp, Is_airlevel(level) ||
+                                (otmp, level == sp_lev(sl_air) ||
                                  u.uinwater ? "slip" : "drop")), NULL);
         u.ublesscnt += rn1(100, 50);    /* the gods take notice */
     }

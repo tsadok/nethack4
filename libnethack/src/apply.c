@@ -254,7 +254,7 @@ use_stethoscope(struct obj *obj, const struct nh_cmd_arg *arg)
             pline("You can't reach the %s.",
                   (dz > 0) ? surface(u.ux, u.uy) : ceiling(u.ux, u.uy));
         else if (its_dead(u.ux, u.uy, &res)) ;  /* message already given */
-        else if (Is_stronghold(level))
+        else if (level == sp_lev(sl_castle))
             You_hear("the crackling of hellfire.");
         else
             pline("The %s seems healthy enough.", surface(u.ux, u.uy));
@@ -1322,7 +1322,7 @@ get_jump_coords(const struct nh_cmd_arg *arg, coord *cc, int magic)
         }
         pline("You cannot escape from %s!", mon_nam(u.ustuck));
         return 0;
-    } else if (Levitation || Is_airlevel(level) || Is_waterlevel(level)) {
+    } else if (Levitation || level == sp_lev(sl_air) || level == sp_lev(sl_water)) {
         pline("You don't have enough traction to jump.");
         return 0;
     } else if (!magic && near_capacity() > UNENCUMBERED) {
@@ -1846,7 +1846,7 @@ use_figurine(struct obj **objp, const struct nh_cmd_arg *arg)
         return 0;
     pline("You %s and it transforms.",
           (dx || dy) ? "set the figurine beside you" :
-          (Is_airlevel(level) || Is_waterlevel(level) ||
+          (level == sp_lev(sl_air) || level == sp_lev(sl_water) ||
            is_pool(level, cc.x, cc.y)) ?
           "release the figurine" :
           (dz < 0 ? "toss the figurine into the air" :
@@ -2304,7 +2304,7 @@ use_whip(struct obj *obj, const struct nh_cmd_arg *arg)
 
         if (!isok(rx, ry)) {
             pline("%s",
-                  Is_airlevel(level) ? "You snap your whip through thin air." :
+                  level == sp_lev(sl_air) ? "You snap your whip through thin air." :
                   msg_snap);
             return 1;
         }
@@ -2433,7 +2433,7 @@ use_whip(struct obj *obj, const struct nh_cmd_arg *arg)
             }
         }
 
-    } else if (Is_airlevel(level) || Is_waterlevel(level)) {
+    } else if (level == sp_lev(sl_air) || level == sp_lev(sl_water)) {
         /* it must be air -- water checked above */
         pline("You snap your whip through thin air.");
 
@@ -3080,7 +3080,7 @@ doapply(const struct nh_cmd_arg *arg)
             otmp->owt = weight(otmp);
             hold_another_object(otmp,
                                 Engulfed ? "Oops!  %s out of your reach!"
-                                : (Is_airlevel(level) || Is_waterlevel(level) ||
+                                : (level == sp_lev(sl_air) || level == sp_lev(sl_water) ||
                                    level->locations[u.ux][u.uy].typ < IRONBARS
                                    || level->locations[u.ux][u.uy].typ >=
                                    ICE) ? "Oops!  %s away from you!" :

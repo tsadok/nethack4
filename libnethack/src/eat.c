@@ -1049,7 +1049,7 @@ rottenfood(struct obj *obj)
 
         if (!Blind)
             what = "goes", where = "dark";
-        else if (Levitation || Is_airlevel(level) || Is_waterlevel(level))
+        else if (Levitation || level == sp_lev(sl_air) || level == sp_lev(sl_water))
             what = "you lose control of", where = "yourself";
         else
             what = "you slap against the", where =

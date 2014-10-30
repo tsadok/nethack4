@@ -558,14 +558,11 @@ makelevel(struct level *lev)
     branch *branchp;
     int room_threshold;
 
-    if (wiz1_level.dlevel == 0)
-        init_dungeons();
-
     {
         s_level *slevnum = Is_special(&lev->z);
 
         /* check for special levels */
-        if (slevnum && !Is_rogue_level(lev)) {
+        if (slevnum && lev != sp_lev(sl_rogue)) {
             makemaz(lev, slevnum->proto);
             return;
         } else if (dungeons[lev->z.dnum].proto[0]) {
@@ -587,8 +584,8 @@ makelevel(struct level *lev)
             makemaz(lev, fillname);
             return;
         } else if (In_hell(lev) ||
-                   (rn2(5) && lev->z.dnum == medusa_level.dnum &&
-                    depth(&lev->z) > depth(&medusa_level))) {
+                   (rn2(5) && lev->z.dnum == sp_lev(sl_medusa)->z.dnum &&
+                    depth(&lev->z) > depth(&sp_lev(sl_medusa)->z))) {
             makemaz(lev, "");
             return;
         }
@@ -596,7 +593,7 @@ makelevel(struct level *lev)
 
     /* otherwise, fall through - it's a "regular" level. */
 
-    if (Is_rogue_level(lev)) {
+    if (lev == sp_lev(sl_rogue)) {
         makeroguerooms(lev);
         makerogueghost(lev);
     } else
@@ -630,7 +627,7 @@ makelevel(struct level *lev)
     branchp = Is_branchlev(lev);      /* possible dungeon branch */
     room_threshold = branchp ? 4 : 3; /* minimum number of rooms needed to
                                          allow a random special room */
-    if (Is_rogue_level(lev))
+    if (lev == sp_lev(sl_rogue))
         goto skip0;
     makecorridors(lev);
     make_niches(lev);
@@ -663,7 +660,7 @@ makelevel(struct level *lev)
     {
         int u_depth = depth(&lev->z);
 
-        if (u_depth > 1 && u_depth < depth(&medusa_level) &&
+        if (u_depth > 1 && u_depth < depth(&sp_lev(sl_medusa)->z) &&
             lev->nroom >= room_threshold && rn2(u_depth) < 3)
             mkroom(lev, SHOPBASE);
         else if (u_depth > 4 && !rn2(6))
@@ -726,7 +723,7 @@ skip0:
             x = somex(croom);
             mkgold(0L, lev, x, y);
         }
-        if (Is_rogue_level(lev))
+        if (lev == sp_lev(sl_rogue))
             goto skip_nonrogue;
         if (!rn2(10))
             mkfount(lev, 0, croom);
@@ -818,9 +815,9 @@ mineralize(struct level *lev)
 
     /* determine if it is even allowed; almost all special levels are excluded
        */
-    if (In_hell(lev) || In_V_tower(lev) || Is_rogue_level(lev) ||
+    if (In_hell(lev) || In_V_tower(lev) || lev == sp_lev(sl_rogue) ||
         lev->flags.arboreal || ((sp = Is_special(&lev->z)) != 0 &&
-                                !Is_oracle_level(lev)
+                                lev != sp_lev(sl_oracle)
                                 && (!In_mines(lev) || sp->flags.town)
         ))
         return;
@@ -1019,7 +1016,7 @@ place_branch(struct level *lev, branch * br,    /* branch to place */
      * As a special case, we also don't actually put anything into
      * the castle level.
      */
-    if (!br || made_branch || Is_stronghold(lev))
+    if (!br || made_branch || lev == sp_lev(sl_castle))
         return;
 
     if (x == COLNO) {   /* find random coordinates for branch */
@@ -1142,7 +1139,7 @@ mktrap(struct level *lev, int num, int mazeflag, struct mkroom *croom,
 
     if (num > 0 && num < TRAPNUM) {
         kind = num;
-    } else if (Is_rogue_level(lev)) {
+    } else if (lev == sp_lev(sl_rogue)) {
         switch (rn2(7)) {
         default:
             kind = BEAR_TRAP;
@@ -1562,7 +1559,7 @@ mk_knox_portal(struct level *lev, xchar x, xchar y)
     schar u_depth;
 
     br = dungeon_branch("Fort Ludios");
-    if (on_level(&knox_level, &br->end1)) {
+    if (on_level(&sp_lev(sl_fort_ludios)->z, &br->end1)) {
         source = &br->end2;
     } else {
         /* disallow Knox branch on a level with one branch already */
@@ -1575,11 +1572,11 @@ mk_knox_portal(struct level *lev, xchar x, xchar y)
     if (source->dnum < n_dgns || (rn2(3) && !wizard))
         return;
 
-    if (!(lev->z.dnum == oracle_level.dnum      /* in main dungeon */
+    if (!(lev->z.dnum == sp_lev(sl_fort_ludios)->z.dnum /* in main dungeon */
           && !at_dgn_entrance(lev, "The Quest")     /* but not Quest's
                                                            entry */
           &&(u_depth = depth(&lev->z)) > 10     /* beneath 10 */
-          && u_depth < depth(&medusa_level)))   /* and above Medusa */
+          && u_depth < depth(&sp_lev(sl_medusa)->z))) /* above Medusa */
         return;
 
     /* Adjust source to be current level and re-insert branch. */

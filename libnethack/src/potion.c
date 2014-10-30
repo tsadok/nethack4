@@ -604,7 +604,7 @@ peffects(struct obj *otmp)
         if (Free_action)
             pline("You stiffen momentarily.");
         else {
-            if (Levitation || Is_airlevel(level) || Is_waterlevel(level))
+            if (Levitation || level == sp_lev(sl_air) || level == sp_lev(sl_water))
                 pline("You are motionlessly suspended.");
             else if (u.usteed)
                 pline("You are frozen in place!");
@@ -766,7 +766,7 @@ peffects(struct obj *otmp)
 
                 if (ledger_no(&level->z) == 1) {
                     pline(riseup, ceiling(u.ux, u.uy));
-                    goto_level(&earth_level, FALSE, FALSE, FALSE);
+                    goto_level(&sp_lev(sl_earth)->z, FALSE, FALSE, FALSE);
                 } else {
                     int newlev = depth(&level->z) - 1;
                     d_level newlevel;
@@ -827,7 +827,7 @@ peffects(struct obj *otmp)
             float_up();
             /* reverse kludge */
             HLevitation = 0;
-            if (otmp->cursed && !Is_waterlevel(level)) {
+            if (otmp->cursed && level != sp_lev(sl_water)) {
                 if ((u.ux != level->upstair.sx || u.uy != level->upstair.sy) &&
                     (u.ux != level->sstairs.sx ||
                      u.uy != level->sstairs.sy || !level->sstairs.up) &&

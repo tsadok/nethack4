@@ -647,7 +647,7 @@ mattacku(struct monst *mtmp)
             break;
         case AT_WEAP:
             if (range2) {
-                if (!Is_rogue_level(level))
+                if (level != sp_lev(sl_rogue))
                     thrwmu(mtmp);
             } else {
                 int hittmp = 0;
@@ -1213,7 +1213,7 @@ hitmu(struct monst *mtmp, const struct attack *mattk)
                     done(DROWNING,
                          killer_msg(DROWNING,
                                     msgprintf("%s by %s",
-                                              Is_waterlevel(level)
+                                              level == sp_lev(sl_water)
                                                   ? "the Plane of Water"
                                                   : a_waterbody(mtmp->mx,
                                                                 mtmp->my),

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Daniel Thaler, 2011.                             */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -121,21 +121,21 @@ hist_lev_name(const struct level *lev, boolean in_or_on)
 {
     const char *hlnbuf;
 
-    if (Is_astralevel(lev))
+    if (lev == sp_lev(sl_astral))
         hlnbuf = "on the Astral Plane";
-    else if (Is_waterlevel(lev))
+    else if (lev == sp_lev(sl_water))
         hlnbuf = "on the Plane of Water";
-    else if (Is_firelevel(lev))
+    else if (lev == sp_lev(sl_fire))
         hlnbuf = "on the Plane of Fire";
-    else if (Is_airlevel(lev))
+    else if (lev == sp_lev(sl_air))
         hlnbuf = "on the Plane of Air";
-    else if (Is_earthlevel(lev))
+    else if (lev == sp_lev(sl_earth))
         hlnbuf = "on the Plane of Earth";
-    else if (Is_knox(lev))
+    else if (lev == sp_lev(sl_fort_ludios))
         hlnbuf = "in Fort Knox";
-    else if (Is_stronghold(lev))
+    else if (lev == sp_lev(sl_castle))
         hlnbuf = "in The Castle";
-    else if (Is_valley(lev))
+    else if (lev == sp_lev(sl_valley))
         hlnbuf = "in The Valley of the Dead";
     else
         hlnbuf = msgprintf("on level %d of %s", lev->z.dlevel,

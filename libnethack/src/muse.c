@@ -1070,8 +1070,8 @@ find_offensive(struct monst * mtmp, struct musable * m)
             && dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) <= 2
             && (mtmp->mx != mtmp->mux || mtmp->my != mtmp->muy)
             && mtmp->mcansee && haseyes(mtmp->data)
-            && !Is_rogue_level(level)
-            && (!In_endgame(level) || Is_earthlevel(level))) {
+            && level != sp_lev(sl_rogue)
+            && (!In_endgame(level) || level == sp_lev(sl_earth))) {
             m->offensive = obj;
             m->has_offense = MUSE_SCR_EARTH;
         }

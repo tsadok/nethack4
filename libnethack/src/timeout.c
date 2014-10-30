@@ -1104,7 +1104,7 @@ do_storms(void)
     int count;
 
     /* no lightning if not the air level or too often, even then */
-    if (!Is_airlevel(level) || rn2(8))
+    if (level != sp_lev(sl_air) || rn2(8))
         return;
 
     /* the number of strikes is 8-log2(nstrike) */

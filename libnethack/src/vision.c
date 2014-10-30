@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Dean Luick, with acknowledgements to Dave Cohrs, 1990. */
 /* NetHack may be freely redistributed.  See license for details.       */
 
@@ -552,12 +552,12 @@ vision_recalc(int control)
 
         /* skip the normal update loop */
         goto skip;
-    } else if (Is_rogue_level(level)) {
+    } else if (level == sp_lev(sl_rogue)) {
         rogue_vision(next_array, next_rmin, next_rmax);
     } else {
         int has_night_vision = 1;       /* hero has night vision */
 
-        if (Underwater && !Is_waterlevel(level)) {
+        if (Underwater && level != sp_lev(sl_water)) {
             /* 
              * The hero is under water.  Only see surrounding locations if
              * they are also underwater.  This overrides night vision but

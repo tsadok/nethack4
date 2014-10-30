@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* nh4-scripts: LEVGEN */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -287,7 +287,7 @@ save_waterlevel(struct level *lev, struct memfile *mf)
     struct bubble *b;
     int i, n;
 
-    if (!Is_waterlevel(lev)) {
+    if (lev != sp_lev(sl_water)) {
         impossible("calling save_waterlevel not on the water level");
         return;
     }
@@ -321,7 +321,7 @@ restore_waterlevel(struct level *lev, struct memfile *mf)
     int i, idx;
     int n;
 
-    if (!Is_waterlevel(lev)) {
+    if (lev != sp_lev(sl_water)) {
         impossible("calling restore_waterlevel not on the water level");
         return;
     }
@@ -365,7 +365,7 @@ movebubbles(struct level *lev)
     int x, y, i, j;
     struct trap *btrap;
 
-    if (!Is_waterlevel(lev)) {
+    if (lev != sp_lev(sl_water)) {
         impossible("calling movebubbles not on the water level");
         return;
     }
@@ -516,7 +516,7 @@ free_waterlevel(struct level* lev)
 {
     struct bubble *b, *bb;
 
-    if (!Is_waterlevel(lev)) {
+    if (lev != sp_lev(sl_water)) {
         impossible("calling free_waterlevel not on the water level");
         return;
     }
@@ -538,7 +538,7 @@ mk_bubble(struct level *lev, int x, int y, int n)
 {
     struct bubble *b;
 
-    if (!Is_waterlevel(lev)) {
+    if (lev != sp_lev(sl_water)) {
         impossible("calling mk_bubble not on the water level");
         return;
     }

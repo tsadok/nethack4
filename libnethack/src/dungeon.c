@@ -97,7 +97,6 @@ save_d_flags(struct memfile *mf, d_flags f)
     mwrite32(mf, dflags);
 }
 
-
 static void
 save_dungeon_struct(struct memfile *mf, const dungeon * dgn)
 {
@@ -113,14 +112,12 @@ save_dungeon_struct(struct memfile *mf, const dungeon * dgn)
     mwrite32(mf, dgn->depth_start);
 }
 
-
 void
 save_dlevel(struct memfile *mf, d_level d)
 {
     mwrite8(mf, d.dnum);
     mwrite8(mf, d.dlevel);
 }
-
 
 static void
 save_branch(struct memfile *mf, const branch * b)
@@ -133,41 +130,39 @@ save_branch(struct memfile *mf, const branch * b)
     mwrite8(mf, b->end1_up);
 }
 
-
 static void
 save_dungeon_topology(struct memfile *mf)
 {
     mtag(mf, 0, MTAG_DUNGEON_TOPOLOGY);
-    save_dlevel(mf, dungeon_topology.d_oracle_level);
-    save_dlevel(mf, dungeon_topology.d_bigroom_level);
-    save_dlevel(mf, dungeon_topology.d_rogue_level);
-    save_dlevel(mf, dungeon_topology.d_medusa_level);
-    save_dlevel(mf, dungeon_topology.d_stronghold_level);
-    save_dlevel(mf, dungeon_topology.d_valley_level);
-    save_dlevel(mf, dungeon_topology.d_wiz1_level);
-    save_dlevel(mf, dungeon_topology.d_wiz2_level);
-    save_dlevel(mf, dungeon_topology.d_wiz3_level);
-    save_dlevel(mf, dungeon_topology.d_juiblex_level);
-    save_dlevel(mf, dungeon_topology.d_orcus_level);
-    save_dlevel(mf, dungeon_topology.d_baalzebub_level);
-    save_dlevel(mf, dungeon_topology.d_asmodeus_level);
-    save_dlevel(mf, dungeon_topology.d_portal_level);
-    save_dlevel(mf, dungeon_topology.d_sanctum_level);
-    save_dlevel(mf, dungeon_topology.d_earth_level);
-    save_dlevel(mf, dungeon_topology.d_water_level);
-    save_dlevel(mf, dungeon_topology.d_fire_level);
-    save_dlevel(mf, dungeon_topology.d_air_level);
-    save_dlevel(mf, dungeon_topology.d_astral_level);
+    for (int i = 0; i < num_special_levels; ++i) {
+        struct level *lev = dungeon_topology.special_levels[i];
+        mwrite8(mf, lev ? ledger_no(&lev->z) : -1);
+    }
     mwrite8(mf, dungeon_topology.d_tower_dnum);
     mwrite8(mf, dungeon_topology.d_sokoban_dnum);
     mwrite8(mf, dungeon_topology.d_mines_dnum);
     mwrite8(mf, dungeon_topology.d_quest_dnum);
-    save_dlevel(mf, dungeon_topology.d_qstart_level);
-    save_dlevel(mf, dungeon_topology.d_qlocate_level);
-    save_dlevel(mf, dungeon_topology.d_nemesis_level);
-    save_dlevel(mf, dungeon_topology.d_knox_level);
+    mwrite8(mf, dungeon_topology.d_endgame_dnum);
 }
 
+static void
+savelevchn(struct memfile *mf)
+{
+    s_level *tmplev;
+    int cnt = 0;
+
+    for (tmplev = sp_levchn; tmplev; tmplev = tmplev->next)
+        cnt++;
+    mwrite32(mf, cnt);
+
+    for (tmplev = sp_levchn; tmplev; tmplev = tmplev->next) {
+        save_d_flags(mf, tmplev->flags);
+        save_dlevel(mf, tmplev->dlevel);
+        mwrite(mf, tmplev->proto, sizeof (tmplev->proto));
+        mwrite8(mf, tmplev->boneid);
+        mwrite8(mf, tmplev->rndlevs);
+    }
+}
 
 /* Save the dungeon structures. */
 void
@@ -183,6 +178,18 @@ save_dungeon(struct memfile *mf)
     for (i = 0; i < n_dgns; i++)
         save_dungeon_struct(mf, &dungeons[i]);
 
+    /* store dungeon layout */
+    savelevchn(mf);
+
+    /* store levels */
+    xchar ltmp;
+    for (ltmp = 0; ltmp <= maxledgerno(); ltmp++) {
+        if (!levels[ltmp])
+            panic("No level when attempting to save!");
+        mtag(mf, ltmp, MTAG_LEVELS);
+        savelev(mf, ltmp);      /* actual level */
+    }
+
     /* writing dungeon_topology directly should be ok, it's just a * fancy
        collection of single byte values */
     save_dungeon_topology(mf);
@@ -195,7 +202,6 @@ save_dungeon(struct memfile *mf)
     for (curr = branches; curr; curr = curr->next)
         save_branch(mf, curr);
 }
-
 
 d_flags
 restore_d_flags(struct memfile *mf)
@@ -213,7 +219,6 @@ restore_d_flags(struct memfile *mf)
     return f;
 }
 
-
 static void
 restore_dungeon_struct(struct memfile *mf, dungeon * dgn)
 {
@@ -228,14 +233,12 @@ restore_dungeon_struct(struct memfile *mf, dungeon * dgn)
     dgn->depth_start = mread32(mf);
 }
 
-
 void
 restore_dlevel(struct memfile *mf, d_level *d)
 {
     d->dnum = mread8(mf);
     d->dlevel = mread8(mf);
 }
-
 
 static void
 restore_branch(struct memfile *mf, branch * b)
@@ -248,40 +251,47 @@ restore_branch(struct memfile *mf, branch * b)
     b->end1_up = mread8(mf);
 }
 
-
 static void
 restore_dungeon_topology(struct memfile *mf)
 {
-    restore_dlevel(mf, &dungeon_topology.d_oracle_level);
-    restore_dlevel(mf, &dungeon_topology.d_bigroom_level);
-    restore_dlevel(mf, &dungeon_topology.d_rogue_level);
-    restore_dlevel(mf, &dungeon_topology.d_medusa_level);
-    restore_dlevel(mf, &dungeon_topology.d_stronghold_level);
-    restore_dlevel(mf, &dungeon_topology.d_valley_level);
-    restore_dlevel(mf, &dungeon_topology.d_wiz1_level);
-    restore_dlevel(mf, &dungeon_topology.d_wiz2_level);
-    restore_dlevel(mf, &dungeon_topology.d_wiz3_level);
-    restore_dlevel(mf, &dungeon_topology.d_juiblex_level);
-    restore_dlevel(mf, &dungeon_topology.d_orcus_level);
-    restore_dlevel(mf, &dungeon_topology.d_baalzebub_level);
-    restore_dlevel(mf, &dungeon_topology.d_asmodeus_level);
-    restore_dlevel(mf, &dungeon_topology.d_portal_level);
-    restore_dlevel(mf, &dungeon_topology.d_sanctum_level);
-    restore_dlevel(mf, &dungeon_topology.d_earth_level);
-    restore_dlevel(mf, &dungeon_topology.d_water_level);
-    restore_dlevel(mf, &dungeon_topology.d_fire_level);
-    restore_dlevel(mf, &dungeon_topology.d_air_level);
-    restore_dlevel(mf, &dungeon_topology.d_astral_level);
+    int i;
+    for (i = 0; i < num_special_levels; ++i) {
+        int8_t ledger = mread8(mf);
+        dungeon_topology.special_levels[i] =
+            ledger == -1 ? NULL : levels[ledger];
+    }
     dungeon_topology.d_tower_dnum = mread8(mf);
     dungeon_topology.d_sokoban_dnum = mread8(mf);
     dungeon_topology.d_mines_dnum = mread8(mf);
     dungeon_topology.d_quest_dnum = mread8(mf);
-    restore_dlevel(mf, &dungeon_topology.d_qstart_level);
-    restore_dlevel(mf, &dungeon_topology.d_qlocate_level);
-    restore_dlevel(mf, &dungeon_topology.d_nemesis_level);
-    restore_dlevel(mf, &dungeon_topology.d_knox_level);
+    dungeon_topology.d_endgame_dnum = mread8(mf);
 }
 
+static void
+restlevchn(struct memfile *mf)
+{
+    int cnt;
+    s_level *tmplev, *x;
+
+    sp_levchn = NULL;
+    cnt = mread32(mf);
+    for (; cnt > 0; cnt--) {
+        tmplev = malloc(sizeof (s_level));
+        tmplev->flags = restore_d_flags(mf);
+        restore_dlevel(mf, &tmplev->dlevel);
+        mread(mf, tmplev->proto, sizeof (tmplev->proto));
+        tmplev->boneid = mread8(mf);
+        tmplev->rndlevs = mread8(mf);
+
+        if (!sp_levchn)
+            sp_levchn = tmplev;
+        else {
+            for (x = sp_levchn; x->next; x = x->next) ;
+            x->next = tmplev;
+        }
+        tmplev->next = NULL;
+    }
+}
 
 /* Restore the dungeon structures. */
 void
@@ -298,6 +308,17 @@ restore_dungeon(struct memfile *mf)
             levels[dungeons[i].ledger_start + j] =
                 alloc_level(&(struct d_level){.dnum = i, .dlevel = j + 1});
         }
+    }
+
+    /* restore dungeon */
+    restlevchn(mf);
+
+    /* restore levels */
+    xchar ltmp;
+    for (ltmp = 0; ltmp <= maxledgerno(); ltmp++) {
+        getlev(mf, levels[ltmp], FALSE);
+        if (!ltmp == ledger_no(&levels[ltmp]->z))
+            panic("dungeon structure corrupt when restoring");
     }
 
     restore_dungeon_topology(mf);
@@ -342,6 +363,11 @@ dname_to_dnum(const char *s)
     panic("Couldn't resolve dungeon number for name \"%s\".", s);
     /* NOT REACHED */
     return (xchar) 0;
+}
+
+struct level *
+sp_lev(enum special_level sl) {
+    return dungeon_topology.special_levels[sl];
 }
 
 s_level *
@@ -714,35 +740,31 @@ place_level(int proto_index, struct proto_dungeon *pd)
 }
 
 
-static struct level_map {
-    const char *lev_name;
-    d_level *lev_spec;
-} const level_map[] = {
-    {"air", &air_level},
-    {"asmodeus", &asmodeus_level},
-    {"astral", &astral_level},
-    {"baalz", &baalzebub_level},
-    {"bigroom", &bigroom_level},
-    {"castle", &stronghold_level},
-    {"earth", &earth_level},
-    {"fakewiz1", &portal_level},
-    {"fire", &fire_level},
-    {"juiblex", &juiblex_level},
-    {"knox", &knox_level},
-    {"medusa", &medusa_level},
-    {"oracle", &oracle_level},
-    {"orcus", &orcus_level},
-    {"rogue", &rogue_level},
-    {"sanctum", &sanctum_level},
-    {"valley", &valley_level},
-    {"water", &water_level},
-    {"wizard1", &wiz1_level},
-    {"wizard2", &wiz2_level},
-    {"wizard3", &wiz3_level},
-    {X_START, &qstart_level},
-    {X_LOCATE, &qlocate_level},
-    {X_GOAL, &nemesis_level},
-    {"", NULL}
+static const char *level_map[]  = {
+    [sl_astral] = "astral",
+    [sl_earth] = "earth",
+    [sl_water] = "water",
+    [sl_fire] = "fire",
+    [sl_air] = "air",
+    [sl_oracle] = "oracle",
+    [sl_bigroom] = "bigroom",
+    [sl_rogue] = "rogue",
+    [sl_medusa] = "medusa",
+    [sl_castle] = "castle",
+    [sl_valley] = "valley",
+    [sl_juiblex] = "juiblex",
+    [sl_orcus] = "orcus",
+    [sl_baal] = "ballz",
+    [sl_asmo] = "asmodeus",
+    [sl_wiztower1] = "wizard1",
+    [sl_wiztower2] = "wizard2",
+    [sl_wiztower3] = "wizard3",
+    [sl_wiztower_portal] = "fakewiz1",
+    [sl_sanctum] = "sanctum",
+    [sl_quest_start] = X_START,
+    [sl_quest_locate] = X_LOCATE,
+    [sl_quest_goal] = X_GOAL,
+    [sl_fort_ludios] = "knox",
 };
 
 void
@@ -752,7 +774,6 @@ init_dungeons(void)
     int i, cl = 0, cb = 0;
     s_level *x;
     struct proto_dungeon pd;
-    const struct level_map *lev_map;
     struct version_info vers_info;
 
     pd.n_levs = pd.n_brs = 0;
@@ -937,23 +958,23 @@ init_dungeons(void)
      * Find most of the special levels and dungeons so we can access their
      * locations quickly.
      */
-    for (lev_map = level_map; lev_map->lev_name[0]; lev_map++) {
+    for (i = 0; i < num_special_levels; ++i) {
         /* 
          * suppress finding the rogue level if it is not enabled
-         * this makes Is_rogue_level(x) fail
+         * this makes x == sp_lev(sl_rogue) fail
          */
-        if (!strncmp(lev_map->lev_name, "rogue", 6) && !flags.rogue_enabled)
+        if (!strncmp(level_map[i], "rogue", 6) && !flags.rogue_enabled)
             continue;
 
-        x = find_level(lev_map->lev_name);
+        x = find_level(level_map[i]);
         if (x) {
-            assign_level(lev_map->lev_spec, &x->dlevel);
-            if (!strncmp(lev_map->lev_name, "x-", 2)) {
+            dungeon_topology.special_levels[i] = levels[ledger_no(&x->dlevel)];
+            if (!strncmp(level_map[i], "x-", 2)) {
                 /* This is where the name substitution on the levels of the
                    quest dungeon occur. */
                 snprintf(x->proto, SIZE(x->proto), "%s%s", urole.filecode,
-                        &lev_map->lev_name[1]);
-            } else if (lev_map->lev_spec == &knox_level) {
+                         &level_map[i][1]);
+            } else if (i == sl_fort_ludios) {
                 branch *br;
 
                 /* 
@@ -963,7 +984,8 @@ init_dungeons(void)
                  * n_dgns.
                  */
                 for (br = branches; br; br = br->next)
-                    if (on_level(&br->end2, &knox_level))
+                    if (on_level(&br->end2,
+                                 &dungeon_topology.special_levels[i]->z))
                         break;
 
                 if (br)
@@ -999,10 +1021,11 @@ init_dungeons(void)
 /*
  * I hate hardwiring these names. :-(
  */
-    quest_dnum = dname_to_dnum("The Quest");
-    sokoban_dnum = dname_to_dnum("Sokoban");
-    mines_dnum = dname_to_dnum("The Gnomish Mines");
-    tower_dnum = dname_to_dnum("Vlad's Tower");
+    dungeon_topology.d_quest_dnum = dname_to_dnum("The Quest");
+    dungeon_topology.d_sokoban_dnum = dname_to_dnum("Sokoban");
+    dungeon_topology.d_mines_dnum = dname_to_dnum("The Gnomish Mines");
+    dungeon_topology.d_tower_dnum = dname_to_dnum("Vlad's Tower");
+    dungeon_topology.d_endgame_dnum = dname_to_dnum("The Elemental Planes");
 
     /* one special fixup for dummy surface level */
     if ((x = find_level("dummy")) != 0) {
@@ -1293,7 +1316,7 @@ can_dig_down(const struct level * lev)
 boolean
 can_fall_thru(const struct level * lev)
 {
-    return (can_dig_down(lev) || Is_stronghold(lev));
+    return (can_dig_down(lev) || lev == sp_lev(sl_castle));
 }
 
 /*
@@ -1308,7 +1331,7 @@ Can_rise_up(int x, int y, const struct level *lev)
     /* can't rise up from inside the top of the Wizard's tower */
     /* KMH -- or in sokoban */
     if (In_endgame(lev) || In_sokoban(lev) ||
-        (Is_wiz1_level(lev) && In_W_tower(x, y, lev)))
+        (lev == sp_lev(sl_wiztower1) && In_W_tower(x, y, lev)))
         return FALSE;
     return (boolean) (lev->z.dlevel > 1 ||
                       (dungeons[lev->z.dnum].entry_lev == 1 &&
@@ -1379,14 +1402,14 @@ get_level(d_level * newlevel, int levnum)
 boolean
 In_quest(const struct level *lev)
 {       /* are you in the quest dungeon? */
-    return (boolean) (lev->z.dnum == quest_dnum);
+    return (boolean) (lev->z.dnum == dungeon_topology.d_quest_dnum);
 }
 
 
 boolean
 In_mines(const struct level *lev)
 {       /* are you in the mines dungeon? */
-    return (boolean) (lev->z.dnum == mines_dnum);
+    return (boolean) (lev->z.dnum == dungeon_topology.d_mines_dnum);
 }
 
 /*
@@ -1436,14 +1459,14 @@ at_dgn_entrance(const struct level *lev, const char *s)
 boolean
 In_V_tower(const struct level *lev)
 {       /* is `lev' part of Vlad's tower? */
-    return (boolean) (lev->z.dnum == tower_dnum);
+    return (boolean) (lev->z.dnum == dungeon_topology.d_tower_dnum);
 }
 
 boolean
 On_W_tower_level(const struct level *lev)
 {       /* is `lev' a level containing the Wizard's tower? */
-    return (boolean) (Is_wiz1_level(lev) || Is_wiz2_level(lev) ||
-                      Is_wiz3_level(lev));
+    return lev == sp_lev(sl_wiztower1) || lev == sp_lev(sl_wiztower2) ||
+           lev == sp_lev(sl_wiztower3);
 }
 
 /* is <x,y> of `lev' inside the Wizard's tower? */
@@ -1529,7 +1552,7 @@ xchar
 level_difficulty(const struct level *lev)
 {
     if (In_endgame(lev))
-        return (xchar) (depth(&sanctum_level) + u.ulevel/2);
+        return (xchar) (depth(&sp_lev(sl_sanctum)->z) + u.ulevel/2);
     else if (Uhave_amulet)
         return deepest_lev_reached(FALSE);
     else
@@ -1542,6 +1565,8 @@ level_difficulty(const struct level *lev)
 schar
 lev_by_name(const char *nam)
 {
+    return 0;
+#if 0 /* FIXME: Make this function work again */
     schar lev = 0;
     s_level *slev;
     d_level dlev;
@@ -1602,6 +1627,7 @@ lev_by_name(const char *nam)
         }
     }
     return lev;
+#endif
 }
 
 
@@ -1712,12 +1738,12 @@ print_dungeon(boolean bymenu, schar * rlev, xchar * rdgn)
                          &lchoices);
 
             buf = msgprintf("   %s: %d", slev->proto, depth(&slev->dlevel));
-            if (on_level(&slev->dlevel, &stronghold_level))
+            if (on_level(&slev->dlevel, &sp_lev(sl_castle)->z))
                 buf = msgprintf("%s (tune %s)", buf, tune);
             if (bymenu) {
                 /* If other floating branches are added, this will need to
                    change */
-                if (i != knox_level.dnum) {
+                if (i != sp_lev(sl_fort_ludios)->z.dnum) {
                     lchoices.lev[lchoices.idx] = slev->dlevel.dlevel;
                     lchoices.dgn[lchoices.idx] = i;
                 } else {
@@ -1784,8 +1810,8 @@ print_dungeon(boolean bymenu, schar * rlev, xchar * rdgn)
      * created by the level compiler (not the dungeon compiler) only exist
      * one per level (currently true, of course).
      */
-    else if (Is_earthlevel(level) || Is_waterlevel(level)
-             || Is_firelevel(level) || Is_airlevel(level)) {
+    else if (level == sp_lev(sl_earth) || level == sp_lev(sl_water)
+             || level == sp_lev(sl_fire) || level == sp_lev(sl_air)) {
         struct trap *trap;
 
         for (trap = level->lev_traps; trap; trap = trap->ntrap)
@@ -1968,7 +1994,7 @@ overview_print_dun(const struct level *lev)
     int entry_depth, reached_depth;
     const char *rv;
 
-    if (dnum == quest_dnum || dnum == knox_level.dnum)
+    if (In_quest(lev) || lev == sp_lev(sl_fort_ludios))
         /* The quest and knox should appear to be level 1 to match other text.
            */
         depthstart = 1;
@@ -1995,14 +2021,14 @@ overview_print_lev(const struct level *lev)
     const char *buf;
 
     depthstart = dungeons[lev->z.dnum].depth_start;
-    if (lev->z.dnum == quest_dnum || lev->z.dnum == knox_level.dnum)
+    if (In_quest(lev) || lev == sp_lev(sl_fort_ludios))
         /* The quest and knox should appear to be level 1 to match other text.
            */
         depthstart = 1;
 
     /* calculate level number */
     i = depthstart + lev->z.dlevel - 1;
-    if (Is_astralevel(lev))
+    if (lev == sp_lev(sl_astral))
         buf = "Astral Plane";
     else if (In_endgame(lev))
         /* Negative numbers are mildly confusing, since they are never shown to 
@@ -2234,7 +2260,7 @@ dooverview(const struct nh_cmd_arg *arg)
 
     buf = overview_print_lev(lev);
     pline("Now viewing %s%s.  Press any key to return.",
-          Is_astralevel(lev) ? "the " : "", buf);
+          lev == sp_lev(sl_astral) ? "the " : "", buf);
     notify_levelchange(lev);
     flush_screen_nopos();
     win_pause_output(P_MAP);

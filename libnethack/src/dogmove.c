@@ -772,7 +772,7 @@ dog_move(struct monst *mtmp, int after)
     }
     if (is_giant(mtmp->data))
         allowflags |= BUSTDOOR;
-    if (!Is_rogue_level(level) && tunnels(mtmp->data))
+    if (level != sp_lev(sl_rogue) && tunnels(mtmp->data))
         allowflags |= ALLOW_DIG;
     cnt = mfndpos(mtmp, poss, info, allowflags);
 

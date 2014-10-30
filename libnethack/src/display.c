@@ -169,7 +169,7 @@ magic_map_background(xchar x, xchar y, int show)
         loc = &tmp_location;
     }
 
-    /* 
+    /*
      * Correct for out of sight lit corridors and rooms that the hero
      * doesn't remember as lit.
      */
@@ -402,7 +402,7 @@ display_monster(xchar x, xchar y,       /* display position */
     boolean mon_mimic = (mon->m_ap_type != M_AP_NOTHING);
     int sensed = mon_mimic && (Protection_from_shape_changers || sensemon(mon));
 
-    /* 
+    /*
      * We must do the mimic check first.  If the mimic is mimicing something,
      * and the location is in sight, we have to change the hero's memory
      * so that when the position is out of sight, the hero remembers what
@@ -415,7 +415,7 @@ display_monster(xchar x, xchar y,       /* display position */
                        (int)mon->m_ap_type);
 
         case M_AP_FURNITURE:{
-                /* 
+                /*
                  * This is a poor man's version of map_background().  I can't
                  * use map_background() because we are overriding what is in
                  * the 'typ' field.
@@ -552,13 +552,13 @@ feel_location(xchar x, xchar y)
 
     /* If the hero's memory of an invisible monster is accurate, we want to
        keep him from detecting the same monster over and over again on each
-       turn. We must return (so we don't erase the monster).  (We must also, in 
+       turn. We must return (so we don't erase the monster).  (We must also, in
        the search function, be sure to skip over previously detected 'I's.) */
     if (level->locations[x][y].mem_invis && m_at(level, x, y))
         return;
 
     /* The hero can't feel non pool locations while under water. */
-    if (Underwater && !Is_waterlevel(level) && !is_pool(level, x, y))
+    if (Underwater && level != sp_lev(sl_water) && !is_pool(level, x, y))
         return;
 
     /* If it passed the above check, then there should not be an invisible
@@ -569,8 +569,8 @@ feel_location(xchar x, xchar y)
     /* if the hero is levitating or not.  */
     set_seenv(loc, u.ux, u.uy, x, y);
 
-    if (Levitation && !Is_airlevel(level) && !Is_waterlevel(level)) {
-        /* 
+    if (Levitation && level != sp_lev(sl_air) && level != sp_lev(sl_water)) {
+        /*
          * Levitation Rules.  It is assumed that the hero can feel the state
          * of the walls around herself and can tell if she is in a corridor,
          * room, or doorway.  Boulders are felt because they are large enough.
@@ -598,7 +598,7 @@ feel_location(xchar x, xchar y)
         map_location(x, y, 1, 1);
 
         if (Punished) {
-            /* 
+            /*
              * A ball or chain is only felt if it is first on the object
              * location list.  Otherwise, we need to clear the felt bit ---
              * something has been dropped on the ball/chain.  If the bit is
@@ -659,7 +659,7 @@ newsym_core(int x, int y, boolean reroll_hallucinated_appearances)
             display_self();
         return;
     }
-    if (Underwater && !Is_waterlevel(level)) {
+    if (Underwater && level != sp_lev(sl_water)) {
         /* don't do anything unless (x,y) is an adjacent underwater position */
         int dx, dy;
 
@@ -679,7 +679,7 @@ newsym_core(int x, int y, boolean reroll_hallucinated_appearances)
     if (cansee(x, y)) {
         struct region *reg = visible_region_at(level, x, y);
 
-        /* 
+        /*
          * Don't use templit here:  E.g.
          *
          *      loc->waslit = !!(loc->lit || templit(x,y));
@@ -833,7 +833,7 @@ tmpsym_initimpl(int style, int sym, int extra)
  * tmpsym_init()
  *
  * Set up structure for temporarily placing glyphs on the screen. Do not
- * call delay_output(); it is up to the caller to decide if it wants to wait. 
+ * call delay_output(); it is up to the caller to decide if it wants to wait.
  *
  * The display styles are as follows:
  *
@@ -997,7 +997,7 @@ swallowed(int first)
     /* assume isok(u.ux,u.uy) */
     left_ok = isok(u.ux - 1, u.uy);
     rght_ok = isok(u.ux + 1, u.uy);
-    /* 
+    /*
      *  Display the hero surrounded by the monster's stomach.
      */
     if (isok(u.ux, u.uy - 1)) {
@@ -1045,7 +1045,7 @@ under_water(int mode)
     int x, y;
 
     /* swallowing has a higher precedence than under water */
-    if (Is_waterlevel(level) || Engulfed)
+    if (level == sp_lev(sl_water) || Engulfed)
         return;
 
     /* full update */
@@ -1113,7 +1113,7 @@ under_ground(int mode)
  * Loop through all of the monsters and update them.  Called when:
  *      + going blind & telepathic
  *      + regaining sight & telepathic
- *      + getting and losing infravision 
+ *      + getting and losing infravision
  *      + hallucinating
  *      + doing a full screen redraw
  *      + see invisible times out or a ring of see invisible is taken off
@@ -1254,7 +1254,7 @@ doredraw(void)
         swallowed(1);
         return 0;
     }
-    if (Underwater && !Is_waterlevel(level)) {
+    if (Underwater && level != sp_lev(sl_water)) {
         under_water(1);
         return 0;
     }
@@ -1900,7 +1900,7 @@ set_corn(struct level *lev, int x1, int y1, int x2, int y2, int x3, int y3,
     is_3 = check_pos(lev, x3, y3, 1);
     is_4 = check_pos(lev, x4, y4, 1);   /* inner location */
 
-    /* 
+    /*
      * All 4 should not be true.  So if the inner location is rock,
      * use it.  If all of the outer 3 are true, use outer.  We currently
      * can't cover the case where only part of the outer is rock, so

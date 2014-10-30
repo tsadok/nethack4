@@ -752,7 +752,8 @@ you_moved(void)
 
             if (flags.mon_generation &&
                 !rn2(u.uevent.udemigod ? 25 :
-                     (depth(&level->z) > depth(&stronghold_level)) ? 50 : 70))
+                     (depth(&level->z) > depth(&sp_lev(sl_castle)->z)) ? 50 :
+                     70))
                 makemon(NULL, level, COLNO, ROWNO, NO_MM_FLAGS);
 
             int oldmoveamt = u.moveamt;
@@ -843,7 +844,7 @@ you_moved(void)
                 /* for the moment at least, you're in tiptop shape */
                 wtcap = UNENCUMBERED;
             } else if (Upolyd && youmonst.data->mlet == S_EEL &&
-                       !is_pool(level, u.ux, u.uy) && !Is_waterlevel(level)) {
+                       !is_pool(level, u.ux, u.uy) && level != sp_lev(sl_water)) {
                 if (u.mh > 1) {
                     u.mh--;
                 } else if (u.mh < 1)

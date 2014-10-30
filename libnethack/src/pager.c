@@ -184,7 +184,7 @@ describe_bg(int x, int y, int bg, char *buf)
         break;
 
     case S_cloud:
-        strcpy(buf, Is_airlevel(level) ? "cloudy area" : "fog/vapor cloud");
+        strcpy(buf, level == sp_lev(sl_air) ? "cloudy area" : "fog/vapor cloud");
         break;
 
     default:
@@ -220,7 +220,7 @@ describe_object(int x, int y, int votyp, char *buf, int known_embed)
                 otmp->spe = current_fruit;      /* give the fruit a type */
             strcpy(buf, distant_name(otmp, xname));
             dealloc_obj(otmp);
-            otmp = vobj_at(x, y);       /* make sure we don't point to the temp 
+            otmp = vobj_at(x, y);       /* make sure we don't point to the temp
                                            obj any more */
         }
     } else
@@ -497,7 +497,7 @@ checkfile(const char *inp, struct permonst *pm, boolean user_typed_name,
         if (ep && ep > dbase_str)
             *ep = '\0';
 
-        /* 
+        /*
          * If the object is named, then the name is the alternate description;
          * otherwise, the result of makesingular() applied to the name is. This
          * isn't strictly optimal, but named objects of interest to the user
@@ -646,7 +646,7 @@ do_look(boolean quick, const struct nh_cmd_arg *arg)
     save_verbose = flags.verbose;
     flags.verbose = flags.verbose && !quick;
 
-    /* 
+    /*
      * we're identifying from the screen.
      */
     do {

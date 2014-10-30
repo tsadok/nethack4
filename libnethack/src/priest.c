@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Izchak Miller, Steve Linhart, 1989.              */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -227,7 +227,7 @@ priestini(struct level *lev, struct mkroom *sroom, int sx, int sy,
 
         /* now his/her goodies... */
         if (sanctum && CONST_EPRI(priest)->shralign == A_NONE &&
-            Is_sanctum(lev)) {
+            lev == sp_lev(sl_sanctum)) {
             mongets(priest, AMULET_OF_YENDOR);
         }
         /* 2 to 4 spellbooks */

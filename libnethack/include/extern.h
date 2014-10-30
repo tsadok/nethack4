@@ -455,6 +455,7 @@ extern void restore_dlevel(struct memfile *mf, d_level *d);
 extern void restore_dungeon(struct memfile *mf);
 extern void insert_branch(branch *, boolean);
 extern void init_dungeons(void);
+extern struct level *sp_lev(enum special_level sl);
 extern s_level *find_level(const char *);
 extern s_level *Is_special(const d_level *);
 extern branch *Is_branchlev(const struct level *lev);

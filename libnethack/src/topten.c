@@ -603,7 +603,7 @@ tt_oname(struct obj *otmp)
 static void
 topten_level_name(int dnum, int dlev, char *outbuf)
 {
-    if (dnum == astral_level.dnum) {
+    if (dnum == dungeon_topology.d_endgame_dnum) {
         const char *arg, *fmt = "on the Plane of %s";
 
         switch (dlev) {
@@ -630,7 +630,7 @@ topten_level_name(int dnum, int dlev, char *outbuf)
         sprintf(outbuf + strlen(outbuf), fmt, arg);
     } else {
         sprintf(outbuf + strlen(outbuf), "in %s", dungeons[dnum].dname);
-        if (dnum != knox_level.dnum)
+        if (dungeons[dnum].num_dunlevs > 1)
             sprintf(outbuf + strlen(outbuf), " on level %d", dlev);
     }
 }
@@ -654,7 +654,8 @@ topten_death_description(struct toptenentry *in, char *outbuf)
                 in->maxlvl);
         /* fixup for closing paren in "escaped... with...Amulet)[max..." */
         if ((bp = strchr(outbuf, ')')) != 0)
-            *bp = (in->deathdnum == astral_level.dnum) ? '\0' : ' ';
+            *bp =
+                (in->deathdnum == dungeon_topology.d_endgame_dnum) ? '\0' : ' ';
         second_line = FALSE;
     } else if (!strncmp("ascended", in->death, 8)) {
         sprintf(outbuf + strlen(outbuf), "ascended to demigod%s-hood",
@@ -746,7 +747,7 @@ nh_get_topten(int *out_len, char *statusbuf, const char *volatile player,
 {
     struct toptenentry *ttlist, newtt;
     struct nh_topten_entry *score_list;
-    boolean game_inited = (wiz1_level.dlevel != 0);
+    boolean game_inited = !!levels[0];
     boolean game_complete = game_inited && moves && program_state.gameover;
     int rank = -1;      /* index of the completed game in the topten list */
     int fd, i, j, sel_count;

@@ -875,7 +875,7 @@ throwit(struct obj *obj, long wep_mask, /* used to re-equip returning boomerang
         (Upolyd ? (u.mh < 5 && u.mh != u.mhmax)
          : (u.uhp < 10 && u.uhp != u.uhpmax)) &&
         obj->owt > (unsigned)((Upolyd ? u.mh : u.uhp) * 2) &&
-        !Is_airlevel(level)) {
+        level != sp_lev(sl_air)) {
         pline("You have so little stamina, %s drops from your grasp.",
               the(xname(obj)));
         exercise(A_CON, FALSE);
@@ -898,8 +898,8 @@ throwit(struct obj *obj, long wep_mask, /* used to re-equip returning boomerang
             encumber_msg();
             setuwep(obj);
             u.twoweap = twoweap;
-        } else if (dz < 0 && !Is_airlevel(level) && !Underwater &&
-                   !Is_waterlevel(level)) {
+        } else if (dz < 0 && level != sp_lev(sl_air) && !Underwater &&
+                   level != sp_lev(sl_water)) {
             toss_up(obj, rn2(5));
         } else {
             hitfloor(obj);
@@ -908,7 +908,7 @@ throwit(struct obj *obj, long wep_mask, /* used to re-equip returning boomerang
         return;
 
     } else if (obj->otyp == BOOMERANG && !Underwater) {
-        if (Is_airlevel(level) || Levitation)
+        if (level == sp_lev(sl_air) || Levitation)
             hurtle(-dx, -dy, 1, TRUE);
         mon = boomhit(dx, dy);
         if (mon == &youmonst) { /* the thing was caught */
@@ -949,7 +949,7 @@ throwit(struct obj *obj, long wep_mask, /* used to re-equip returning boomerang
                 range /= 2;
         }
 
-        if (Is_airlevel(level) || Levitation) {
+        if (level == sp_lev(sl_air) || Levitation) {
             /* action, reaction... */
             urange -= range;
             if (urange < 1)
@@ -975,7 +975,7 @@ throwit(struct obj *obj, long wep_mask, /* used to re-equip returning boomerang
                      &obj_destroyed);
 
         /* have to do this after bhit() so u.ux & u.uy are correct */
-        if (Is_airlevel(level) || Levitation)
+        if (level == sp_lev(sl_air) || Levitation)
             hurtle(-dx, -dy, urange, TRUE);
 
         if (obj_destroyed)
@@ -1722,8 +1722,8 @@ throw_gold(struct obj *obj, schar dx, schar dy, schar dz)
     }
 
     if (dz) {
-        if (dz < 0 && !Is_airlevel(level) && !Underwater &&
-            !Is_waterlevel(level)) {
+        if (dz < 0 && level != sp_lev(sl_air) && !Underwater &&
+            level != sp_lev(sl_water)) {
             pline("The gold hits the %s, then falls back on top of your %s.",
                   ceiling(u.ux, u.uy), body_part(HEAD));
             /* some self damage? */

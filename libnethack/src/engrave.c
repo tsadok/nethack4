@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -173,8 +173,8 @@ can_reach_floor(void)
     return (boolean) (!Engulfed &&
                       /* Restricted/unskilled riders can't reach the floor */
                       !(u.usteed && P_SKILL(P_RIDING) < P_BASIC) &&
-                      (!Levitation || Is_airlevel(level) ||
-                       Is_waterlevel(level)));
+                      (!Levitation || level == sp_lev(sl_air) ||
+                       level == sp_lev(sl_water)));
 }
 
 
@@ -185,10 +185,10 @@ surface(int x, int y)
 
     if ((x == u.ux) && (y == u.uy) && Engulfed && is_animal(u.ustuck->data))
         return "maw";
-    else if (IS_AIR(loc->typ) && Is_airlevel(level))
+    else if (IS_AIR(loc->typ) && level == sp_lev(sl_air))
         return "air";
     else if (is_pool(level, x, y))
-        return (Underwater && !Is_waterlevel(level)) ? "bottom" : "water";
+        return (Underwater && level != sp_lev(sl_water)) ? "bottom" : "water";
     else if (is_ice(level, x, y))
         return "ice";
     else if (is_lava(level, x, y))
@@ -201,7 +201,7 @@ surface(int x, int y)
         return "headstone";
     else if (IS_FOUNTAIN(level->locations[x][y].typ))
         return "fountain";
-    else if ((IS_ROOM(loc->typ) && !Is_earthlevel(level)) || IS_WALL(loc->typ)
+    else if ((IS_ROOM(loc->typ) && level != sp_lev(sl_earth)) || IS_WALL(loc->typ)
              || IS_DOOR(loc->typ) || loc->typ == SDOOR)
         return "floor";
     else
@@ -226,7 +226,7 @@ ceiling(int x, int y)
         what = "sky";
     else if (Underwater)
         what = "water's surface";
-    else if ((IS_ROOM(loc->typ) && !Is_earthlevel(level)) || IS_WALL(loc->typ)
+    else if ((IS_ROOM(loc->typ) && level != sp_lev(sl_earth)) || IS_WALL(loc->typ)
              || IS_DOOR(loc->typ) || loc->typ == SDOOR)
         what = "ceiling";
     else
@@ -514,7 +514,7 @@ doengrave_core(const struct nh_cmd_arg *arg, int auto_elbereth)
         pline("You can't write on the water!");
         return 0;
     }
-    if (Is_airlevel(level) || Is_waterlevel(level) /* in bubble */ ) {
+    if (level == sp_lev(sl_air) || level == sp_lev(sl_water) /* in bubble */ ) {
         pline("You can't write in thin air!");
         return 0;
     }

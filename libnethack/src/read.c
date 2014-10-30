@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -1117,8 +1117,8 @@ seffects(struct obj *sobj, boolean * known)
         return 1;
     case SCR_EARTH:
         /* TODO: handle steeds */
-        if (!Is_rogue_level(level) &&
-            (!In_endgame(level) || Is_earthlevel(level))) {
+        if (level != sp_lev(sl_rogue) &&
+            (!In_endgame(level) || level == sp_lev(sl_earth))) {
             int x, y;
 
             /* Identify the scroll */
@@ -1341,7 +1341,7 @@ litroom(boolean on, struct obj *obj)
 
 do_it:
     /* No-op in water - can only see the adjacent squares and that's it! */
-    if (Underwater || Is_waterlevel(level))
+    if (Underwater || level == sp_lev(sl_water))
         return;
     /* 
      *  If we are darkening the room and the hero is punished but not
@@ -1351,7 +1351,7 @@ do_it:
     if (Punished && !on && !Blind)
         move_bc(1, 0, uball->ox, uball->oy, uchain->ox, uchain->oy);
 
-    if (Is_rogue_level(level)) {
+    if (level == sp_lev(sl_rogue)) {
         /* Can't use do_clear_area because MAX_RADIUS is too small */
         /* rogue lighting must light the entire room */
         int rnum = level->locations[u.ux][u.uy].roomno - ROOMOFFSET;

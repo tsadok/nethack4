@@ -91,7 +91,7 @@ moverock(schar dx, schar dy)
         rx = u.ux + 2 * dx;     /* boulder destination position */
         ry = u.uy + 2 * dy;
         action_completed();
-        if (Levitation || Is_airlevel(level)) {
+        if (Levitation || level == sp_lev(sl_air)) {
             if (Blind)
                 feel_location(sx, sy);
             pline("You don't have enough leverage to push %s.",
@@ -108,7 +108,7 @@ moverock(schar dx, schar dy)
         if (isok(rx, ry) && !IS_ROCK(level->locations[rx][ry].typ) &&
             level->locations[rx][ry].typ != IRONBARS &&
             (!IS_DOOR(level->locations[rx][ry].typ) || !(dx && dy) ||
-             (!Is_rogue_level(level) &&
+             (level != sp_lev(sl_rogue) &&
               (level->locations[rx][ry].doormask & ~D_BROKEN) == D_NODOOR)) &&
             !sobj_at(BOULDER, level, rx, ry)) {
             ttmp = t_at(level, rx, ry);
@@ -575,7 +575,7 @@ test_move(int ux, int uy, int dx, int dy, int dz, int mode,
                 return FALSE;
         } else {
             if (mode == DO_MOVE) {
-                if (Is_stronghold(level) && is_db_wall(x, y))
+                if (level == sp_lev(sl_castle) && is_db_wall(x, y))
                     pline("The drawbridge is up!");
                 if (passwall && !may_passwall(level, x, y) &&
                     In_sokoban(level))
@@ -623,7 +623,7 @@ test_move(int ux, int uy, int dx, int dy, int dz, int mode,
         } else {
         testdiag:
             if (dx && dy && !passwall && ((tmpr->doormask & ~D_BROKEN)
-                                          || Is_rogue_level(level)
+                                          || level == sp_lev(sl_rogue)
                                           || block_door(x, y))) {
                 /* Diagonal moves into a door are not allowed. */
                 if (blind && mode == DO_MOVE)
@@ -683,7 +683,7 @@ test_move(int ux, int uy, int dx, int dy, int dz, int mode,
     /* Now see if other things block our way. */
     if (dx && dy && !passwall &&
         (IS_DOOR(ust->typ) && ((ust->doormask & ~D_BROKEN)
-                               || Is_rogue_level(level)
+                               || level == sp_lev(sl_rogue)
                                || block_entry(x, y))
         )) {
         /* Can't move at a diagonal out of a doorway with door. */
@@ -1247,7 +1247,7 @@ domove(const struct nh_cmd_arg *arg, enum u_interaction_mode uim,
     if (((wtcap = near_capacity()) >= OVERLOADED ||
          (wtcap > SLT_ENCUMBER && (Upolyd ? (u.mh < 5 && u.mh != u.mhmax)
                                    : (u.uhp < 10 && u.uhp != u.uhpmax))))
-        && !Is_airlevel(level)) {
+        && level != sp_lev(sl_air)) {
         if (wtcap < OVERLOADED) {
             pline("You don't have enough stamina to move.");
             exercise(A_CON, FALSE);
@@ -1262,7 +1262,7 @@ domove(const struct nh_cmd_arg *arg, enum u_interaction_mode uim,
         u.uy = y = u.ustuck->my;
         mtmp = u.ustuck;
     } else {
-        if (Is_airlevel(level) && rn2(4) && !Levitation && !Flying) {
+        if (level == sp_lev(sl_air) && rn2(4) && !Levitation && !Flying) {
             switch (rn2(3)) {
             case 0:
                 pline("You tumble in place.");
@@ -1615,8 +1615,8 @@ domove(const struct nh_cmd_arg *arg, enum u_interaction_mode uim,
         action_completed();
         return 1;
     } else if (!youmonst.data->mmove) {
-        pline("You are rooted %s.", Levitation || Is_airlevel(level) ||
-              Is_waterlevel(level) ? "in place" : "to the ground");
+        pline("You are rooted %s.", Levitation || level == sp_lev(sl_air) ||
+              level == sp_lev(sl_water) ? "in place" : "to the ground");
         action_completed();
         return 1;
     }
@@ -1922,7 +1922,7 @@ domove(const struct nh_cmd_arg *arg, enum u_interaction_mode uim,
     if (hides_under(youmonst.data))
         u.uundetected = OBJ_AT(u.ux, u.uy);
     else if (youmonst.data->mlet == S_EEL)
-        u.uundetected = is_pool(level, u.ux, u.uy) && !Is_waterlevel(level);
+        u.uundetected = is_pool(level, u.ux, u.uy) && level != sp_lev(sl_water);
     else if (turnstate.move.dx || turnstate.move.dy)
         u.uundetected = 0;
 
@@ -2000,14 +2000,14 @@ spoteffects(boolean pick)
         int was_underwater;
 
         if (!is_pool(level, u.ux, u.uy)) {
-            if (Is_waterlevel(level))
+            if (level == sp_lev(sl_water))
                 pline("You pop into an air bubble.");
             else if (is_lava(level, u.ux, u.uy))
                 pline("You leave the water...");        /* oops! */
             else
                 pline("You are on solid %s again.",
                       is_ice(level, u.ux, u.uy) ? "ice" : "land");
-        } else if (Is_waterlevel(level))
+        } else if (level == sp_lev(sl_water))
             goto stillinwater;
         else if (Levitation)
             pline("You pop out of the water like a cork!");
@@ -2017,7 +2017,7 @@ spoteffects(boolean pick)
             pline("You slowly rise above the surface.");
         else
             goto stillinwater;
-        was_underwater = Underwater && !Is_waterlevel(level);
+        was_underwater = Underwater && level != sp_lev(sl_water);
         u.uinwater = 0; /* leave the water */
         if (was_underwater) {   /* restore vision */
             doredraw();
@@ -2033,7 +2033,7 @@ stillinwater:
                 !is_floater(u.usteed->data) && !is_clinger(u.usteed->data)) {
                 dismount_steed(Underwater ? DISMOUNT_FELL : DISMOUNT_GENERIC);
                 /* dismount_steed() -> float_down() -> pickup() */
-                if (!Is_airlevel(level) && !Is_waterlevel(level))
+                if (level != sp_lev(sl_air) && level != sp_lev(sl_water))
                     pick = FALSE;
             } else if (is_lava(level, u.ux, u.uy)) {
                 if (lava_effects())
@@ -2789,7 +2789,7 @@ weight_cap(void)
             carrcap = (carrcap * (long)youmonst.data->cwt / WT_HUMAN);
     }
 
-    if (Levitation || Is_airlevel(level)        /* pugh@cornell */
+    if (Levitation || level == sp_lev(sl_air)        /* pugh@cornell */
         ||(u.usteed && strongmonst(u.usteed->data)))
         carrcap = MAX_CARR_CAP;
     else {

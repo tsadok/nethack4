@@ -14,7 +14,7 @@ static int select_newcham_form(struct monst *);
 static void kill_eggs(struct obj *);
 
 #define LEVEL_SPECIFIC_NOCORPSE(mdat) \
-         (Is_rogue_level(level) || \
+         (level == sp_lev(sl_rogue) || \
            (level->flags.graveyard && is_undead(mdat) && rn2(3)))
 
 
@@ -434,7 +434,7 @@ minliquid(struct monst *mtmp)
         }
     } else {
         /* but eels have a difficult time outside */
-        if (mtmp->data->mlet == S_EEL && !Is_waterlevel(level)) {
+        if (mtmp->data->mlet == S_EEL && level != sp_lev(sl_water)) {
             if (mtmp->mhp > 1)
                 mtmp->mhp--;
             monflee(mtmp, 2, FALSE, FALSE);
@@ -1108,10 +1108,10 @@ nexttry:       /* eels prefer the water, but if there is no water nearby, they
                 (nodiag ||
                  ((IS_DOOR(nowtyp) &&
                    ((mlevel->locations[x][y].doormask & ~D_BROKEN) ||
-                    Is_rogue_level(level))) ||
+                    level == sp_lev(sl_rogue))) ||
                   (IS_DOOR(ntyp) &&
                    ((mlevel->locations[nx][ny].doormask & ~D_BROKEN) ||
-                    Is_rogue_level(level))))))
+                    level == sp_lev(sl_rogue))))))
                 continue;
             if ((is_pool(mlevel, nx, ny) == wantpool || poolok) &&
                 (lavaok || !is_lava(mlevel, nx, ny))) {

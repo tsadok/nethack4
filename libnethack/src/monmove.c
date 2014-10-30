@@ -648,7 +648,7 @@ m_move(struct monst *mtmp, int after)
        called it via strategy()), but we call it anyway so that calls of m_move
        from elsewhere (ex. leprechauns dodging) work */
 
-    if (!Is_rogue_level(level))
+    if (level != sp_lev(sl_rogue))
         can_tunnel = tunnels(ptr);
     can_open = !(nohands(ptr) || verysmall(ptr));
     can_unlock = ((can_open && m_carrying(mtmp, SKELETON_KEY)) || mtmp->iswiz ||
@@ -771,7 +771,7 @@ not_special:
           ptr->mlet == S_LIGHT) && !rn2(3)))
         appr = 0;
 
-    if ((!mtmp->mpeaceful || !rn2(10)) && (!Is_rogue_level(level))) {
+    if ((!mtmp->mpeaceful || !rn2(10)) && level != sp_lev(sl_rogue)) {
         boolean in_line = lined_up(mtmp) &&
             (mtmp->mx != mtmp->mux || mtmp->my != mtmp->muy) &&
             (distmin(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) <=
@@ -1107,7 +1107,7 @@ postmov:
                 mtmp->mundetected = (ptr->mlet != S_EEL) ?
                     OBJ_AT(mtmp->mx, mtmp->my) :
                     (is_pool(level, mtmp->mx, mtmp->my) &&
-                     !Is_waterlevel(level));
+                     level != sp_lev(sl_water));
             newsym(mtmp->mx, mtmp->my);
         }
         if (mtmp->isshk) {

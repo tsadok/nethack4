@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright 1991, M. Stephenson */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -74,11 +74,11 @@ onquest(const struct level *orig_lev)
     if (!Is_special(&level->z))
         return;
 
-    if (Is_qstart(level))
+    if (level == sp_lev(sl_quest_start))
         on_start(orig_lev);
-    else if (Is_qlocate(level) && level->z.dlevel > orig_lev->z.dlevel)
+    else if (level == sp_lev(sl_quest_locate) && level->z.dlevel > orig_lev->z.dlevel)
         on_locate(orig_lev);
-    else if (Is_nemesis(level))
+    else if (level == sp_lev(sl_quest_goal))
         on_goal();
     return;
 }
@@ -287,7 +287,7 @@ chat_with_leader(void)
             qt_pager(QT_NEXTLEADER);
         /* the quest leader might have passed through the portal into the
            regular dungeon; none of the remaining make sense there */
-        if (!Is_qstart(level))
+        if (level != sp_lev(sl_quest_start))
             return;
 
         if (not_capable()) {
@@ -326,7 +326,7 @@ leader_speaks(struct monst *mtmp)
     }
     /* the quest leader might have passed through the portal into the regular
        dungeon; if so, mustn't perform "backwards expulsion" */
-    if (!Is_qstart(level))
+    if (level != sp_lev(sl_quest_start))
         return;
 
     if (Qstat(pissed_off)) {

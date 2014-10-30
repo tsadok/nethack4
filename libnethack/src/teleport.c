@@ -588,7 +588,7 @@ level_tele_impl(boolean wizard_tele)
                 if ((newlev = (int)print_dungeon(TRUE, &destlev, &destdnum))) {
                     newlevel.dnum = destdnum;
                     newlevel.dlevel = destlev;
-                    if (newlevel.dnum == astral_level.dnum &&
+                    if (newlevel.dnum == dungeon_topology.d_endgame_dnum &&
                         !In_endgame(level)) {
                         const char *dest = "Destination is earth level";
                         if (!Uhave_amulet) {
@@ -600,7 +600,7 @@ level_tele_impl(boolean wizard_tele)
                                 dest = msgcat(dest, " with the amulet");
                             }
                         }
-                        assign_level(&newlevel, &earth_level);
+                        assign_level(&newlevel, &sp_lev(sl_earth)->z);
                         pline("%s.", dest);
                     }
                     force_dest = TRUE;
@@ -633,7 +633,7 @@ level_tele_impl(boolean wizard_tele)
 
         /* if in Knox and the requested level > 0, stay put. we let negative
            values requests fall into the "heaven" loop. */
-        if (Is_knox(level) && newlev > 0) {
+        if (level == sp_lev(sl_fort_ludios) && newlev > 0) {
             pline("You shudder for a moment.");
             return;
         }
@@ -722,11 +722,11 @@ level_tele_impl(boolean wizard_tele)
     if (escape_by_flying) {
         pline("You %s.", escape_by_flying);
         done(ESCAPED, "teleported to safety");
-    } else if (level->z.dnum == medusa_level.dnum &&
+    } else if (level->z.dnum == sp_lev(sl_medusa)->z.dnum &&
                newlev >=
                dungeons[level->z.dnum].depth_start + dunlevs_in_dungeon(&level->z)) {
         if (!(wizard_tele && force_dest))
-            assign_level(&newlevel, &valley_level);
+            assign_level(&newlevel, &sp_lev(sl_valley)->z);
     } else {
         /* if invocation did not yet occur, teleporting into the last level of
            Gehennom is forbidden. */
@@ -741,8 +741,8 @@ level_tele_impl(boolean wizard_tele)
                 pline("Sorry...");
             }
         /* no teleporting out of quest dungeon */
-        if (In_quest(level) && newlev < depth(&qstart_level))
-            newlev = depth(&qstart_level);
+        if (In_quest(level) && newlev < depth(&sp_lev(sl_quest_start)->z))
+            newlev = depth(&sp_lev(sl_quest_start)->z);
         /* the player thinks of levels purely in logical terms, so we must
            translate newlev to a number relative to the current dungeon. */
         if (!(wizard_tele && force_dest))
@@ -1042,8 +1042,8 @@ mlevel_tele_trap(struct monst *mtmp, struct trap *trap, boolean force_it,
         int migrate_typ = MIGR_RANDOM;
 
         if ((tt == HOLE || tt == TRAPDOOR)) {
-            if (Is_stronghold(level)) {
-                assign_level(&tolevel, &valley_level);
+            if (level == sp_lev(sl_castle)) {
+                assign_level(&tolevel, &sp_lev(sl_valley)->z);
             } else if (Is_botlevel(level)) {
                 if (in_sight && trap->tseen)
                     pline("%s avoids the %s.", Monnam(mtmp),
@@ -1165,7 +1165,7 @@ random_teleport_level(void)
 {
     int nlev, max_depth, min_depth, cur_depth = (int)depth(&level->z);
 
-    if (!rn2(5) || Is_knox(level))
+    if (!rn2(5) || level == sp_lev(sl_fort_ludios))
         return cur_depth;
 
     if (In_endgame(level))      /* only happens in wizmode */
@@ -1246,7 +1246,7 @@ u_teleport_mon(struct monst * mtmp, boolean give_feedback)
 struct level *
 portal_target(xchar dnum)
 {
-    if (In_endgame(level) || dnum == astral_level.dnum || 
+    if (In_endgame(level) || dnum == dungeon_topology.d_endgame_dnum || 
         dnum == level->z.dnum)
         return NULL;
 

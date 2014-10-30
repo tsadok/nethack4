@@ -15,7 +15,6 @@
 
 static void save_you(struct memfile *mf, struct you *you);
 static void save_utracked(struct memfile *mf, struct you *you);
-static void savelevchn(struct memfile *mf);
 static void savedamage(struct memfile *mf, struct level *lev);
 static void freedamage(struct level *lev);
 static void saveobjchn(struct memfile *mf, struct obj *);
@@ -88,8 +87,6 @@ GEN_SAVE_DECODE(32, 0xFFFFFFFF)
 void
 savegame(struct memfile *mf)
 {
-    xchar ltmp;
-
     /* no tag useful here as store_version adds one */
     store_version(mf);
 
@@ -103,17 +100,7 @@ savegame(struct memfile *mf)
     save_you(mf, &u);
     save_mon(mf, &youmonst);
 
-    /* store dungeon layout */
     save_dungeon(mf);
-    savelevchn(mf);
-
-    /* store levels */
-    for (ltmp = 0; ltmp <= maxledgerno(); ltmp++) {
-        if (!levels[ltmp])
-            panic("No level when attempting to save!");
-        mtag(mf, ltmp, MTAG_LEVELS);
-        savelev(mf, ltmp);      /* actual level */
-    }
 
     save_dlevel(mf, level->z);
 
@@ -728,26 +715,6 @@ freelev(xchar levnum)
 
     free(lev);
     levels[levnum] = NULL;
-}
-
-
-static void
-savelevchn(struct memfile *mf)
-{
-    s_level *tmplev;
-    int cnt = 0;
-
-    for (tmplev = sp_levchn; tmplev; tmplev = tmplev->next)
-        cnt++;
-    mwrite32(mf, cnt);
-
-    for (tmplev = sp_levchn; tmplev; tmplev = tmplev->next) {
-        save_d_flags(mf, tmplev->flags);
-        save_dlevel(mf, tmplev->dlevel);
-        mwrite(mf, tmplev->proto, sizeof (tmplev->proto));
-        mwrite8(mf, tmplev->boneid);
-        mwrite8(mf, tmplev->rndlevs);
-    }
 }
 
 

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -20,7 +20,7 @@ static void sense_trap(struct trap *, xchar, xchar, int);
 static void show_map_spot(int, int);
 static void findone(int, int, void *);
 static void openone(int, int, void *);
-static const char *level_distance(d_level *);
+static const char *level_distance(struct level *where);
 
 /* Recursively search obj for an object in class oclass and return 1st found */
 static struct obj *
@@ -739,10 +739,10 @@ outtrapmap:
 
 
 static const char *
-level_distance(d_level * where)
+level_distance(struct level *where)
 {
-    schar ll = depth(&level->z) - depth(where);
-    boolean indun = (level->z.dnum == where->dnum);
+    schar ll = depth(&level->z) - depth(&where->z);
+    boolean indun = (level->z.dnum == where->z.dnum);
 
     if (ll < 0) {
         if (ll < (-8 - rn2(3)))
@@ -779,16 +779,6 @@ level_distance(d_level * where)
     else
         return "near you";
 }
-
-static const struct {
-    const char *what;
-    d_level *where;
-} level_detects[] = {
-    {
-    "Delphi", &oracle_level}, {
-    "Medusa's lair", &medusa_level}, {
-    "a castle", &stronghold_level}, {
-"the Wizard of Yendor's tower", &wiz1_level},};
 
 void
 use_crystal_ball(struct obj *obj)
@@ -906,6 +896,16 @@ use_crystal_ball(struct obj *obj)
                 break;
             default:
                 {
+                    struct {
+                        const char *what;
+                        struct level *where;
+                    } level_detects[] = {
+                        {"Delphi", sp_lev(sl_oracle)},
+                        {"Medusa's lair", sp_lev(sl_medusa)},
+                        {"a castle", sp_lev(sl_castle)},
+                        {"the Wizard of Yendor's tower", sp_lev(sl_wiztower1)},
+                    };
+
                     int i = rn2(SIZE(level_detects));
 
                     pline("You see %s, %s.", level_detects[i].what,
@@ -1000,7 +1000,7 @@ cvt_sdoor_to_door(struct rm *loc, const struct level * lev)
 {
     int newmask = loc->doormask & ~WM_MASK;
 
-    if (Is_rogue_level(lev))
+    if (lev == sp_lev(sl_rogue))
         /* rogue didn't have doors, only doorways */
         newmask = D_NODOOR;
     else

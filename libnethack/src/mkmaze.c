@@ -561,7 +561,7 @@ bound_digging(struct level *lev)
     boolean found, nonwall;
     int xmin, xmax, ymin, ymax;
 
-    if (Is_earthlevel(lev))
+    if (lev == sp_lev(sl_earth))
         return; /* everything diggable here */
 
     found = nonwall = FALSE;
@@ -699,7 +699,7 @@ waterbody_impl(xchar x, xchar y, boolean article)
         return "ice";
     else if (is_moat(level, x, y))
         return msgcat(article ? "a " : "", "moat");
-    else if ((ltyp != POOL) && (ltyp != WATER) && Is_juiblex_level(level))
+    else if ((ltyp != POOL) && (ltyp != WATER) && level == sp_lev(sl_juiblex))
         return msgcat(article ? "a " : "", "swamp");
     else if (ltyp == POOL)
         return msgcat(article ? "a " : "", "pool of water");

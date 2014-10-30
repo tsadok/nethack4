@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -118,34 +118,48 @@ struct overview_info {
  *
  * Depth corresponds to the number of floors below the surface.
  */
-# define Is_astralevel(x)       (on_level(&(x)->z, &astral_level))
-# define Is_earthlevel(x)       (on_level(&(x)->z, &earth_level))
-# define Is_waterlevel(x)       (on_level(&(x)->z, &water_level))
-# define Is_firelevel(x)        (on_level(&(x)->z, &fire_level))
-# define Is_airlevel(x)         (on_level(&(x)->z, &air_level))
-# define Is_medusa_level(x)     (on_level(&(x)->z, &medusa_level))
-# define Is_oracle_level(x)     (on_level(&(x)->z, &oracle_level))
-# define Is_valley(x)           (on_level(&(x)->z, &valley_level))
-# define Is_juiblex_level(x)    (on_level(&(x)->z, &juiblex_level))
-# define Is_orcus_level(x)      (on_level(&(x)->z, &orcus_level))
-# define Is_asmo_level(x)       (on_level(&(x)->z, &asmodeus_level))
-# define Is_baal_level(x)       (on_level(&(x)->z, &baalzebub_level))
-# define Is_wiz1_level(x)       (on_level(&(x)->z, &wiz1_level))
-# define Is_wiz2_level(x)       (on_level(&(x)->z, &wiz2_level))
-# define Is_wiz3_level(x)       (on_level(&(x)->z, &wiz3_level))
-# define Is_sanctum(x)          (on_level(&(x)->z, &sanctum_level))
-# define Is_portal_level(x)     (on_level(&(x)->z, &portal_level))
-# define Is_rogue_level(x)      (on_level(&(x)->z, &rogue_level))
-# define Is_stronghold(x)       (on_level(&(x)->z, &stronghold_level))
-# define Is_bigroom(x)          (on_level(&(x)->z, &bigroom_level))
-# define Is_qstart(x)           (on_level(&(x)->z, &qstart_level))
-# define Is_qlocate(x)          (on_level(&(x)->z, &qlocate_level))
-# define Is_nemesis(x)          (on_level(&(x)->z, &nemesis_level))
-# define Is_knox(x)             (on_level(&(x)->z, &knox_level))
 
-# define In_sokoban(x)          ((x)->z.dnum == sokoban_dnum)
+/* Dungeon topology */
+
+enum special_level {
+    sl_astral,
+    sl_earth,
+    sl_water,
+    sl_fire,
+    sl_air,
+    sl_oracle,
+    sl_bigroom,
+    sl_rogue,
+    sl_medusa,
+    sl_castle,
+    sl_valley,
+    sl_juiblex,
+    sl_orcus,
+    sl_baal,
+    sl_asmo,
+    sl_wiztower1,
+    sl_wiztower2,
+    sl_wiztower3,
+    sl_wiztower_portal,
+    sl_sanctum,
+    sl_quest_start,
+    sl_quest_locate,
+    sl_quest_goal,
+    sl_fort_ludios,
+    num_special_levels
+};
+
+extern struct dgn_topology {
+    struct level *special_levels[num_special_levels];
+    xchar d_tower_dnum;
+    xchar d_sokoban_dnum;
+    xchar d_mines_dnum, d_quest_dnum;
+    xchar d_endgame_dnum;
+} dungeon_topology;
+
+# define In_sokoban(x)          ((x)->z.dnum == dungeon_topology.d_sokoban_dnum)
 # define Inhell                 In_hell(level)  /* now gehennom */
-# define In_endgame(x)          ((x)->z.dnum == astral_level.dnum)
+# define In_endgame(x)          ((x)->z.dnum == dungeon_topology.d_endgame_dnum)
 
 # define within_bounded_area(X,Y,LX,LY,HX,HY)                   \
     ((X) >= (LX) && (X) <= (HX) && (Y) >= (LY) && (Y) <= (HY))
