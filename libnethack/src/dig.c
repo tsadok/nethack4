@@ -602,10 +602,7 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
                     pickup(1, flags.interaction_mode);
                 if (shopdoor && madeby_u)
                     pay_for_damage("ruin", FALSE);
-
             } else {
-                d_level newlevel;
-
                 if (*u.ushops && madeby_u)
                     shopdig(1); /* shk might snatch pack */
                 /* handle earlier damage, eg breaking wand of digging */
@@ -615,6 +612,7 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
                 pline("You fall through...");
                 /* Earlier checks must ensure that the destination level exists 
                    and is in the present dungeon. */
+                d_level newlevel;
                 newlevel.dnum = level->z.dnum;
                 newlevel.dlevel = level->z.dlevel + 1;
                 goto_level(&newlevel, FALSE, TRUE, FALSE);

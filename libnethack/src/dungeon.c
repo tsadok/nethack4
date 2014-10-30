@@ -1019,16 +1019,16 @@ init_dungeons(void)
 }
 
 xchar
-dunlev(const d_level * lev)
+dunlev(const struct level *lev)
 {       /* return the level number for lev in *this* dungeon */
-    return lev->dlevel;
+    return lev->z.dlevel;
 }
 
 /* return the lowest level number for *this* dungeon*/
 xchar
-dunlevs_in_dungeon(const d_level * lev)
+dunlevs_in_dungeon(const d_level *dlev)
 {
-    return dungeons[lev->dnum].num_dunlevs;
+    return dungeons[dlev->dnum].num_dunlevs;
 }
 
 /* return the lowest level explored in the game*/

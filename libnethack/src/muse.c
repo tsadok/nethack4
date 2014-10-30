@@ -596,7 +596,6 @@ use_defensive(struct monst *mtmp, struct musable *m)
             how = SCR_TELEPORTATION;
             if (obj_is_cursed || mtmp->mconf) {
                 int nlev;
-                d_level flev;
 
                 if (mon_has_amulet(mtmp) || In_endgame(level)) {
                     if (vismon)
@@ -610,6 +609,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
                         pline("%s shudders for a moment.", Monnam(mtmp));
                     return 2;
                 }
+                d_level flev;
                 get_level(&flev, nlev);
                 migrate_to_level(mtmp, ledger_no(&flev), MIGR_RANDOM, NULL);
                 if (oseen)
@@ -761,7 +761,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
         }
         m_flee(mtmp);
         if (Inhell && mon_has_amulet(mtmp) && !rn2(4) &&
-            (dunlev(&level->z) < dunlevs_in_dungeon(&level->z) - 3)) {
+            (dunlev(level) < dunlevs_in_dungeon(&level->z) - 3)) {
             if (vismon)
                 pline("As %s climbs the stairs, a mysterious force momentarily "
                       "surrounds %s...", mon_nam(mtmp), mhim(mtmp));

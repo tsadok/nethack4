@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -871,7 +871,7 @@ mineralize(struct level *lev)
                     }
                 }
                 if (rn2(1000) < gemprob) {
-                    for (cnt = rnd(2 + dunlev(&lev->z) / 3); cnt > 0; cnt--)
+                    for (cnt = rnd(2 + dunlev(lev) / 3); cnt > 0; cnt--)
                         if ((otmp = mkobj(lev, GEM_CLASS, mkobj_normal)) != 0) {
                             if (otmp->otyp == ROCK) {
                                 dealloc_obj(otmp);      /* discard it */
@@ -1269,8 +1269,8 @@ mkstairs(struct level *lev, xchar x, xchar y, char up, struct mkroom *croom)
      * attempt can happen when a special level is placed at an end and
      * has an up or down stair specified in its description file.
      */
-    if ((dunlev(&lev->z) == 1 && up) ||
-        (dunlev(&lev->z) == dunlevs_in_dungeon(&lev->z) && !up))
+    if ((dunlev(lev) == 1 && up) ||
+        (dunlev(lev) == dunlevs_in_dungeon(&lev->z) && !up))
         return;
 
     if (up) {

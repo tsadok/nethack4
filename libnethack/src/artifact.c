@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -1325,7 +1325,6 @@ arti_invoke(struct obj *obj)
             break;
         case CREATE_PORTAL:{
                 int i, num_ok_dungeons, last_ok_dungeon = 0;
-                d_level newlev;
                 struct nh_menulist menu;
 
                 init_menulist(&menu);
@@ -1361,23 +1360,16 @@ arti_invoke(struct obj *obj)
                  * i is now index into dungeon structure for the new dungeon.
                  * Find the closest level in the given dungeon, open
                  * a use-once portal to that dungeon and go there.
-                 * The closest level is either the entry or dunlev_ureached.
                  */
-                newlev.dnum = i;
-                if (dungeons[i].depth_start >= depth(&level->z))
-                    newlev.dlevel = dungeons[i].entry_lev;
-                else
-                    newlev.dlevel = dungeons[i].dunlev_ureached;
-                if (Uhave_amulet || In_endgame(level) ||
-                    newlev.dnum == astral_level.dnum ||
-                    newlev.dnum == level->z.dnum) {
+                struct level *lev = portal_target(i);
+                if (Uhave_amulet || !lev) {
                     pline("You feel very disoriented for a moment.");
                 } else {
                     if (!Blind)
                         pline("You are surrounded by a shimmering sphere!");
                     else
                         pline("You feel weightless for a moment.");
-                    goto_level(&newlev, FALSE, FALSE, FALSE);
+                    goto_level(&lev->z, FALSE, FALSE, FALSE);
                 }
                 break;
             }

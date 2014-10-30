@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -863,7 +863,7 @@ display_rip(int how, long umoney, const char *killer)
             if (!In_endgame(level) && !Is_knox(level))
                 pbuf = msgprintf("%s on dungeon level %d", pbuf,
                                  In_quest(level) ?
-                                 dunlev(&level->z) : depth(&level->z));
+                                 dunlev(level) : depth(&level->z));
         }
 
         pbuf = msgprintf("%s with %d point%s,", pbuf, u.urexp, plur(u.urexp));

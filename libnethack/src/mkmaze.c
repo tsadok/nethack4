@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -338,10 +338,10 @@ makemaz(struct level *lev, const char *s)
         if (dunlevs_in_dungeon(&lev->z) > 1) {
             if (sp && sp->rndlevs)
                 snprintf(protofile, SIZE(protofile), "%s%d-%d", dungeons[lev->z.dnum].proto,
-                        dunlev(&lev->z), rnd((int)sp->rndlevs));
+                        dunlev(lev), rnd((int)sp->rndlevs));
             else
                 snprintf(protofile, SIZE(protofile), "%s%d", dungeons[lev->z.dnum].proto,
-                        dunlev(&lev->z));
+                        dunlev(lev));
         } else if (sp && sp->rndlevs) {
             snprintf(protofile, SIZE(protofile), "%s-%d", dungeons[lev->z.dnum].proto,
                     rnd((int)sp->rndlevs));

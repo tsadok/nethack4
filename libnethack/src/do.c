@@ -885,7 +885,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     boolean at_trapdoor = ((t_at(level, u.ux, u.uy)) &&
                            (t_at(level, u.ux, u.uy))->ttyp == TRAPDOOR);
 
-    if (dunlev(newlevel) > dunlevs_in_dungeon(newlevel))
+    if (newlevel->dlevel > dunlevs_in_dungeon(newlevel))
         newlevel->dlevel = dunlevs_in_dungeon(newlevel);
     if (newdungeon && newlevel->dnum == astral_level.dnum) {
         /* 1st Endgame Level !!! */
@@ -909,7 +909,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
        6.25 8.33 12.5 -2 8.33 4.17 0.0 -2 6.25 8.33 0.0 -3 8.33 4.17 0.0 -3
        6.25 0.0 0.0 */
     if (Inhell && up && Uhave_amulet && !newdungeon && !portal &&
-        (dunlev(&level->z) < dunlevs_in_dungeon(&level->z) - 3)) {
+        (level->z.dlevel < dunlevs_in_dungeon(&level->z) - 3)) {
         if (!rn2(4)) {
             int odds = 3 + (int)u.ualign.type,  /* 2..4 */
                 diff = odds <= 1 ? 0 : rn2(odds);       /* paranoia */
@@ -975,11 +975,12 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     /* If the entry level is the top level, then the dungeon goes down.
        Otherwise it goes up. */
     if (dungeons[level->z.dnum].entry_lev == 1) {
-        if (dunlev_reached(&level->z) < dunlev(&level->z))
-            dunlev_reached(&level->z) = dunlev(&level->z);
+        if (dunlev_reached(&level->z) < dunlev(level))
+            dunlev_reached(&level->z) = dunlev(level);
     } else {
-        if (dunlev_reached(&level->z) > dunlev(&level->z) || !dunlev_reached(&level->z))
-            dunlev_reached(&level->z) = dunlev(&level->z);
+        if (dunlev_reached(&level->z) > dunlev(level) || 
+            dunlev_reached(&level->z))
+            dunlev_reached(&level->z) = dunlev(level);
     }
 
     flush_screen_disable();     /* ensure all map flushes are postponed */

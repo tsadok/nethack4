@@ -359,9 +359,8 @@ maketrap(struct level *lev, int x, int y, int typ)
 void
 fall_through(boolean td)
 {       /* td == TRUE : trap door or hole */
-    d_level dtmp;
     const char *dont_fall = NULL;
-    int newlevel = dunlev(&level->z);
+    int newlevel = dunlev(level);
     const char *msgbuf;
 
     /* KMH -- You can't escape the Sokoban level traps */
@@ -408,6 +407,7 @@ fall_through(boolean td)
         return;
     }
 
+    d_level dtmp;
     if (*u.ushops)
         shopdig(1);
     if (Is_stronghold(level)) {

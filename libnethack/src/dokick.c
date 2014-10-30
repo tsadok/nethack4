@@ -917,7 +917,7 @@ dokick(const struct nh_cmd_arg *arg)
                 maploc->looted = T_LOOTED;
                 return 1;
             } else if (!rn2(4)) {
-                if (dunlev(&level->z) < dunlevs_in_dungeon(&level->z)) {
+                if (dunlev(level) < dunlevs_in_dungeon(&level->z)) {
                     fall_through(FALSE);
                     return 1;
                 } else

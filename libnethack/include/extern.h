@@ -461,8 +461,8 @@ extern branch *Is_branchlev(const struct level *lev);
 extern xchar ledger_no(const d_level *);
 extern xchar maxledgerno(void);
 extern schar depth(const d_level *);
-extern xchar dunlev(const d_level *);
-extern xchar dunlevs_in_dungeon(const d_level *);
+extern xchar dunlev(const struct level *lev);
+extern xchar dunlevs_in_dungeon(const d_level *dlev);
 extern xchar ledger_to_dnum(xchar);
 extern xchar ledger_to_dlev(xchar);
 extern xchar deepest_lev_reached(boolean);
@@ -1677,6 +1677,7 @@ extern void rloco_pos(struct level *lev, struct obj *obj, int *nx, int *ny);
 extern void rloco(struct obj *);
 extern int random_teleport_level(void);
 extern boolean u_teleport_mon(struct monst *, boolean);
+extern struct level *portal_target(xchar dnum);
 
 /* ### timeout.c ### */
 

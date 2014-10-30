@@ -758,7 +758,6 @@ level_tele_impl(boolean wizard_tele)
 void
 domagicportal(struct trap *ttmp)
 {
-    struct d_level target_level;
 
     if (!next_to_u()) {
         pline("You shudder for a moment.");
@@ -775,6 +774,7 @@ domagicportal(struct trap *ttmp)
         return;
     }
 
+    struct d_level target_level;
     target_level = ttmp->dst;
     schedule_goto(&target_level, FALSE, FALSE, 1,
                   "You feel dizzy for a moment, but the sensation passes.",
@@ -1239,5 +1239,25 @@ u_teleport_mon(struct monst * mtmp, boolean give_feedback)
     return TRUE;
 }
 
-/*teleport.c*/
 
+/* Find the target level for a portal teleport. It's either the entry or the
+ * furthest-reached level.
+ */
+struct level *
+portal_target(xchar dnum)
+{
+    if (In_endgame(level) || dnum == astral_level.dnum || 
+        dnum == level->z.dnum)
+        return NULL;
+
+    d_level dlev;
+    dlev.dnum = dnum;
+    if (dungeons[dnum].depth_start >= depth(&level->z))
+        dlev.dlevel = dungeons[dnum].entry_lev;
+    else
+        dlev.dlevel = dungeons[dnum].dunlev_ureached;
+    
+    return levels[ledger_no(&dlev)];
+}
+
+/*teleport.c*/

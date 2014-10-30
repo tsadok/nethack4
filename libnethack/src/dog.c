@@ -599,7 +599,6 @@ migrate_to_level(struct monst *mtmp, xchar tolev,       /* destination level */
                  coord * cc)
 {       /* optional destination coordinates */
     struct obj *obj;
-    d_level new_lev;
     xchar xyflags;
     int num_segs = 0;   /* count of worm segments */
 
@@ -632,6 +631,7 @@ migrate_to_level(struct monst *mtmp, xchar tolev,       /* destination level */
     if (mtmp->dlevel == level)
         newsym(mtmp->mx, mtmp->my);
 
+    d_level new_lev;
     new_lev.dnum = ledger_to_dnum((xchar) tolev);
     new_lev.dlevel = ledger_to_dlev((xchar) tolev);
 

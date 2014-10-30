@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-10-30 */
 /*      Copyright (c) 1989 by Jean-Christophe Collet */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -2708,18 +2708,13 @@ fixup_special(struct level *lev)
             added_branch = TRUE;
             goto place_it;
 
-        case LR_PORTAL:
-            if (*r->rname.str >= '0' && *r->rname.str <= '9') {
-                /* "chutes and ladders" */
-                lvl = lev->z;
-                lvl.dlevel = atoi(r->rname.str);
-            } else {
+        case LR_PORTAL: {
                 s_level *sp = find_level(r->rname.str);
 
                 lvl = sp->dlevel;
             }
-            /* fall into... */
 
+            /* fall into... */
         case LR_UPSTAIR:
         case LR_DOWNSTAIR:
         place_it:
