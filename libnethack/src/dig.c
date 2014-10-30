@@ -641,7 +641,7 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
 
                     if (Is_stronghold(level)) {
                         assign_level(&tolevel, &valley_level);
-                    } else if (Is_botlevel(&level->z)) {
+                    } else if (Is_botlevel(level)) {
                         if (canseemon(mtmp))
                             pline("%s avoids the trap.", Monnam(mtmp));
                         return;

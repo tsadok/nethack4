@@ -923,7 +923,7 @@ done_noreturn(int how, const char *killer)
     if (moves <= 1 && how <= LAST_KILLER)   /* You die... --More-- */
         pline("Do not pass go.  Do not collect 200 %s.", currency(200L));
 
-    bones_ok = how <= LAST_KILLER && how != GENOCIDED && can_make_bones(&level->z);
+    bones_ok = how <= LAST_KILLER && how != GENOCIDED && can_make_bones(level);
 
     if (!killer)
         killer = killer_msg(how, NULL);

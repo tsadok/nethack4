@@ -417,7 +417,7 @@ find_defensive(struct monst *mtmp, struct musable *m)
             && !In_sokoban(level)
             /* digging wouldn't be effective; assume they know that */
             && !(lev->locations[x][y].wall_info & W_NONDIGGABLE)
-            && !(Is_botlevel(&level->z) || In_endgame(level))
+            && !(Is_botlevel(level) || In_endgame(level))
             && !(is_ice(lev, x, y) || is_pool(lev, x, y) || is_lava(lev, x, y))
             && !(mtmp->data == &mons[PM_VLAD_THE_IMPALER]
                  && In_V_tower(level))) {
@@ -719,7 +719,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
     case MUSE_TRAPDOOR:
         /* trap doors on "bottom" levels of dungeons are rock-drop trap doors,
            not holes in the floor.  We check here for safety. */
-        if (Is_botlevel(&level->z))
+        if (Is_botlevel(level))
             return 0;
         m_flee(mtmp);
         if (vis) {

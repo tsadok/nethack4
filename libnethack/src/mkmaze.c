@@ -242,7 +242,7 @@ place_lregion(struct level *lev, xchar lx, xchar ly, xchar hx, xchar hy,
          * the branch location (to avoid putting branches in corridors).
          */
         if (rtype == LR_BRANCH && lev->nroom) {
-            place_branch(lev, Is_branchlev(&lev->z), COLNO, ROWNO);
+            place_branch(lev, Is_branchlev(lev), COLNO, ROWNO);
             return;
         }
 
@@ -315,7 +315,7 @@ put_lregion_here(struct level *lev, xchar x, xchar y, xchar nlx, xchar nly,
         mkstairs(lev, x, y, (char)rtype, NULL);
         break;
     case LR_BRANCH:
-        place_branch(lev, Is_branchlev(&lev->z), x, y);
+        place_branch(lev, Is_branchlev(lev), x, y);
         break;
     }
     return TRUE;
@@ -437,7 +437,7 @@ makemaz(struct level *lev, const char *s)
     }
 
     /* place branch stair or portal */
-    place_branch(lev, Is_branchlev(&lev->z), COLNO, ROWNO);
+    place_branch(lev, Is_branchlev(lev), COLNO, ROWNO);
 
     for (x = rn1(8, 11); x; x--) {
         mazexy(lev, &mm);

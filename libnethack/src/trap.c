@@ -411,7 +411,7 @@ fall_through(boolean td)
     if (*u.ushops)
         shopdig(1);
     if (Is_stronghold(level)) {
-        find_hell(&dtmp);
+        assign_level(&dtmp, &valley_level);
     } else {
         dtmp.dnum = level->z.dnum;
         dtmp.dlevel = newlevel;

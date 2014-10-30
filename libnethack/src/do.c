@@ -783,7 +783,7 @@ dodown(enum u_interaction_mode uim)
     }
 
     if (trap && Is_stronghold(level)) {
-        goto_hell(FALSE, TRUE);
+        goto_level(&valley_level, FALSE, TRUE, FALSE);
     } else {
         at_ladder = (boolean) (level->locations[u.ux][u.uy].typ == LADDER);
         next_level(!trap);

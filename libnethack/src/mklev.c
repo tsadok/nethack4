@@ -605,7 +605,7 @@ makelevel(struct level *lev)
 
     /* construct stairs (up and down in different rooms if possible) */
     croom = &lev->rooms[rn2(lev->nroom)];
-    if (!Is_botlevel(&lev->z)) {
+    if (!Is_botlevel(lev)) {
         y = somey(croom);
         x = somex(croom);
         mkstairs(lev, x, y, 0, croom);  /* down */
@@ -627,9 +627,9 @@ makelevel(struct level *lev)
         mkstairs(lev, sx, sy, 1, croom);        /* up */
     }
 
-    branchp = Is_branchlev(&lev->z);    /* possible dungeon branch */
-    room_threshold = branchp ? 4 : 3;   /* minimum number of rooms needed to
-                                           allow a random special room */
+    branchp = Is_branchlev(lev);      /* possible dungeon branch */
+    room_threshold = branchp ? 4 : 3; /* minimum number of rooms needed to
+                                         allow a random special room */
     if (Is_rogue_level(lev))
         goto skip0;
     makecorridors(lev);
@@ -891,16 +891,14 @@ struct level *
 mklev(d_level * levnum)
 {
     struct mkroom *croom;
-    int ln = ledger_no(levnum);
-    struct level *lev;
+    struct level *lev = levels[ledger_no(levnum)];
 
-    if (levels[ln]->generated)
-        return levels[ln];
+    if (lev->generated || getbones(lev))
+        return lev;
 
-    if (getbones(levnum))
-        return levels[ln];      /* initialized in getbones->getlev */
+    /* getbones() may have reallocated the level. */
+    lev = levels[ledger_no(levnum)];
 
-    lev = levels[ln];
     if (!on_level(levnum, &lev->z))
         panic("mklev: dungeon structure corrupted");
 
@@ -1576,7 +1574,7 @@ mk_knox_portal(struct level *lev, xchar x, xchar y)
         source = &br->end2;
     } else {
         /* disallow Knox branch on a level with one branch already */
-        if (Is_branchlev(&lev->z))
+        if (Is_branchlev(lev))
             return;
         source = &br->end1;
     }

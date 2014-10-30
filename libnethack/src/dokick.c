@@ -1198,7 +1198,7 @@ drop_to(coord * cc, schar loc)
             cc->x = valley_level.dnum;
             cc->y = valley_level.dlevel;
             break;
-        } else if (In_endgame(level) || Is_botlevel(&level->z)) {
+        } else if (In_endgame(level) || Is_botlevel(level)) {
             cc->y = cc->x = -1;
             break;
         }       /* else fall to the next cases */

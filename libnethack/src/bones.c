@@ -6,45 +6,45 @@
 #include "hack.h"
 #include "lev.h"
 
-static boolean no_bones_level(d_level *);
+static boolean no_bones_level(struct level *lev);
 static void goodfruit(int);
 static void resetobjs(struct obj *, boolean);
 static void drop_upon_death(struct monst *, struct obj *);
 
 
 static char *
-make_bones_id(char *buf, d_level * dlev)
+make_bones_id(char *buf, struct level *lev)
 {
     s_level *sptr;
 
-    sprintf(buf, "%c%s", dungeons[dlev->dnum].boneid,
-            dlev->dnum == quest_dnum ? urole.filecode : "0");
-    if ((sptr = Is_special(dlev)) != 0)
+    sprintf(buf, "%c%s", dungeons[lev->z.dnum].boneid,
+            In_quest(lev) ? urole.filecode : "0");
+    if ((sptr = Is_special(&lev->z)) != 0)
         sprintf(buf + 2, ".%c", sptr->boneid);
     else
-        sprintf(buf + 2, ".%d", dlev->dlevel);
+        sprintf(buf + 2, ".%d", lev->z.dlevel);
 
     return buf;
 }
 
 
 static boolean
-no_bones_level(d_level * lev)
+no_bones_level(struct level *lev)
 {
     s_level *sptr;
 
-    return (boolean) (((sptr = Is_special(lev)) != 0 && !sptr->boneid)
-                      || !dungeons[lev->dnum].boneid
+    return (boolean) (((sptr = Is_special(&lev->z)) != 0 && !sptr->boneid)
+                      || !dungeons[lev->z.dnum].boneid
                       /* no bones on the last or multiway branch levels */
                       /* in any dungeon (level 1 isn't multiway).  */
                       || Is_botlevel(lev)
-                      || (Is_branchlev(lev) && lev->dlevel > 1)
+                      || (Is_branchlev(lev) && lev->z.dlevel > 1)
                       /* no bones in the invocation level */
-                      || (dungeons[lev->dnum].flags.hellish &&
-                          lev->dlevel == dunlevs_in_dungeon(lev) - 1)
+                      || (In_hell(lev) &&
+                          lev->z.dlevel == dunlevs_in_dungeon(&lev->z) - 1)
                       /* no bones on the first level */
                       /* TODO: remove hardcoding in dungeon rewrite */
-                      || (lev->dnum == 0 && lev->dlevel == 1)
+                      || (lev->z.dnum == 0 && lev->z.dlevel == 1)
         );
 }
 
@@ -180,11 +180,11 @@ drop_upon_death(struct monst *mtmp, struct obj *cont)
 
 /* check whether bones are feasible */
 boolean
-can_make_bones(d_level * lev)
+can_make_bones(struct level *lev)
 {
     struct trap *ttmp;
 
-    if (ledger_no(lev) <= 0 || ledger_no(lev) > maxledgerno())
+    if (ledger_no(&lev->z) < 0 || ledger_no(&lev->z) > maxledgerno())
         return FALSE;
     if (no_bones_level(lev))
         return FALSE;   /* no bones for specific levels */
@@ -199,12 +199,12 @@ can_make_bones(d_level * lev)
     }
 
     turnstate.generating_bones = TRUE;
-    int rn2chance = rn2(1 + (depth(lev) >> 2));
+    /* fewer ghosts on low levels */
+    int rn2chance = rn2(1 + (depth(&lev->z) >> 2));
     turnstate.generating_bones = FALSE;
 
-    if (depth(lev) <= 0 ||      /* bulletproofing for endgame */
-        (!rn2chance             /* fewer ghosts on low levels */
-         && !wizard))
+    if (depth(&lev->z) <= 0 || /* bulletproofing for endgame */
+        (!rn2chance && !wizard))
         return FALSE;
     /* don't let multiple restarts generate multiple copies of objects in bones 
        files */
@@ -243,7 +243,7 @@ savebones(struct obj *corpse, boolean take_items)
     /* caller has already checked `can_make_bones()' */
 
     clear_bypasses();
-    make_bones_id(bonesid, &level->z);
+    make_bones_id(bonesid, level);
     fd = open_bonesfile(bonesid);
     if (fd >= 0) {
         close(fd);
@@ -385,8 +385,8 @@ make_bones:
 }
 
 
-int
-getbones(d_level * levnum)
+boolean
+getbones(struct level *lev)
 {
     int ok;
     char c, bonesid[10], oldbonesid[10];
@@ -407,7 +407,7 @@ getbones(d_level * levnum)
     if (no_bones_level(levnum))
         goto fail;
 
-    make_bones_id(bonesid, levnum);
+    make_bones_id(bonesid, lev);
 
     if (log_want_replay('B')) {
         if (log_replay_input(0, "B!")) {
@@ -460,10 +460,7 @@ getbones(d_level * levnum)
         } else {
             struct monst *mtmp;
 
-            /* Special levels might move around. */
-            assign_level(&levels[ledger_no(levnum)]->z, levnum);
-
-            struct level *lev = getlev(&mf, ledger_no(levnum), TRUE);
+            getlev(&mf, lev, TRUE);
 
             /* Note that getlev() now keeps tabs on unique monsters such as
                demon lords, and tracks the birth counts of all species just as
@@ -486,7 +483,7 @@ getbones(d_level * levnum)
 
     if (wizard) {
         if (yn("Unlink bones?") == 'n') {
-            return ok;
+            return TRUE;
         }
     }
     if (from_file && !delete_bonesfile(bonesid)) {
@@ -495,10 +492,13 @@ getbones(d_level * levnum)
            last N-1 under UNIX). So no point in a mysterious message for a
            normal event -- just generate a new level for those N-1 games. */
         /* pline("Cannot unlink bones."); */
-        freelev(ledger_no(levnum));
-        return 0;
+        d_level levnum = lev->z;
+        xchar ln = ledger_no(&lev->z);
+        freelev(ln);
+        levels[ln] = alloc_level(&levnum);
+        return FALSE;
     }
-    return ok;
+    return TRUE;
 
 record_fail:
     log_record_input("B!");
@@ -506,7 +506,7 @@ fail:
     if (bonesfn)
         free(bonesfn);
     mfree(&mf);
-    return 0;
+    return FALSE;
 }
 
 /*bones.c*/

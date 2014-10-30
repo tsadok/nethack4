@@ -640,9 +640,6 @@ savelev(struct memfile *mf, xchar levnum)
     mtag(mf, levnum, MTAG_LEVEL);
     mwrite8(mf, lev->generated);
 
-    mwrite8(mf, lev->z.dnum);
-    mwrite8(mf, lev->z.dlevel);
-
     if (!lev->generated)
         return;
 

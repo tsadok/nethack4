@@ -2761,7 +2761,7 @@ fixup_special(struct level *lev)
     }
 
     /* place dungeon branch if not placed above */
-    if (!added_branch && Is_branchlev(&lev->z)) {
+    if (!added_branch && Is_branchlev(lev)) {
         place_lregion(lev, COLNO, ROWNO, COLNO, ROWNO, COLNO, ROWNO, COLNO, ROWNO, LR_BRANCH, NULL);
     }
 

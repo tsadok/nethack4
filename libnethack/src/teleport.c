@@ -726,7 +726,7 @@ level_tele_impl(boolean wizard_tele)
                newlev >=
                dungeons[level->z.dnum].depth_start + dunlevs_in_dungeon(&level->z)) {
         if (!(wizard_tele && force_dest))
-            find_hell(&newlevel);
+            assign_level(&newlevel, &valley_level);
     } else {
         /* if invocation did not yet occur, teleporting into the last level of
            Gehennom is forbidden. */
@@ -1044,7 +1044,7 @@ mlevel_tele_trap(struct monst *mtmp, struct trap *trap, boolean force_it,
         if ((tt == HOLE || tt == TRAPDOOR)) {
             if (Is_stronghold(level)) {
                 assign_level(&tolevel, &valley_level);
-            } else if (Is_botlevel(&level->z)) {
+            } else if (Is_botlevel(level)) {
                 if (in_sight && trap->tseen)
                     pline("%s avoids the %s.", Monnam(mtmp),
                           (tt == HOLE) ? "hole" : "trap");
@@ -1201,7 +1201,7 @@ random_teleport_level(void)
     if (nlev > max_depth) {
         nlev = max_depth;
         /* teleport up if already on bottom */
-        if (Is_botlevel(&level->z))
+        if (Is_botlevel(level))
             nlev -= rnd(3);
     }
     if (nlev < min_depth) {

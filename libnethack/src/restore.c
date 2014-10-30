@@ -872,7 +872,7 @@ dorecover(struct memfile *mf)
 
     /* restore levels */
     for (ltmp = 0; ltmp <= maxledgerno(); ltmp++) {
-        getlev(mf, ltmp, FALSE);
+        getlev(mf, levels[ltmp], FALSE);
         if (!ltmp == ledger_no(&levels[ltmp]->z))
             panic("dungeon structure corrupt when restoring");
     }
@@ -1086,14 +1086,13 @@ restore_coords(struct memfile *mf, coord *c, int n)
 }
 
 
-struct level *
-getlev(struct memfile *mf, xchar levnum, boolean ghostly)
+void
+getlev(struct memfile *mf, struct level *lev, boolean ghostly)
 {
     struct monst *mtmp;
     branch *br;
     int x, y;
     unsigned int lflags;
-    struct level *lev;
 
     if (ghostly)
         clear_id_mapping();
@@ -1106,25 +1105,13 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
     /* for bones files, there is fruit chain data before the level data */
     mfmagic_check(mf, LEVEL_MAGIC);
 
-    lev = levels[levnum];
     lev->generated = mread8(mf);
-
-    /* Special levels might move around in bones; in this case, the caller
-     * should have set the level's d_level already, and we'll just skip over it
-     * since it might be wrong. */
-    if (ghostly) {
-        mread8(mf);
-        mread8(mf);
-    } else {
-        lev->z.dnum = mread8(mf);
-        lev->z.dlevel = mread8(mf);
-    }
 
     if (ghostly && !lev->generated)
         panic("bones contained unfinished level");
 
     if (!lev->generated)
-        return lev;
+        return;
 
     /* FIXME: This is a total kludge. Fix. */
     if (Is_waterlevel(lev))
@@ -1225,19 +1212,7 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
         /* Now get rid of all the temp fruits... */
         freefruitchn(oldfruit), oldfruit = 0;
 
-        /* TODO: Is this dead code? I /hope/ it's dead code. */
-        if (levnum > ledger_no(&medusa_level) &&
-            levnum < ledger_no(&stronghold_level) &&
-            !isok(lev->dnstair.sx, lev->dnstair.sy)) {
-            coord cc;
-
-            mazexy(lev, &cc);
-            lev->dnstair.sx = cc.x;
-            lev->dnstair.sy = cc.y;
-            lev->locations[cc.x][cc.y].typ = STAIRS;
-        }
-
-        br = Is_branchlev(&lev->z);
+        br = Is_branchlev(lev);
         if (br && lev->z.dlevel == 1) {
             d_level ltmp;
 
@@ -1288,7 +1263,7 @@ getlev(struct memfile *mf, xchar levnum, boolean ghostly)
     if (lev->mgr && lev->mgr->restore_extra)
         lev->mgr->restore_extra(lev, mf);
 
-    return lev;
+    return;
 }
 
 

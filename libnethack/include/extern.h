@@ -166,9 +166,9 @@ extern void drag_down(void);
 
 /* ### bones.c ### */
 
-extern boolean can_make_bones(d_level * lev);
+extern boolean can_make_bones(struct level *lev);
 extern void savebones(struct obj *, boolean take_items);
-extern int getbones(d_level * levnum);
+extern boolean getbones(struct level *lev);
 
 /* ### botl.c ### */
 
@@ -457,7 +457,7 @@ extern void insert_branch(branch *, boolean);
 extern void init_dungeons(void);
 extern s_level *find_level(const char *);
 extern s_level *Is_special(const d_level *);
-extern branch *Is_branchlev(const d_level *);
+extern branch *Is_branchlev(const struct level *lev);
 extern xchar ledger_no(const d_level *);
 extern xchar maxledgerno(void);
 extern schar depth(const d_level *);
@@ -475,7 +475,7 @@ extern void u_on_upstairs(void);
 extern void u_on_dnstairs(void);
 extern boolean On_stairs(xchar, xchar);
 extern void get_level(d_level *, int);
-extern boolean Is_botlevel(const d_level *dlev);
+extern boolean Is_botlevel(const struct level *lev);
 extern boolean can_fall_thru(const struct level *lev);
 extern boolean can_dig_down(const struct level *lev);
 extern boolean Can_rise_up(int, int, const struct level *lev);
@@ -487,8 +487,6 @@ extern boolean In_hell(const struct level *lev);
 extern boolean In_V_tower(const struct level *lev);
 extern boolean On_W_tower_level(const struct level *lev);
 extern boolean In_W_tower(int, int, const struct level *lev);
-extern void find_hell(d_level *);
-extern void goto_hell(boolean, boolean);
 extern void assign_level(d_level * dest, const d_level * src);
 extern void assign_rnd_level(d_level * dest, const d_level * src, int range);
 extern int induced_align(const struct level *lev, int pct);
@@ -1462,7 +1460,7 @@ extern void trickery(const char *);
 extern void restore_flags(struct memfile *mf, struct flag *f);
 extern void restore_you(struct memfile *mf, struct you *y);
 extern void restore_coords(struct memfile *mf, coord *c, int n);
-extern struct level *getlev(struct memfile *mf, xchar levnum, boolean ghostly);
+extern void getlev(struct memfile *mf, struct level *lev, boolean ghostly);
 extern boolean lookup_id_mapping(unsigned, unsigned *);
 
 /* ### role.c ### */

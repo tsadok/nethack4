@@ -1149,12 +1149,12 @@ Is_special(const d_level * lev)
  * branch.  Otherwise, return null.
  */
 branch *
-Is_branchlev(const d_level * lev)
+Is_branchlev(const struct level *lev)
 {
     branch *curr;
 
     for (curr = branches; curr; curr = curr->next) {
-        if (on_level(lev, &curr->end1) || on_level(lev, &curr->end2))
+        if (on_level(&lev->z, &curr->end1) || on_level(&lev->z, &curr->end2))
             return curr;
     }
     return NULL;
@@ -1273,15 +1273,15 @@ On_stairs(xchar x, xchar y)
 }
 
 boolean
-Is_botlevel(const d_level *dlev)
+Is_botlevel(const struct level *lev)
 {
-    return (dlev->dlevel == dungeons[dlev->dnum].num_dunlevs);
+    return (lev->z.dlevel == dungeons[lev->z.dnum].num_dunlevs);
 }
 
 boolean
 can_dig_down(const struct level * lev)
 {
-    return (!lev->flags.hardfloor && !Is_botlevel(&lev->z) &&
+    return (!lev->flags.hardfloor && !Is_botlevel(lev) &&
             !Invocation_lev(lev));
 }
 
@@ -1474,22 +1474,6 @@ In_hell(const struct level *lev)
     return (boolean) (dungeons[lev->z.dnum].flags.hellish);
 }
 
-
-void
-find_hell(d_level * lev)
-{       /* sets *lev to be the gateway to Gehennom... */
-    lev->dnum = valley_level.dnum;
-    lev->dlevel = 1;
-}
-
-void
-goto_hell(boolean at_stairs, boolean falling)
-{       /* go directly to hell... */
-    d_level lev;
-
-    find_hell(&lev);
-    goto_level(&lev, at_stairs, falling, FALSE);
-}
 
 void
 assign_level(d_level * dest, const d_level * src)
