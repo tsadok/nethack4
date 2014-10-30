@@ -1464,9 +1464,8 @@ newgame(microseconds birthday)
 
     load_qtlist();      /* load up the quest text info */
 
-    /* FIXME: hardcode replacing u_init() */
-    d_level first_lev = { .dnum = 0, .dlevel = 1 };
-    level = mklev(&first_lev);
+    mklev(levels[0]);
+    level = levels[0];
 
     u_on_upstairs();    /* place the player on the upstairs before initializing
                            inventory, or else the x-ray vision check when

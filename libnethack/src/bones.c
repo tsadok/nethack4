@@ -421,13 +421,20 @@ getbones(struct level *lev)
         terminate(RESTART_PLAY); /* one of the better of many bad options */
     } else {
         int fd = open_bonesfile(bonesid);
-
         if (fd == -1)
             goto record_fail;
+
         mf.buf = loadfile(fd, &mf.len);
         close(fd);
         if (!mf.buf)
             goto record_fail;
+
+        if (!wizard || (yn("Unlink bones?") == 'y')) {
+            if (!delete_bonesfile(bonesid)) {
+                mfree(&mf);
+                goto record_fail;
+            }
+        }
 
         from_file = TRUE;
     }
@@ -481,23 +488,6 @@ getbones(struct level *lev)
     mfree(&mf);
     free(bonesfn);
 
-    if (wizard) {
-        if (yn("Unlink bones?") == 'n') {
-            return TRUE;
-        }
-    }
-    if (from_file && !delete_bonesfile(bonesid)) {
-        /* When N games try to simultaneously restore the same bones file, N-1
-           of them will fail to delete it (the first N-1 under AmigaDOS, the
-           last N-1 under UNIX). So no point in a mysterious message for a
-           normal event -- just generate a new level for those N-1 games. */
-        /* pline("Cannot unlink bones."); */
-        d_level levnum = lev->z;
-        xchar ln = ledger_no(&lev->z);
-        freelev(ln);
-        levels[ln] = alloc_level(&levnum);
-        return FALSE;
-    }
     return TRUE;
 
 record_fail:

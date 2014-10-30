@@ -1262,8 +1262,6 @@ getlev(struct memfile *mf, struct level *lev, boolean ghostly)
 
     if (lev->mgr && lev->mgr->restore_extra)
         lev->mgr->restore_extra(lev, mf);
-
-    return;
 }
 
 

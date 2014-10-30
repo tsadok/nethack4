@@ -947,7 +947,7 @@ extern void add_subroom(struct level *lev, struct mkroom *, int, int, int, int,
                         boolean, schar, boolean);
 extern void makecorridors(struct level *lev);
 extern void add_door(struct level *lev, int, int, struct mkroom *);
-extern struct level *mklev(d_level * levnum);
+extern void mklev(struct level *lev);
 extern void topologize(struct level *lev, struct mkroom *croom);
 extern void place_branch(struct level *lev, branch *, xchar, xchar);
 extern boolean occupied(struct level *lev, xchar x, xchar y);

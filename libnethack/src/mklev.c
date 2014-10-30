@@ -887,20 +887,13 @@ mineralize(struct level *lev)
             }
 }
 
-struct level *
-mklev(d_level * levnum)
+void
+mklev(struct level *lev)
 {
     struct mkroom *croom;
-    struct level *lev = levels[ledger_no(levnum)];
 
     if (lev->generated || getbones(lev))
-        return lev;
-
-    /* getbones() may have reallocated the level. */
-    lev = levels[ledger_no(levnum)];
-
-    if (!on_level(levnum, &lev->z))
-        panic("mklev: dungeon structure corrupted");
+        return;
 
     in_mklev = TRUE;
     makelevel(lev);
@@ -908,6 +901,7 @@ mklev(d_level * levnum)
     mineralize(lev);
     lev->generated = TRUE;
     in_mklev = FALSE;
+
     /* has_morgue gets cleared once morgue is entered; graveyard stays set
        (graveyard might already be set even when has_morgue is clear [see
        fixup_special()], so don't update it unconditionally) */
@@ -918,8 +912,6 @@ mklev(d_level * levnum)
             topologize(lev, croom);
     }
     set_wall_state(lev);
-
-    return lev;
 }
 
 
