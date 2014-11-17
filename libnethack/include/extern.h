@@ -323,7 +323,7 @@ extern int dodown(enum u_interaction_mode);
 extern int doup(enum u_interaction_mode);
 extern void notify_levelchange(const struct level *lev);
 extern void goto_level(d_level *, boolean, boolean, boolean);
-extern void schedule_goto(d_level *, boolean, boolean, int, const char *,
+extern void schedule_goto(struct level *, boolean, boolean, int, const char *,
                           const char *);
 extern boolean deferred_goto(void);
 extern boolean revive_corpse(struct obj *);

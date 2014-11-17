@@ -1345,7 +1345,7 @@ final_level(void)
 
 /* change levels at the end of this turn, after monsters finish moving */
 void
-schedule_goto(d_level * tolev, boolean at_stairs, boolean falling,
+schedule_goto(struct level * tolev, boolean at_stairs, boolean falling,
               int portal_flag, const char *pre_msg, const char *post_msg)
 {
     int typmask = 0100; /* non-zero triggers `deferred_goto' */
@@ -1361,7 +1361,7 @@ schedule_goto(d_level * tolev, boolean at_stairs, boolean falling,
         typmask |= 0200;        /* flag for portal removal */
     turnstate.goto_info.flags = typmask;
     /* destination level */
-    assign_level(&turnstate.goto_info.dlevel, tolev);
+    turnstate.goto_info.lev = tolev;
 
     if (pre_msg)
         strncpy(turnstate.goto_info.pre_msg, pre_msg, BUFSZ);
@@ -1377,16 +1377,16 @@ deferred_goto(void)
         return FALSE;
 
     boolean retval = FALSE;
-    d_level dest;
-    assign_level(&dest, &turnstate.goto_info.dlevel);
+    struct level *dest = turnstate.goto_info.lev;
 
-    if (!on_level(&level->z, &dest)) {
+    if (dest && dest != level) {
         int typmask = turnstate.goto_info.flags;
 
         if (*turnstate.goto_info.pre_msg)
             pline("%s", turnstate.goto_info.pre_msg);
 
-        goto_level(&dest, ! !(typmask & 1), ! !(typmask & 2), ! !(typmask & 4));
+        goto_level(&dest->z, ! !(typmask & 1), ! !(typmask & 2),
+                   ! !(typmask & 4));
         retval = TRUE;
 
         if (typmask & 0200) {   /* remove portal */
@@ -1402,7 +1402,7 @@ deferred_goto(void)
             pline("%s", turnstate.goto_info.post_msg);
     }
 
-    turnstate.goto_info.dlevel.dnum = turnstate.goto_info.dlevel.dlevel = -1;
+    turnstate.goto_info.lev = NULL;
     turnstate.goto_info.flags = 0;
     turnstate.goto_info.pre_msg[0] = '\0';
     turnstate.goto_info.post_msg[0] = '\0';

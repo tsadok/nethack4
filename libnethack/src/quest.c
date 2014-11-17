@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-30 */
+/* Last modified by Sean Hunt, 2014-11-17 */
 /* Copyright 1991, M. Stephenson */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -188,7 +188,8 @@ expulsion(boolean seal)
     dest = (br->end1.dnum == level->z.dnum) ? &br->end2 : &br->end1;
     portal_flag = u.uevent.qexpelled ? 0 :      /* returned via artifact? */
         !seal ? 1 : -1;
-    schedule_goto(dest, FALSE, FALSE, portal_flag, NULL, NULL);
+    schedule_goto(levels[ledger_no(dest)], FALSE, FALSE, portal_flag, NULL,
+                  NULL);
     if (seal) { /* remove the portal to the quest - sealing it off */
         int reexpelled = u.uevent.qexpelled;
 

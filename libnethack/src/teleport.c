@@ -669,7 +669,8 @@ level_tele_impl(boolean wizard_tele)
         }
         newlevel.dnum = level->z.dnum;
         newlevel.dlevel = llimit + newlev;
-        schedule_goto(&newlevel, FALSE, FALSE, 0, NULL, NULL);
+        schedule_goto(levels[ledger_no(&newlevel)], FALSE, FALSE, 0, NULL,
+                      NULL);
         return;
     }
 
@@ -749,7 +750,7 @@ level_tele_impl(boolean wizard_tele)
         if (!(wizard_tele && force_dest))
             assign_level(&newlevel, &get_level(newlev)->z);
     }
-    schedule_goto(&newlevel, FALSE, FALSE, 0, NULL, NULL);
+    schedule_goto(levels[ledger_no(&newlevel)], FALSE, FALSE, 0, NULL, NULL);
     /* in case player just read a scroll and is about to be asked to call it
        something, we can't defer until the end of the turn */
     if (!flags.mon_moving)
@@ -775,7 +776,7 @@ domagicportal(struct trap *ttmp)
         return;
     }
 
-    schedule_goto(&ttmp->dest->z, FALSE, FALSE, 1,
+    schedule_goto(ttmp->dest, FALSE, FALSE, 1,
                   "You feel dizzy for a moment, but the sensation passes.",
                   NULL);
 }

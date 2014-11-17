@@ -359,16 +359,21 @@ void
 fall_through(boolean td)
 {       /* td == TRUE : trap door or hole */
     const char *dont_fall = NULL;
-    int newlevel = dunlev(level);
+    struct level *dest = level;
     const char *msgbuf;
 
     /* KMH -- You can't escape the Sokoban level traps */
     if (Blind && Levitation && !In_sokoban(level))
         return;
 
-    do {
-        newlevel++;
-    } while (!rn2(4) && newlevel < dunlevs_in_dungeon(&level->z));
+    if (level == sp_lev(sl_castle))
+        dest = sp_lev(sl_valley);
+    else
+        while (dest->z.dlevel < dunlevs_in_dungeon(&dest->z)) {
+            dest = level_below(dest);
+            if (rn2(4))
+                break;
+        }
 
     if (td) {
         struct trap *t = t_at(level, u.ux, u.uy);
@@ -387,8 +392,7 @@ fall_through(boolean td)
     /* KMH -- You can't escape the Sokoban level traps */
     else if (Levitation || u.ustuck || !can_fall_thru(level)
              || Flying || is_clinger(youmonst.data)
-             || (Inhell && !u.uevent.invoked &&
-                 newlevel == dunlevs_in_dungeon(&level->z))) {
+             || (Inhell && !u.uevent.invoked && dest == sp_lev(sl_sanctum))) {
         dont_fall = "You don't fall in.";
     } else if (youmonst.data->msize >= MZ_HUGE) {
         dont_fall = "You don't fit through.";
@@ -406,21 +410,15 @@ fall_through(boolean td)
         return;
     }
 
-    d_level dtmp;
     if (*u.ushops)
         shopdig(1);
-    if (level == sp_lev(sl_castle)) {
-        assign_level(&dtmp, &sp_lev(sl_valley)->z);
-    } else {
-        dtmp.dnum = level->z.dnum;
-        dtmp.dlevel = newlevel;
-    }
+
     if (!td)
         msgbuf = msgprintf("The hole in the %s above you closes up.",
                            ceiling(u.ux, u.uy));
     else
         msgbuf = NULL;
-    schedule_goto(&dtmp, FALSE, TRUE, 0, NULL, msgbuf);
+    schedule_goto(dest, FALSE, TRUE, 0, NULL, msgbuf);
 }
 
 /*

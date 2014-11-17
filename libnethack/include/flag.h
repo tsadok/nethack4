@@ -177,7 +177,7 @@ struct turnstate {
 
     /* Level changes scheduled for the end of turn after all monsters move. */
     struct deferred_goto_info {
-        d_level dlevel;
+        struct level *lev;
         uchar flags;
         char pre_msg[BUFSZ], post_msg[BUFSZ];
     } goto_info;

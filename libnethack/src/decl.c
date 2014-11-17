@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-11-17 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -169,7 +169,7 @@ static const struct turnstate default_turnstate = {
     .migrating_objs = NULL,
     .pray = { .align = A_NONE, .type = pty_invalid, .trouble = ptr_invalid },
     .move = { .dx = 0, .dy = 0 },
-    .goto_info = { .dlevel = { .dnum = -1, .dlevel = -1 }, .flags = 0 }
+    .goto_info = { .lev = NULL, .flags = 0 }
 };
 
 struct turnstate turnstate;
@@ -301,9 +301,8 @@ neutral_turnstate_tasks(void)
         impossible("turnstate deferred goto pre-msg persisted between turns");
     if (*turnstate.goto_info.post_msg)
         impossible("turnstate deferred goto post-msg persisted between turns");
-    if (turnstate.goto_info.dlevel.dlevel != -1 ||
-        turnstate.goto_info.dlevel.dnum != -1)
-        impossible("turnstate deferred goto dlevel persisted between turns");
+    if (turnstate.goto_info.lev)
+        impossible("turnstate deferred goto level persisted between turns");
 
     memcpy(&turnstate, &default_turnstate, sizeof turnstate);
 
