@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-11-21 */
+/* Last modified by Sean Hunt, 2014-12-06 */
 /* Copyright (C) 1990 by Ken Arromdee                              */
 /* NetHack may be freely redistributed.  See license for details.  */
 
@@ -595,7 +595,8 @@ use_defensive(struct monst *mtmp, struct musable *m)
             m_useup(mtmp, otmp);        /* otmp might be free'ed */
             how = SCR_TELEPORTATION;
             if (obj_is_cursed || mtmp->mconf) {
-                int nlev;
+                if (oseen)
+                    makeknown(SCR_TELEPORTATION);
 
                 if (mon_has_amulet(mtmp) || In_endgame(level)) {
                     if (vismon)
@@ -603,17 +604,16 @@ use_defensive(struct monst *mtmp, struct musable *m)
                               Monnam(mtmp));
                     return 2;
                 }
-                nlev = random_teleport_level();
-                if (nlev == depth(&level->z)) {
+
+                struct level *dest = random_teleport_level();
+
+                if (!dest) {
                     if (vismon)
                         pline("%s shudders for a moment.", Monnam(mtmp));
                     return 2;
                 }
-                d_level flev;
-                get_level(&flev, nlev);
-                migrate_to_level(mtmp, ledger_no(&flev), MIGR_RANDOM, NULL);
-                if (oseen)
-                    makeknown(SCR_TELEPORTATION);
+
+                migrate_to_level(mtmp, dest, MIGR_RANDOM, NULL);
             } else
                 goto mon_tele;
             return 2;
@@ -654,7 +654,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
                 You_hear("something crash through the %s.",
                          surface(mtmp->mx, mtmp->my));
             /* we made sure that there is a level for mtmp to go to */
-            migrate_to_level(mtmp, ledger_no(&level->z) + 1, MIGR_RANDOM, NULL);
+            migrate_to_level(mtmp, level_below(level), MIGR_RANDOM, NULL);
             return 2;
         }
     case MUSE_WAN_CREATE_MONSTER:
@@ -744,7 +744,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
             worm_move(mtmp);
         newsym(trapx, trapy);
 
-        migrate_to_level(mtmp, ledger_no(&level->z) + 1, MIGR_RANDOM, NULL);
+        migrate_to_level(mtmp, level_below(level), MIGR_RANDOM, NULL);
         return 2;
     case MUSE_UPSTAIRS:
         /* Monsters without amulets escape the dungeon and are gone for good
@@ -769,31 +769,30 @@ use_defensive(struct monst *mtmp, struct musable *m)
                he'll immediately go right to the upstairs, so there's not much
                point in having any chance for a random position on the current
                level */
-            migrate_to_level(mtmp, ledger_no(&level->z) + 1, MIGR_RANDOM, NULL);
+            migrate_to_level(mtmp, level_below(level), MIGR_RANDOM, NULL);
         } else {
             if (vismon)
                 pline("%s escapes upstairs!", Monnam(mtmp));
-            migrate_to_level(mtmp, ledger_no(&level->z) - 1, MIGR_STAIRS_DOWN,
-                             NULL);
+            migrate_to_level(mtmp, level_above(level), MIGR_STAIRS_DOWN, NULL);
         }
         return 2;
     case MUSE_DOWNSTAIRS:
         m_flee(mtmp);
         if (vismon)
             pline("%s escapes downstairs!", Monnam(mtmp));
-        migrate_to_level(mtmp, ledger_no(&level->z) + 1, MIGR_STAIRS_UP, NULL);
+        migrate_to_level(mtmp, level_below(level), MIGR_STAIRS_UP, NULL);
         return 2;
     case MUSE_UP_LADDER:
         m_flee(mtmp);
         if (vismon)
             pline("%s escapes up the ladder!", Monnam(mtmp));
-        migrate_to_level(mtmp, ledger_no(&level->z) - 1, MIGR_LADDER_DOWN, NULL);
+        migrate_to_level(mtmp, level_above(level), MIGR_LADDER_DOWN, NULL);
         return 2;
     case MUSE_DN_LADDER:
         m_flee(mtmp);
         if (vismon)
             pline("%s escapes down the ladder!", Monnam(mtmp));
-        migrate_to_level(mtmp, ledger_no(&level->z) + 1, MIGR_LADDER_UP, NULL);
+        migrate_to_level(mtmp, level_below(level), MIGR_LADDER_UP, NULL);
         return 2;
     case MUSE_SSTAIRS:
         m_flee(mtmp);
@@ -803,14 +802,14 @@ use_defensive(struct monst *mtmp, struct musable *m)
             if (vismon)
                 pline("%s escapes upstairs!", Monnam(mtmp));
             if (Inhell) {
-                migrate_to_level(mtmp, ledger_no(&level->sstairs.tolev),
+                migrate_to_level(mtmp, ledger_no(&level->sstairs.tolev->z),
                                  MIGR_RANDOM, NULL);
                 return 2;
             }
         } else if (vismon)
             pline("%s escapes downstairs!", Monnam(mtmp));
-        migrate_to_level(mtmp, ledger_no(&level->sstairs.tolev), MIGR_SSTAIRS,
-                         NULL);
+        migrate_to_level(mtmp, ledger_no(&level->sstairs.tolev->z),
+                         MIGR_SSTAIRS, NULL);
         return 2;
     case MUSE_TELEPORT_TRAP:
         m_flee(mtmp);
@@ -1673,11 +1672,10 @@ use_misc(struct monst *mtmp, struct musable *m)
         if (otmp->cursed) {
             if (Can_rise_up(mtmp->mx, mtmp->my, level)) {
                 int tolev = depth(&level->z) - 1;
-                d_level tolevel;
+                struct level *dest = get_level(tolev);
 
-                get_level(&tolevel, tolev);
                 /* insurance against future changes... */
-                if (on_level(&tolevel, &level->z))
+                if (dest == level)
                     goto skipmsg;
                 if (vismon) {
                     pline("%s rises up, through the %s!", Monnam(mtmp),
@@ -1687,7 +1685,7 @@ use_misc(struct monst *mtmp, struct musable *m)
                         docall(otmp);
                 }
                 m_useup(mtmp, otmp);
-                migrate_to_level(mtmp, ledger_no(&tolevel), MIGR_RANDOM, NULL);
+                migrate_to_level(mtmp, dest, MIGR_RANDOM, NULL);
                 return 2;
             } else {
             skipmsg:

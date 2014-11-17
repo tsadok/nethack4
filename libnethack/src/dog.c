@@ -582,7 +582,7 @@ keepdogs(boolean pets_only)
             /* we want to be able to find him when his next resurrection chance 
                comes up, but have him resume his present location if player
                returns to this level before that time */
-            migrate_to_level(mtmp, ledger_no(&level->z), MIGR_EXACT_XY, NULL);
+            migrate_to_level(mtmp, level, MIGR_EXACT_XY, NULL);
         } else if (mtmp->mleashed) {
             /* this can happen if your quest leader ejects you from the "home"
                level while a leashed pet isn't next to you */
@@ -594,7 +594,7 @@ keepdogs(boolean pets_only)
 
 
 void
-migrate_to_level(struct monst *mtmp, xchar tolev,       /* destination level */
+migrate_to_level(struct monst *mtmp, struct level *lev, /* destination level */
                  xchar xyloc,   /* MIGR_xxx destination xy location: */
                  coord * cc)
 {       /* optional destination coordinates */
@@ -632,8 +632,8 @@ migrate_to_level(struct monst *mtmp, xchar tolev,       /* destination level */
         newsym(mtmp->mx, mtmp->my);
 
     d_level new_lev;
-    new_lev.dnum = ledger_to_dnum((xchar) tolev);
-    new_lev.dlevel = ledger_to_dlev((xchar) tolev);
+    new_lev.dnum = lev->z.dnum;
+    new_lev.dlevel = lev->z.dlevel;
 
     /* set migration data */
     xyflags = (depth(&new_lev) < depth(&level->z)); /* 1 => up */

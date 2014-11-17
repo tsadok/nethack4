@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-30 */
+/* Last modified by Sean Hunt, 2014-12-06 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -33,7 +33,7 @@ typedef struct s_level {        /* special dungeon level element */
 
 typedef struct stairway {       /* basic stairway identifier */
     xchar sx, sy;       /* x / y location of the stair */
-    d_level tolev;      /* where does it go */
+    struct level *tolev;      /* where does it go */
     char up;    /* what type of stairway (up/down) */
 } stairway;
 

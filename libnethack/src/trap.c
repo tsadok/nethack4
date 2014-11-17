@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-11-22 */
+/* Last modified by Sean Hunt, 2014-12-06 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -1488,27 +1488,29 @@ launch_obj(short otyp, int x1, int y1, int x2, int y2, int style)
                     }
                     break;
                 case LEVEL_TELEP:
-                case TELEP_TRAP:
+                case TELEP_TRAP: {
+                    struct level *dest = random_teleport_level();
+                    seetrap(t);
+
+                    if (t->ttyp == LEVEL_TELEP && !dest) {
+                        pline("The rolling boulder shudders.");
+                        continue;
+                    }
+
                     if (cansee(bhitpos.x, bhitpos.y))
                         pline("Suddenly the rolling boulder disappears!");
                     else
                         You_hear("a rumbling stop abruptly.");
+
                     singleobj->otrapped = 0;
                     if (t->ttyp == TELEP_TRAP)
                         rloco(singleobj);
-                    else {
-                        int newlev = random_teleport_level();
-                        d_level dest;
+                    else
+                        deliver_object(singleobj, dest, MIGR_RANDOM);
 
-                        if (newlev == depth(&level->z) || In_endgame(level))
-                            continue;
-                        get_level(&dest, newlev);
-                        deliver_object(singleobj, dest.dnum, dest.dlevel,
-                                       MIGR_RANDOM);
-                    }
-                    seetrap(t);
                     used_up = TRUE;
                     break;
+                }
                 case PIT:
                 case SPIKED_PIT:
                 case HOLE:

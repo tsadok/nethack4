@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-02 */
+/* Last modified by Sean Hunt, 2014-12-06 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -110,6 +110,12 @@ save_dungeon_struct(struct memfile *mf, const dungeon * dgn)
     mwrite8(mf, dgn->dunlev_ureached);
     mwrite32(mf, dgn->ledger_start);
     mwrite32(mf, dgn->depth_start);
+}
+
+void
+save_levptr(struct memfile *mf, struct level *lev)
+{
+    mwrite8(mf, lev ? ledger_no(&lev->z) : -1);
 }
 
 void
@@ -231,6 +237,13 @@ restore_dungeon_struct(struct memfile *mf, dungeon * dgn)
     dgn->dunlev_ureached = mread8(mf);
     dgn->ledger_start = mread32(mf);
     dgn->depth_start = mread32(mf);
+}
+
+struct level *
+restore_levptr(struct memfile *mf)
+{
+    int8_t lnum = mread8(mf);
+    return lnum == -1 ? NULL : levels[lnum];
 }
 
 void
@@ -1183,20 +1196,30 @@ Is_branchlev(const struct level *lev)
     return NULL;
 }
 
+struct level *
+level_above(struct level *lev) {
+    /* TODO: TERRIBLE KLUDGE. Rely on the fact that levels are ordered in the
+     * array. This is truly awful. But hey. */
+    return levels[ledger_no(&lev->z) - 1];
+}
+
+struct level *
+level_below(struct level *lev) {
+    /* TODO: TERRIBLE KLUDGE. Rely on the fact that levels are ordered in the
+     * array. This is truly awful. But hey. */
+    return levels[ledger_no(&lev->z) + 1];
+}
+
 /* goto the next level (or appropriate dungeon) */
 void
 next_level(boolean at_stairs)
 {
     if (at_stairs && u.ux == level->sstairs.sx && u.uy == level->sstairs.sy) {
         /* Taking a down dungeon branch. */
-        goto_level(&level->sstairs.tolev, at_stairs, FALSE, FALSE);
+        goto_level(&level->sstairs.tolev->z, at_stairs, FALSE, FALSE);
     } else {
         /* Going down a stairs or jump in a trap door. */
-        d_level newlevel;
-
-        newlevel.dnum = level->z.dnum;
-        newlevel.dlevel = level->z.dlevel + 1;
-        goto_level(&newlevel, at_stairs, !at_stairs, FALSE);
+        goto_level(&level_below(level)->z, at_stairs, !at_stairs, FALSE);
     }
 }
 
@@ -1211,7 +1234,7 @@ prev_level(boolean at_stairs)
         if (!level->z.dnum && level->z.dlevel == 1 && !Uhave_amulet)
             done(ESCAPED, NULL);
         else
-            goto_level(&level->sstairs.tolev, at_stairs, FALSE, FALSE);
+            goto_level(&level->sstairs.tolev->z, at_stairs, FALSE, FALSE);
     } else {
         /* Going up a stairs or rising through the ceiling. */
         d_level newlevel;
@@ -1351,8 +1374,8 @@ Can_rise_up(int x, int y, const struct level *lev)
  * "down" is confined to the current dungeon.  At present, level teleport
  * in dungeons that build up is confined within them.
  */
-void
-get_level(d_level * newlevel, int levnum)
+struct level *
+get_level(int levnum)
 {
     branch *br;
     xchar dgn = level->z.dnum;
@@ -1394,8 +1417,7 @@ get_level(d_level * newlevel, int levnum)
         levnum = levnum - dungeons[dgn].depth_start + 1;
     }
 
-    newlevel->dnum = dgn;
-    newlevel->dlevel = levnum;
+    return levels[ledger_no(&(struct d_level){.dnum = dgn, .dlevel = levnum})];
 }
 
 
@@ -1904,11 +1926,11 @@ overview_scan(const struct level *lev, struct overview_info *oi)
             case S_upsstair:
             case S_dnsstair:
                 if (lev->sstairs.sx == x && lev->sstairs.sy == y &&
-                    lev->sstairs.tolev.dnum != lev->z.dnum) {
+                    lev->sstairs.tolev->z.dnum != lev->z.dnum) {
                     oi->branch = TRUE;
-                    if (levels[ledger_no(&lev->sstairs.tolev)]->generated) {
+                    if (levels[ledger_no(&lev->sstairs.tolev->z)]->generated) {
                         oi->branch_dst_known = TRUE;
-                        oi->branch_dst = lev->sstairs.tolev;
+                        oi->branch_dst = lev->sstairs.tolev->z;
                     } else {
                         oi->branch_dst_known = FALSE;
                     }

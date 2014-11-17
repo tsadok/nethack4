@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-11-22 */
+/* Last modified by Sean Hunt, 2014-12-06 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -635,21 +635,20 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
                     return;     /* temporary? kludge */
 
                 if (teleport_pet(mtmp, FALSE)) {
-                    d_level tolevel;
+                    struct level *dest;
 
                     if (level == sp_lev(sl_castle)) {
-                        assign_level(&tolevel, &sp_lev(sl_valley)->z);
+                        dest = sp_lev(sl_valley);
                     } else if (Is_botlevel(level)) {
                         if (canseemon(mtmp))
                             pline("%s avoids the trap.", Monnam(mtmp));
                         return;
                     } else {
-                        get_level(&tolevel, depth(&level->z) + 1);
+                        dest = level_below(level);
                     }
                     if (mtmp->isshk)
                         make_angry_shk(mtmp, 0, 0);
-                    migrate_to_level(mtmp, ledger_no(&tolevel), MIGR_RANDOM,
-                                     NULL);
+                    migrate_to_level(mtmp, dest, MIGR_RANDOM, NULL);
                 }
             }
         }

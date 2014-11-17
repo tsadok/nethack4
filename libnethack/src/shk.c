@@ -991,8 +991,8 @@ make_happy_shk(struct monst *shkp, boolean silentkops)
                going farther down rather than up */
             mdrop_special_objs(shkp);
             /* arrive near shop's door */
-            migrate_to_level(shkp, ledger_no(&eshkp->shoplevel), MIGR_APPROX_XY,
-                             &eshkp->shd);
+            migrate_to_level(shkp, levels[ledger_no(&eshkp->shoplevel)],
+                             MIGR_APPROX_XY, &eshkp->shd);
         }
         if (vanished)
             pline("Satisfied, %s suddenly disappears!", shk_nam);

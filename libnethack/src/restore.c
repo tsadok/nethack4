@@ -1019,7 +1019,7 @@ restore_stairway(struct memfile *mf, stairway *s)
     s->sy = mread8(mf);
     if (!s->sx && !s->sy)
         s->sx = COLNO, s->sy = ROWNO;
-    restore_dlevel(mf, &s->tolev);
+    s->tolev = restore_levptr(mf);
     s->up = mread8(mf);
 }
 
@@ -1188,7 +1188,7 @@ getlev(struct memfile *mf, struct level *lev, boolean ghostly)
             case BR_STAIR:
             case BR_NO_END1:
             case BR_NO_END2:   /* OK to assign to sstairs if it's not used */
-                assign_level(&lev->sstairs.tolev, &ltmp);
+                lev->sstairs.tolev = levels[ledger_no(&ltmp)];
                 break;
             case BR_PORTAL:    /* max of 1 portal per level */
                 {

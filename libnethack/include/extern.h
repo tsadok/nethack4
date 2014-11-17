@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-02 */
+/* Last modified by Sean Hunt, 2014-12-06 */
 /* Copyright (c) Steve Creps, 1988.                               */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -396,7 +396,8 @@ extern void losedogs(void);
 extern void mon_arrive(struct monst *, boolean);
 extern void mon_catchup_elapsed_time(struct monst *, long);
 extern void keepdogs(boolean);
-extern void migrate_to_level(struct monst *, xchar, xchar, coord *);
+extern void migrate_to_level(struct monst *mtmp, struct level *lev, xchar xyloc,
+                             coord *cc);
 extern int dogfood(struct monst *, struct obj *);
 extern struct monst *tamedog(struct monst *, struct obj *);
 extern void abuse_dog(struct monst *);
@@ -416,9 +417,8 @@ extern void container_impact_dmg(struct obj *);
 extern int dokick(const struct nh_cmd_arg *);
 extern boolean ship_object(struct obj *, xchar, xchar, boolean);
 extern schar down_gate(xchar, xchar);
-extern void impact_drop(struct obj *, xchar, xchar, xchar);
-extern void deliver_object(struct obj *obj, xchar dnum, xchar dlevel,
-                           int where);
+extern void impact_drop(struct obj *, xchar, xchar, struct level *dest);
+extern void deliver_object(struct obj *obj, struct level *lev, int where);
 
 /* ### dothrow.c ### */
 
@@ -448,9 +448,11 @@ extern void dump_catch_menus(boolean);
 
 extern void free_dungeon(void);
 extern void save_d_flags(struct memfile *mf, d_flags f);
+extern void save_levptr(struct memfile *mf, struct level *lev);
 extern void save_dlevel(struct memfile *mf, d_level d);
 extern void save_dungeon(struct memfile *mf);
 extern d_flags restore_d_flags(struct memfile *mf);
+extern struct level *restore_levptr(struct memfile *mf);
 extern void restore_dlevel(struct memfile *mf, d_level *d);
 extern void restore_dungeon(struct memfile *mf);
 extern void insert_branch(branch *, boolean);
@@ -468,6 +470,8 @@ extern xchar ledger_to_dnum(xchar);
 extern xchar ledger_to_dlev(xchar);
 extern xchar deepest_lev_reached(boolean);
 extern boolean on_level(const d_level *, const d_level *);
+extern struct level *level_above(struct level *lev);
+extern struct level *level_below(struct level *lev);
 extern void next_level(boolean);
 extern void prev_level(boolean);
 extern void u_on_newpos(int, int);
@@ -475,7 +479,7 @@ extern void u_on_sstairs(void);
 extern void u_on_upstairs(void);
 extern void u_on_dnstairs(void);
 extern boolean On_stairs(xchar, xchar);
-extern void get_level(d_level *, int);
+extern struct level *get_level(int);
 extern boolean Is_botlevel(const struct level *lev);
 extern boolean can_fall_thru(const struct level *lev);
 extern boolean can_dig_down(const struct level *lev);
@@ -1676,7 +1680,7 @@ extern void mtele_trap(struct monst *, struct trap *, int);
 extern int mlevel_tele_trap(struct monst *, struct trap *, boolean, int);
 extern void rloco_pos(struct level *lev, struct obj *obj, int *nx, int *ny);
 extern void rloco(struct obj *);
-extern int random_teleport_level(void);
+extern struct level *random_teleport_level(void);
 extern boolean u_teleport_mon(struct monst *, boolean);
 extern struct level *portal_target(xchar dnum);
 

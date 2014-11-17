@@ -1126,7 +1126,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
         struct obj *otmp2 = otmp;
         otmp = otmp2->nobj;
 
-        deliver_object(otmp2, level->z.dnum, level->z.dlevel, MIGR_NEAR_PLAYER);
+        deliver_object(otmp2, level, MIGR_NEAR_PLAYER);
     }
 
     for (otmp = invent; otmp; otmp = otmp->nobj)
@@ -1164,7 +1164,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
 
             if (!rloc(mtmp, TRUE))
                 /* no room to move it; send it away, to return later */
-                migrate_to_level(mtmp, ledger_no(&level->z), MIGR_RANDOM, NULL);
+                migrate_to_level(mtmp, level, MIGR_RANDOM, NULL);
         }
     }
 

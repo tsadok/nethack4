@@ -646,12 +646,13 @@ level_tele_impl(boolean wizard_tele)
         if (In_quest(level) && newlev > 0)
             newlev = newlev + dungeons[level->z.dnum].depth_start - 1;
     } else {    /* involuntary level tele */
-    random_levtport:
-        newlev = random_teleport_level();
-        if (newlev == depth(&level->z)) {
+    random_levtport: ;
+        struct level *dest = random_teleport_level();
+        if (!dest) {
             pline("You shudder for a moment.");
             return;
         }
+        newlev = depth(&dest->z);
     }
 
     if (!next_to_u()) {
@@ -746,7 +747,7 @@ level_tele_impl(boolean wizard_tele)
         /* the player thinks of levels purely in logical terms, so we must
            translate newlev to a number relative to the current dungeon. */
         if (!(wizard_tele && force_dest))
-            get_level(&newlevel, newlev);
+            assign_level(&newlevel, &get_level(newlev)->z);
     }
     schedule_goto(&newlevel, FALSE, FALSE, 0, NULL, NULL);
     /* in case player just read a scroll and is about to be asked to call it
@@ -1038,19 +1039,19 @@ mlevel_tele_trap(struct monst *mtmp, struct trap *trap, boolean force_it,
     if (mtmp == u.ustuck)       /* probably a vortex */
         return 0;       /* temporary? kludge */
     if (teleport_pet(mtmp, force_it)) {
-        d_level tolevel;
+        struct level *dest;
         int migrate_typ = MIGR_RANDOM;
 
         if ((tt == HOLE || tt == TRAPDOOR)) {
             if (level == sp_lev(sl_castle)) {
-                assign_level(&tolevel, &sp_lev(sl_valley)->z);
+                dest = sp_lev(sl_valley);
             } else if (Is_botlevel(level)) {
                 if (in_sight && trap->tseen)
                     pline("%s avoids the %s.", Monnam(mtmp),
                           (tt == HOLE) ? "hole" : "trap");
                 return 0;
             } else {
-                get_level(&tolevel, depth(&level->z) + 1);
+                dest = level_below(level);
             }
         } else if (tt == MAGIC_PORTAL) {
             if (In_endgame(level) &&
@@ -1062,32 +1063,33 @@ mlevel_tele_trap(struct monst *mtmp, struct trap *trap, boolean force_it,
                 }
                 return 0;
             } else {
-                assign_level(&tolevel, &trap->dst);
+                dest = levels[ledger_no(&trap->dst)];
                 migrate_typ = MIGR_PORTAL;
             }
         } else {        /* (tt == LEVEL_TELEP) */
-            int nlev;
-
             if (mon_has_amulet(mtmp) || In_endgame(level)) {
-                if (in_sight)
+                if (in_sight) {
                     pline("%s seems very disoriented for a moment.",
                           Monnam(mtmp));
+                    seetrap(trap);
+                }
                 return 0;
             }
-            nlev = random_teleport_level();
-            if (nlev == depth(&level->z)) {
-                if (in_sight)
+            dest = random_teleport_level();
+            if (!dest) {
+                if (in_sight) {
                     pline("%s shudders for a moment.", Monnam(mtmp));
+                    seetrap(trap);
+                }
                 return 0;
             }
-            get_level(&tolevel, nlev);
         }
 
         if (in_sight) {
             pline("Suddenly, %s disappears out of sight.", mon_nam(mtmp));
             seetrap(trap);
         }
-        migrate_to_level(mtmp, ledger_no(&tolevel), migrate_typ, NULL);
+        migrate_to_level(mtmp, dest, migrate_typ, NULL);
         return 3;       /* no longer on this level */
     }
     return 0;
@@ -1160,16 +1162,16 @@ rloco(struct obj *obj)
 }
 
 /* Returns an absolute depth */
-int
+struct level *
 random_teleport_level(void)
 {
-    int nlev, max_depth, min_depth, cur_depth = (int)depth(&level->z);
+    int nlev, max_lev, min_lev, cur_lev = level->z.dlevel;
 
     if (!rn2(5) || level == sp_lev(sl_fort_ludios))
-        return cur_depth;
+        return NULL;
 
     if (In_endgame(level))      /* only happens in wizmode */
-        return cur_depth;
+        return NULL;
 
     /* What I really want to do is as follows: -- If in a dungeon that goes
        down, the new level is to be restricted to [top of parent, bottom of
@@ -1185,34 +1187,37 @@ random_teleport_level(void)
        explicitly handle quest here too, to fix the problem of monsters
        sometimes level teleporting out of it into main dungeon. Also prevent
        monsters reaching the Sanctum prior to invocation. */
-    min_depth = In_quest(level) ? dungeons[level->z.dnum].depth_start : 1;
-    max_depth =
-        dunlevs_in_dungeon(&level->z) + (dungeons[level->z.dnum].depth_start - 1);
+    min_lev = 1;
+    max_lev = dunlevs_in_dungeon(&level->z);
     /* can't reach the Sanctum if the invocation hasn't been performed */
     if (Inhell && !u.uevent.invoked)
-        max_depth -= 1;
+        max_lev -= 1;
 
     /* Get a random value relative to the current dungeon */
     /* Range is 1 to current+3, current not counting */
-    nlev = rn2(cur_depth + 3 - min_depth) + min_depth;
-    if (nlev >= cur_depth)
+    nlev = rn2(cur_lev + 3 - min_lev) + min_lev;
+    if (nlev >= cur_lev)
         nlev++;
 
-    if (nlev > max_depth) {
-        nlev = max_depth;
+    if (nlev > max_lev) {
+        nlev = max_lev;
         /* teleport up if already on bottom */
         if (Is_botlevel(level))
             nlev -= rnd(3);
     }
-    if (nlev < min_depth) {
-        nlev = min_depth;
-        if (nlev == cur_depth) {
+    if (nlev < min_lev) {
+        nlev = min_lev;
+        if (nlev == cur_lev) {
             nlev += rnd(3);
-            if (nlev > max_depth)
-                nlev = max_depth;
+            if (nlev > max_lev)
+                nlev = max_lev;
         }
     }
-    return nlev;
+    if (nlev == cur_lev)
+        return NULL;
+
+    return levels[ledger_no(&(struct d_level){.dnum = level->z.dnum,
+                                              .dlevel = nlev})];
 }
 
 /* you teleport a monster (via wand, spell, or poly'd q.mechanic attack);
