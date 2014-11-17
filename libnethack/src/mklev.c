@@ -1003,7 +1003,7 @@ place_branch(struct level *lev, branch * br,    /* branch to place */
              xchar x, xchar y)
 {       /* location */
     coord m;
-    d_level *dest;
+    struct level *dest;
     boolean make_stairs;
     struct mkroom *br_room;
 
@@ -1027,14 +1027,14 @@ place_branch(struct level *lev, branch * br,    /* branch to place */
         br_room = pos_to_room(lev, x, y);
     }
 
-    if (on_level(&br->end1, &lev->z)) {
+    if (lev == br->end1) {
         /* we're on end1 */
         make_stairs = br->type != BR_NO_END1;
-        dest = &br->end2;
+        dest = br->end2;
     } else {
         /* we're on end2 */
         make_stairs = br->type != BR_NO_END2;
-        dest = &br->end1;
+        dest = br->end1;
     }
 
     if (!isok(x, y))
@@ -1043,13 +1043,12 @@ place_branch(struct level *lev, branch * br,    /* branch to place */
         impossible("suspicious attempt to place dungeon branch at (0, 0)");
 
     if (br->type == BR_PORTAL) {
-        mkportal(lev, x, y, levels[ledger_no(dest)]);
+        mkportal(lev, x, y, dest);
     } else if (make_stairs) {
         lev->sstairs.sx = x;
         lev->sstairs.sy = y;
-        lev->sstairs.up =
-            (char)on_level(&br->end1, &lev->z) ? br->end1_up : !br->end1_up;
-        lev->sstairs.tolev = levels[ledger_no(dest)];
+        lev->sstairs.up = lev == br->end1 ? br->end1_up : !br->end1_up;
+        lev->sstairs.tolev = dest;
         lev->sstairs_room = br_room;
 
         lev->locations[x][y].ladder = lev->sstairs.up ? LA_UP : LA_DOWN;
@@ -1546,20 +1545,19 @@ mkinvpos(xchar x, xchar y, int dist)
 /*
  * The portal to Ludios is special.  The entrance can only occur within a
  * vault in the main dungeon at a depth greater than 10.  The Ludios branch
- * structure reflects this by having a bogus "source" dungeon:  the value
- * of n_dgns (thus, Is_branchlev() will never find it).
+ * structure reflects this by having a NULL source dungeon. 
  *
  * Ludios will remain isolated until the branch is corrected by this function.
  */
 static void
 mk_knox_portal(struct level *lev, xchar x, xchar y)
 {
-    d_level *source;
+    struct level **source;
     branch *br;
     schar u_depth;
 
     br = dungeon_branch("Fort Ludios");
-    if (on_level(&sp_lev(sl_fort_ludios)->z, &br->end1)) {
+    if (br->end1 == sp_lev(sl_fort_ludios)) {
         source = &br->end2;
     } else {
         /* disallow Knox branch on a level with one branch already */
@@ -1569,10 +1567,10 @@ mk_knox_portal(struct level *lev, xchar x, xchar y)
     }
 
     /* Already set or 2/3 chance of deferring until a later level. */
-    if (source->dnum < n_dgns || (rn2(3) && !wizard))
+    if ((*source) || (rn2(3) && !wizard))
         return;
 
-    if (!(lev->z.dnum == sp_lev(sl_fort_ludios)->z.dnum /* in main dungeon */
+    if (!(lev->z.dnum == sp_lev(sl_medusa)->z.dnum /* in main dungeon */
           && !at_dgn_entrance(lev, "The Quest")     /* but not Quest's
                                                            entry */
           &&(u_depth = depth(&lev->z)) > 10     /* beneath 10 */
@@ -1580,7 +1578,7 @@ mk_knox_portal(struct level *lev, xchar x, xchar y)
         return;
 
     /* Adjust source to be current level and re-insert branch. */
-    *source = lev->z;
+    *source = lev;
     insert_branch(br, TRUE);
 
     place_branch(lev, br, x, y);

@@ -75,8 +75,7 @@ typedef struct branch {
     struct branch *next;        /* next in the branch chain */
     int id;     /* branch identifier */
     int type;   /* type of branch */
-    d_level end1;       /* "primary" end point */
-    d_level end2;       /* other end point */
+    struct level *end1, *end2; /* branch end points */
     boolean end1_up;    /* does end1 go up? */
 } branch;
 

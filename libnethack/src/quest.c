@@ -180,16 +180,15 @@ static void
 expulsion(boolean seal)
 {
     branch *br;
-    d_level *dest;
+    struct level *dest;
     struct trap *t;
     int portal_flag;
 
     br = dungeon_branch("The Quest");
-    dest = (br->end1.dnum == level->z.dnum) ? &br->end2 : &br->end1;
+    dest = (br->end1->z.dnum == level->z.dnum) ? br->end2 : br->end1;
     portal_flag = u.uevent.qexpelled ? 0 :      /* returned via artifact? */
         !seal ? 1 : -1;
-    schedule_goto(levels[ledger_no(dest)], FALSE, FALSE, portal_flag, NULL,
-                  NULL);
+    schedule_goto(dest, FALSE, FALSE, portal_flag, NULL, NULL);
     if (seal) { /* remove the portal to the quest - sealing it off */
         int reexpelled = u.uevent.qexpelled;
 

@@ -41,9 +41,8 @@ struct lchoice {
 static void Fread(void *, int, int, dlb *);
 static xchar dname_to_dnum(const char *);
 static int find_branch(const char *, struct proto_dungeon *);
-static xchar parent_dnum(const char *, struct proto_dungeon *);
 static int level_range(xchar, int, int, int, struct proto_dungeon *, int *);
-static xchar parent_dlevel(const char *, struct proto_dungeon *);
+static struct level *parent_level(const char *, struct proto_dungeon *);
 static int correct_branch_type(struct tmpbranch *);
 static branch *add_branch(int, int, struct proto_dungeon *);
 static void add_level(s_level *);
@@ -131,8 +130,8 @@ save_branch(struct memfile *mf, const branch * b)
     mtag(mf, b->id, MTAG_BRANCH);
     mwrite32(mf, b->id);
     mwrite32(mf, b->type);
-    save_dlevel(mf, b->end1);
-    save_dlevel(mf, b->end2);
+    save_levptr(mf, b->end1);
+    save_levptr(mf, b->end2);
     mwrite8(mf, b->end1_up);
 }
 
@@ -259,8 +258,8 @@ restore_branch(struct memfile *mf, branch * b)
     b->next = NULL;
     b->id = mread32(mf);
     b->type = mread32(mf);
-    restore_dlevel(mf, &b->end1);
-    restore_dlevel(mf, &b->end2);
+    b->end1 = restore_levptr(mf);
+    b->end2 = restore_levptr(mf);
     b->end1_up = mread8(mf);
 }
 
@@ -413,41 +412,17 @@ find_branch(const char *s,      /* dungeon name */
         const char *dnam;
 
         for (br = branches; br; br = br->next) {
-            dnam = dungeons[br->end2.dnum].dname;
+            dnam = dungeons[br->end2->z.dnum].dname;
             if (!strcmpi(dnam, s) ||
                 (!strncmpi(dnam, "The ", 4) && !strcmpi(dnam + 4, s)))
                 break;
         }
-        i = br ? ((ledger_no(&br->end1) << 8) | ledger_no(&br->end2)) : -1;
+        i = br ? ((ledger_no(&br->end1->z) << 8) | ledger_no(&br->end2->z))
+               : -1;
     }
     return i;
 }
 
-
-/*
- * Find the "parent" by searching the prototype branch list for the branch
- * listing, then figuring out to which dungeon it belongs.
- */
-static xchar
-parent_dnum(const char *s,      /* dungeon name */
-            struct proto_dungeon *pd)
-{
-    int i;
-    xchar pdnum;
-
-    i = find_branch(s, pd);
-    /* 
-     * Got branch, now find parent dungeon.  Stop if we have reached
-     * "this" dungeon (if we haven't found it by now it is an error).
-     */
-    for (pdnum = 0; strcmp(pd->tmpdungeon[pdnum].name, s); pdnum++)
-        if ((i -= pd->tmpdungeon[pdnum].branches) < 0)
-            return pdnum;
-
-    panic("parent_dnum: couldn't resolve branch.");
-    /* NOT REACHED */
-    return (xchar) 0;
-}
 
 /*
  * Return a starting point and number of successive positions a level
@@ -492,16 +467,23 @@ level_range(xchar dgn, int base, int rrand, int chain, struct proto_dungeon *pd,
     return 1;
 }
 
-static xchar
-parent_dlevel(const char *s, struct proto_dungeon *pd)
+static struct level *
+parent_level(const char *s, struct proto_dungeon *pd)
 {
-    int i, j, num, base, dnum = parent_dnum(s, pd);
+    int i, j, num, base, pdnum;
     branch *curr;
 
 
-    i = find_branch(s, pd);
+    i = j = find_branch(s, pd);
+    for (pdnum = 0; strcmp(pd->tmpdungeon[pdnum].name, s); pdnum++)
+        if ((j -= pd->tmpdungeon[pdnum].branches) < 0)
+            break;
+
+    if (!strcmp(pd->tmpdungeon[pdnum].name, s))
+        panic("parent_level: couldn't resolve branch.");
+
     num =
-        level_range(dnum, pd->tmpbranch[i].lev.base, pd->tmpbranch[i].lev.rand,
+        level_range(pdnum, pd->tmpbranch[i].lev.base, pd->tmpbranch[i].lev.rand,
                     pd->tmpbranch[i].chain, pd, &base);
 
     /* KMH -- Try our best to find a level without an existing branch */
@@ -510,11 +492,14 @@ parent_dlevel(const char *s, struct proto_dungeon *pd)
         if (++i >= num)
             i = 0;
         for (curr = branches; curr; curr = curr->next)
-            if ((curr->end1.dnum == dnum && curr->end1.dlevel == base + i) ||
-                (curr->end2.dnum == dnum && curr->end2.dlevel == base + i))
+            if ((curr->end1->z.dnum == pdnum &&
+                 curr->end1->z.dlevel == base + i) ||
+                (curr->end2->z.dnum == pdnum &&
+                 curr->end2->z.dlevel == base + i))
                 break;
     } while (curr && i != j);
-    return base + i;
+    return levels[ledger_no(&(struct d_level){.dnum = pdnum,
+                                              .dlevel = base + i})];
 }
 
 /* Convert from the temporary branch type to the dungeon branch type. */
@@ -533,6 +518,13 @@ correct_branch_type(struct tmpbranch *tbr)
     }
     impossible("correct_branch_type: unknown branch type");
     return BR_STAIR;
+}
+
+/* Get a unique numerical identifier for each branch. */
+static int
+branch_val(struct branch *b) {
+    return ledger_no(&b->end2->z) + MAXLINFO *
+        (b->end1 ? ledger_no(&b->end1->z) : -1);
 }
 
 /*
@@ -560,12 +552,6 @@ insert_branch(branch * new_branch, boolean extract_first)
             branches = curr->next;
     }
     new_branch->next = NULL;
-
-/* Convert the branch into a unique number so we can sort them. */
-#define branch_val(bp)                                                  \
-    ((((long)(bp)->end1.dnum * (MAXLEVEL+1) +                           \
-       (long)(bp)->end1.dlevel) * (MAXDUNGEON+1) * (MAXLEVEL+1)) +      \
-     ((long)(bp)->end2.dnum * (MAXLEVEL+1) + (long)(bp)->end2.dlevel))
 
     /* 
      * Insert the new branch into the correct place in the branch list.
@@ -601,10 +587,10 @@ add_branch(int dgn, int child_entry_level, struct proto_dungeon *pd)
     new_branch->next = NULL;
     new_branch->id = branch_id++;
     new_branch->type = correct_branch_type(&pd->tmpbranch[branch_num]);
-    new_branch->end1.dnum = parent_dnum(dungeons[dgn].dname, pd);
-    new_branch->end1.dlevel = parent_dlevel(dungeons[dgn].dname, pd);
-    new_branch->end2.dnum = dgn;
-    new_branch->end2.dlevel = child_entry_level;
+    new_branch->end1 = parent_level(dungeons[dgn].dname, pd);
+    new_branch->end2 =
+        levels[ledger_no(&(struct d_level){.dnum = dgn,
+                                           .dlevel = child_entry_level})];
     new_branch->end1_up = pd->tmpbranch[branch_num].up ? TRUE : FALSE;
 
     insert_branch(new_branch, FALSE);
@@ -897,11 +883,11 @@ init_dungeons(void)
             br = add_branch(i, dungeons[i].entry_lev, &pd);
 
             /* Get the depth of the connecting end. */
-            if (br->end1.dnum == i) {
-                from_depth = depth(&br->end2);
+            if (br->end1->z.dnum == i) {
+                from_depth = depth(&br->end2->z);
                 from_up = !br->end1_up;
             } else {
-                from_depth = depth(&br->end1);
+                from_depth = depth(&br->end1->z);
                 from_up = br->end1_up;
             }
 
@@ -997,12 +983,11 @@ init_dungeons(void)
                  * n_dgns.
                  */
                 for (br = branches; br; br = br->next)
-                    if (on_level(&br->end2,
-                                 &dungeon_topology.special_levels[i]->z))
+                    if (br->end2 == sp_lev(i))
                         break;
 
                 if (br)
-                    br->end1.dnum = n_dgns;
+                    br->end1 = NULL;
                 /* adjust the branch's position on the list */
                 insert_branch(br, TRUE);
             }
@@ -1056,6 +1041,7 @@ init_dungeons(void)
 
 xchar
 dunlev(const struct level *lev)
+
 {       /* return the level number for lev in *this* dungeon */
     return lev->z.dlevel;
 }
@@ -1190,7 +1176,7 @@ Is_branchlev(const struct level *lev)
     branch *curr;
 
     for (curr = branches; curr; curr = curr->next) {
-        if (on_level(&lev->z, &curr->end1) || on_level(&lev->z, &curr->end2))
+        if (lev == curr->end1 || lev == curr->end2)
             return curr;
     }
     return NULL;
@@ -1404,12 +1390,12 @@ get_level(int levnum)
                  * unique.
                  */
                 for (br = branches; br; br = br->next)
-                    if (br->end2.dnum == dgn)
+                    if (!br->end2)
                         break;
                 if (!br)
                     panic("get_level: can't find parent dungeon");
 
-                dgn = br->end1.dnum;
+                dgn = br->end1->z.dnum;
             } while (levnum < dungeons[dgn].depth_start);
         }
 
@@ -1452,7 +1438,7 @@ dungeon_branch(const char *s)
 
     /* Find the branch that connects to dungeon i's branch. */
     for (br = branches; br; br = br->next)
-        if (br->end2.dnum == dnum)
+        if (br->end2->z.dnum == dnum)
             break;
 
     if (!br)
@@ -1475,7 +1461,7 @@ at_dgn_entrance(const struct level *lev, const char *s)
     branch *br;
 
     br = dungeon_branch(s);
-    return (boolean) (on_level(&lev->z, &br->end1) ? TRUE : FALSE);
+    return lev == br->end1;
 }
 
 boolean
@@ -1682,14 +1668,16 @@ print_branch(struct nh_menulist *menu, int dnum,
 
     /* This assumes that end1 is the "parent". */
     for (br = branches; br; br = br->next) {
-        if (br->end1.dnum == dnum && lower_bound < br->end1.dlevel &&
-            br->end1.dlevel <= upper_bound) {
+        if (br->end1 && br->end1->z.dnum == dnum &&
+            lower_bound < br->end1->z.dlevel &&
+            br->end1->z.dlevel <= upper_bound) {
             buf = msgprintf("   %s to %s: %d", br_string(br->type),
-                            dungeons[br->end2.dnum].dname, depth(&br->end1));
+                            dungeons[br->end2->z.dnum].dname,
+                            depth(&br->end1->z));
             if (bymenu) {
-                lchoices->lev[lchoices->idx] = br->end1.dlevel;
-                lchoices->dgn[lchoices->idx] = br->end1.dnum;
-                lchoices->playerlev[lchoices->idx] = depth(&br->end1);
+                lchoices->lev[lchoices->idx] = br->end1->z.dlevel;
+                lchoices->dgn[lchoices->idx] = br->end1->z.dnum;
+                lchoices->playerlev[lchoices->idx] = depth(&br->end1->z);
 
                 add_menuitem(menu, lchoices->idx + 1, buf, lchoices->menuletter,
                              FALSE);
@@ -1794,7 +1782,7 @@ print_dungeon(boolean bymenu, schar * rlev, xchar * rdgn)
 
     /* Print out floating branches (if any). */
     for (first = TRUE, br = branches; br; br = br->next) {
-        if (br->end1.dnum == n_dgns) {
+        if (!br->end1) {
             if (first) {
                 if (!bymenu) {
                     add_menutext(&menu, "");
@@ -1803,7 +1791,7 @@ print_dungeon(boolean bymenu, schar * rlev, xchar * rdgn)
                 first = FALSE;
             }
             buf = msgprintf("   %s to %s", br_string(br->type),
-                            dungeons[br->end2.dnum].dname);
+                            dungeons[br->end2->z.dnum].dname);
             if (!bymenu)
                 add_menutext(&menu, buf);
         }

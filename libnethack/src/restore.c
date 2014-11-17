@@ -1176,18 +1176,18 @@ getlev(struct memfile *mf, struct level *lev, boolean ghostly)
 
         br = Is_branchlev(lev);
         if (br && lev->z.dlevel == 1) {
-            d_level ltmp;
+            struct level *ltmp;
 
-            if (on_level(&lev->z, &br->end1))
-                assign_level(&ltmp, &br->end2);
+            if (lev == br->end1)
+                ltmp = br->end2;
             else
-                assign_level(&ltmp, &br->end1);
+                ltmp = br->end1;
 
             switch (br->type) {
             case BR_STAIR:
             case BR_NO_END1:
             case BR_NO_END2:   /* OK to assign to sstairs if it's not used */
-                lev->sstairs.tolev = levels[ledger_no(&ltmp)];
+                lev->sstairs.tolev = ltmp;
                 break;
             case BR_PORTAL:    /* max of 1 portal per level */
                 {
@@ -1198,7 +1198,7 @@ getlev(struct memfile *mf, struct level *lev, boolean ghostly)
                             break;
                     if (!ttmp)
                         panic("getlev: need portal but none found");
-                    ttmp->dest = levels[ledger_no(&ltmp)];
+                    ttmp->dest = ltmp;
                 }
                 break;
             }
