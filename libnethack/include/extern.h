@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-30 */
 /* Copyright (c) Steve Creps, 1988.                               */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -322,7 +322,7 @@ extern int doddrop(const struct nh_cmd_arg *);
 extern int dodown(enum u_interaction_mode);
 extern int doup(enum u_interaction_mode);
 extern void notify_levelchange(const struct level *lev);
-extern void goto_level(d_level *, boolean, boolean, boolean);
+extern void goto_level(struct level *, boolean, boolean, boolean);
 extern void schedule_goto(struct level *, boolean, boolean, int, const char *,
                           const char *);
 extern boolean deferred_goto(void);

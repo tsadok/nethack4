@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -402,7 +402,7 @@ fall_through(boolean td)
     if (dont_fall) {
         pline("%s", dont_fall);
         /* hero didn't fall through, but any objects here might */
-        impact_drop(NULL, u.ux, u.uy, 0);
+        impact_drop(NULL, u.ux, u.uy, NULL);
         if (!td) {
             win_pause_output(P_MESSAGE);
             pline("The opening under you closes up.");
@@ -2369,7 +2369,6 @@ int
 float_down(long hmask)
 {       /* might cancel timeout */
     struct trap *trap = NULL;
-    d_level current_dungeon_level;
     boolean no_msg = FALSE;
 
     HLevitation &= ~hmask;
@@ -2467,7 +2466,7 @@ float_down(long hmask)
         action_interrupted();
     }
 
-    assign_level(&current_dungeon_level, &level->z);
+    struct level *current_dungeon_level = level;
 
     if (trap)
         switch (trap->ttyp) {
@@ -2486,7 +2485,7 @@ float_down(long hmask)
     if (level != sp_lev(sl_air) && level != sp_lev(sl_water) && !Engulfed &&
         /* falling through trap door calls goto_level, and goto_level does its
            own pickup() call */
-        on_level(&level->z, &current_dungeon_level))
+        current_dungeon_level == level)
         pickup(1, flags.interaction_mode);
     return 1;
 }

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -760,13 +760,14 @@ peffects(struct obj *otmp)
         if (otmp->cursed) {
             unkn++;
             /* they went up a level */
-            if ((ledger_no(&level->z) == 1 && Uhave_amulet) ||
+            if ((level->z.dnum == 0 && level->z.dlevel == 1 &&
+                 Uhave_amulet) ||
                 Can_rise_up(u.ux, u.uy, level)) {
                 const char *riseup = "You rise up, through the %s!";
 
-                if (ledger_no(&level->z) == 1) {
+                if (level->z.dnum == 0 && level->z.dlevel == 1) {
                     pline(riseup, ceiling(u.ux, u.uy));
-                    goto_level(&sp_lev(sl_earth)->z, FALSE, FALSE, FALSE);
+                    goto_level(sp_lev(sl_earth), FALSE, FALSE, FALSE);
                 } else {
                     struct level *dest = get_level(depth(&level->z) - 1);
                     if (dest == level) {
@@ -774,7 +775,7 @@ peffects(struct obj *otmp)
                         break;
                     } else
                         pline(riseup, ceiling(u.ux, u.uy));
-                    goto_level(&dest->z, FALSE, FALSE, FALSE);
+                    goto_level(dest, FALSE, FALSE, FALSE);
                 }
             } else
                 pline("You have an uneasy feeling.");

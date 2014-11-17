@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -597,7 +597,7 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
                hero does fall down is treated in goto_level(). */
             if (u.ustuck || wont_fall) {
                 if (newobjs)
-                    impact_drop(NULL, x, y, 0);
+                    impact_drop(NULL, x, y, NULL);
                 if (oldobjs != newobjs)
                     pickup(1, flags.interaction_mode);
                 if (shopdoor && madeby_u)
@@ -612,10 +612,7 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
                 pline("You fall through...");
                 /* Earlier checks must ensure that the destination level exists 
                    and is in the present dungeon. */
-                d_level newlevel;
-                newlevel.dnum = level->z.dnum;
-                newlevel.dlevel = level->z.dlevel + 1;
-                goto_level(&newlevel, FALSE, TRUE, FALSE);
+                goto_level(level_below(level), FALSE, TRUE, FALSE);
                 /* messages for arriving in special rooms */
                 spoteffects(FALSE);
             }
@@ -623,7 +620,7 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
             if (shopdoor && madeby_u)
                 pay_for_damage("ruin", FALSE);
             if (newobjs)
-                impact_drop(NULL, x, y, 0);
+                impact_drop(NULL, x, y, NULL);
             if (mtmp) {
                 /* [don't we need special sokoban handling here?] */
                 if (is_flyer(mtmp->data) || is_floater(mtmp->data) ||
@@ -637,9 +634,7 @@ digactualhole(int x, int y, struct monst *madeby, int ttyp)
                 if (teleport_pet(mtmp, FALSE)) {
                     struct level *dest;
 
-                    if (level == sp_lev(sl_castle)) {
-                        dest = sp_lev(sl_valley);
-                    } else if (Is_botlevel(level)) {
+                    if (Is_botlevel(level) && level != sp_lev(sl_castle)) {
                         if (canseemon(mtmp))
                             pline("%s avoids the trap.", Monnam(mtmp));
                         return;

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -782,13 +782,9 @@ dodown(enum u_interaction_mode uim)
         }
     }
 
-    if (trap && level == sp_lev(sl_castle)) {
-        goto_level(&sp_lev(sl_valley)->z, FALSE, TRUE, FALSE);
-    } else {
-        at_ladder = (boolean) (level->locations[u.ux][u.uy].typ == LADDER);
-        next_level(!trap);
-        at_ladder = FALSE;
-    }
+    at_ladder = (boolean) (level->locations[u.ux][u.uy].typ == LADDER);
+    next_level(!trap);
+    at_ladder = FALSE;
     return 1;
 }
 
@@ -871,13 +867,17 @@ notify_levelchange(const struct level *lev)
 
 
 void
-goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
+goto_level(struct level *dest, boolean at_stairs, boolean falling,
            boolean portal)
 {
-    xchar new_ledger;
-    boolean up = (depth(newlevel) < depth(&level->z)), newdungeon =
-        (level->z.dnum != newlevel->dnum), was_in_W_tower =
-        In_W_tower(u.ux, u.uy, level), familiar = FALSE;
+    if (!dest) {
+        impossible("goto_level: null destination");
+        return;
+    }
+
+    boolean up = (depth(&dest->z) < depth(&level->z)),
+            newdungeon = (level->z.dnum != dest->z.dnum),
+            was_in_W_tower = In_W_tower(u.ux, u.uy, level), familiar = FALSE;
     boolean new = FALSE;        /* made a new level? */
     struct monst *mtmp, *mtmp2;
     struct obj *otmp;
@@ -885,20 +885,12 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
     boolean at_trapdoor = ((t_at(level, u.ux, u.uy)) &&
                            (t_at(level, u.ux, u.uy))->ttyp == TRAPDOOR);
 
-    if (newlevel->dlevel > dunlevs_in_dungeon(newlevel))
-        newlevel->dlevel = dunlevs_in_dungeon(newlevel);
-    if (newdungeon && newlevel->dnum == dungeon_topology.d_endgame_dnum) {
+    if (newdungeon && dest->z.dnum == dungeon_topology.d_endgame_dnum) {
         /* 1st Endgame Level !!! */
         if (Uhave_amulet)
-            assign_level(newlevel, &sp_lev(sl_earth)->z);
+            dest = sp_lev(sl_earth);
         else
             return;
-    }
-    new_ledger = ledger_no(newlevel);
-    if (new_ledger < 0) {
-        /* The caller should be doing this themselves. */
-        impossible("Escaping via goto_level?");
-        done(ESCAPED, NULL);
     }
 
     /* If you have the amulet and are trying to get out of Gehennom, going up a
@@ -908,6 +900,7 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
        +1 75.0 75.0 75.0 0 0.0 12.5 25.0 0 6.25 8.33 12.5 -1 8.33 4.17 0.0 -1
        6.25 8.33 12.5 -2 8.33 4.17 0.0 -2 6.25 8.33 0.0 -3 8.33 4.17 0.0 -3
        6.25 0.0 0.0 */
+#if 0 /* Mysterious force will no longer be a thing */
     if (Inhell && up && Uhave_amulet && !newdungeon && !portal &&
         (level->z.dlevel < dunlevs_in_dungeon(&level->z) - 3)) {
         if (!rn2(4)) {
@@ -937,18 +930,20 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
                 at_stairs = at_ladder = FALSE;
         }
     }
+#endif
 
     /* Prevent the player from going past the first quest level unless (s)he
        has been given the go-ahead by the leader. */
-    if (on_level(&level->z, &sp_lev(sl_quest_start)->z) &&
-        !newdungeon && !ok_to_quest(TRUE))
+    if (level == sp_lev(sl_quest_start) && !newdungeon && !ok_to_quest(TRUE))
         return;
 
-    if (on_level(newlevel, &level->z))
-        return; /* this can happen */
+    if (dest == level) {
+        impossible("goto_level: going to current level");
+        return;
+    }
 
     if (falling)        /* assuming this is only trap door or hole */
-        impact_drop(NULL, u.ux, u.uy, newlevel->dlevel);
+        impact_drop(NULL, u.ux, u.uy, dest);
 
     check_special_room(TRUE);   /* probably was a trap door */
     if (Punished)
@@ -987,18 +982,18 @@ goto_level(d_level * newlevel, boolean at_stairs, boolean falling,
 
     flush_screen_disable();     /* ensure all map flushes are postponed */
     origlev = level;
+    /* We put level = NULL here as a sanity check. We could set it directly to
+     * dest, but this ensures that nothing in mklev relies on knowing level. */
     level = NULL;
 
-    if (!levels[new_ledger]->generated) {
+    if (!dest->generated) {
         /* entering this level for first time; make it now */
-        mklev(levels[new_ledger]);
-        level = levels[new_ledger];
+        mklev(dest);
+        level = dest;
         historic_event(FALSE, "reached %s.", hist_lev_name(level, FALSE));
         new = TRUE;     /* made the level */
     } else {
-        /* returning to previously visited level */
-        level = levels[new_ledger];
-
+        level = dest;
         /* regenerate animals while on another level */
         for (mtmp = level->monlist; mtmp; mtmp = mtmp2) {
             mtmp2 = mtmp->nmon;
@@ -1385,8 +1380,7 @@ deferred_goto(void)
         if (*turnstate.goto_info.pre_msg)
             pline("%s", turnstate.goto_info.pre_msg);
 
-        goto_level(&dest->z, ! !(typmask & 1), ! !(typmask & 2),
-                   ! !(typmask & 4));
+        goto_level(dest, ! !(typmask & 1), ! !(typmask & 2), ! !(typmask & 4));
         retval = TRUE;
 
         if (typmask & 0200) {   /* remove portal */

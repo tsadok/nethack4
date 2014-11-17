@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-30 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -1186,6 +1186,8 @@ struct level *
 level_above(struct level *lev) {
     /* TODO: TERRIBLE KLUDGE. Rely on the fact that levels are ordered in the
      * array. This is truly awful. But hey. */
+    if (level->z.dlevel == 1)
+        return NULL;
     return levels[ledger_no(&lev->z) - 1];
 }
 
@@ -1193,6 +1195,10 @@ struct level *
 level_below(struct level *lev) {
     /* TODO: TERRIBLE KLUDGE. Rely on the fact that levels are ordered in the
      * array. This is truly awful. But hey. */
+    if (level == sp_lev(sl_castle))
+        return sp_lev(sl_valley);
+    else if (level->z.dlevel == dunlevs_in_dungeon(&level->z))
+        return NULL;
     return levels[ledger_no(&lev->z) + 1];
 }
 
@@ -1202,10 +1208,10 @@ next_level(boolean at_stairs)
 {
     if (at_stairs && u.ux == level->sstairs.sx && u.uy == level->sstairs.sy) {
         /* Taking a down dungeon branch. */
-        goto_level(&level->sstairs.tolev->z, at_stairs, FALSE, FALSE);
+        goto_level(level->sstairs.tolev, at_stairs, FALSE, FALSE);
     } else {
         /* Going down a stairs or jump in a trap door. */
-        goto_level(&level_below(level)->z, at_stairs, !at_stairs, FALSE);
+        goto_level(level_below(level), at_stairs, !at_stairs, FALSE);
     }
 }
 
@@ -1220,14 +1226,10 @@ prev_level(boolean at_stairs)
         if (!level->z.dnum && level->z.dlevel == 1 && !Uhave_amulet)
             done(ESCAPED, NULL);
         else
-            goto_level(&level->sstairs.tolev->z, at_stairs, FALSE, FALSE);
+            goto_level(level->sstairs.tolev, at_stairs, FALSE, FALSE);
     } else {
         /* Going up a stairs or rising through the ceiling. */
-        d_level newlevel;
-
-        newlevel.dnum = level->z.dnum;
-        newlevel.dlevel = level->z.dlevel - 1;
-        goto_level(&newlevel, at_stairs, FALSE, FALSE);
+        goto_level(level_above(level), at_stairs, FALSE, FALSE);
     }
 }
 
