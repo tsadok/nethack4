@@ -347,8 +347,7 @@ maketrap(struct level *lev, int x, int y, int typ)
         ttmp->tseen = 0;
     ttmp->once = 0;
     ttmp->madeby_u = 0;
-    ttmp->dst.dnum = -1;
-    ttmp->dst.dlevel = -1;
+    ttmp->dest = NULL;
     if (!oldplace) {
         ttmp->ntrap = lev->lev_traps;
         lev->lev_traps = ttmp;

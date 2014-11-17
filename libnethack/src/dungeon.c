@@ -1998,9 +1998,9 @@ overview_scan(const struct level *lev, struct overview_info *oi)
     for (trap = lev->lev_traps; trap; trap = trap->ntrap)
         if (trap->tseen && trap->ttyp == MAGIC_PORTAL) {
             oi->portal = TRUE;
-            if (levels[ledger_no(&trap->dst)]->generated) {
+            if (trap->dest->flags.hero_memory) {
                 oi->portal_dst_known = TRUE;
-                oi->portal_dst = trap->dst;
+                oi->portal_dst = trap->dest->z;
             } else {
                 oi->portal_dst_known = FALSE;
             }

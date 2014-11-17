@@ -861,8 +861,7 @@ savetrapchn(struct memfile *mf, struct trap *trap, struct level *lev)
              MTAG_TRAP);
         mwrite8(mf, trap->tx);
         mwrite8(mf, trap->ty);
-        mwrite8(mf, trap->dst.dnum);
-        mwrite8(mf, trap->dst.dlevel);
+        save_levptr(mf, trap->dest);
         mwrite8(mf, trap->launch.x);
         mwrite8(mf, trap->launch.y);
         tflags = (trap->ttyp << 11) | (trap->tseen << 10) |

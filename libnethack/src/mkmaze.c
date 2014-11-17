@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-30 */
+/* Last modified by Sean Hunt, 2014-11-17 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -308,7 +308,7 @@ put_lregion_here(struct level *lev, xchar x, xchar y, xchar nlx, xchar nly,
         u_on_newpos(x, y);
         break;
     case LR_PORTAL:
-        mkportal(lev, x, y, dest_lvl->dnum, dest_lvl->dlevel);
+        mkportal(lev, x, y, levels[ledger_no(dest_lvl)]);
         break;
     case LR_DOWNSTAIR:
     case LR_UPSTAIR:
@@ -631,8 +631,8 @@ bound_digging(struct level *lev)
             }
 }
 
-void
-mkportal(struct level *lev, xchar x, xchar y, xchar todnum, xchar todlevel)
+struct trap *
+mkportal(struct level *lev, xchar x, xchar y, struct level *dest)
 {
     /* a portal "trap" must be matched by a */
     /* portal in the destination dungeon/dlevel */
@@ -640,11 +640,10 @@ mkportal(struct level *lev, xchar x, xchar y, xchar todnum, xchar todlevel)
 
     if (!ttmp) {
         impossible("portal on top of portal??");
-        return;
+        return NULL;
     }
-    ttmp->dst.dnum = todnum;
-    ttmp->dst.dlevel = todlevel;
-    return;
+    ttmp->dest = dest;
+    return ttmp;
 }
 
 /* when moving in water, possibly (1 in 3) alter the intended destination */

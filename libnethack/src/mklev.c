@@ -1043,7 +1043,7 @@ place_branch(struct level *lev, branch * br,    /* branch to place */
         impossible("suspicious attempt to place dungeon branch at (0, 0)");
 
     if (br->type == BR_PORTAL) {
-        mkportal(lev, x, y, dest->dnum, dest->dlevel);
+        mkportal(lev, x, y, levels[ledger_no(dest)]);
     } else if (make_stairs) {
         lev->sstairs.sx = x;
         lev->sstairs.sy = y;

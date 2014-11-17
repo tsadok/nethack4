@@ -775,9 +775,7 @@ domagicportal(struct trap *ttmp)
         return;
     }
 
-    struct d_level target_level;
-    target_level = ttmp->dst;
-    schedule_goto(&target_level, FALSE, FALSE, 1,
+    schedule_goto(&ttmp->dest->z, FALSE, FALSE, 1,
                   "You feel dizzy for a moment, but the sensation passes.",
                   NULL);
 }
@@ -1063,7 +1061,7 @@ mlevel_tele_trap(struct monst *mtmp, struct trap *trap, boolean force_it,
                 }
                 return 0;
             } else {
-                dest = levels[ledger_no(&trap->dst)];
+                dest = trap->dest;
                 migrate_typ = MIGR_PORTAL;
             }
         } else {        /* (tt == LEVEL_TELEP) */

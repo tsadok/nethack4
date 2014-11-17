@@ -974,8 +974,8 @@ extern void walkfrom(struct level *lev, int, int);
 extern void makemaz(struct level *lev, const char *);
 extern void mazexy(struct level *lev, coord * cc);
 extern void bound_digging(struct level *lev);
-extern void mkportal(struct level *lev, xchar x, xchar y, xchar todnum,
-                     xchar todlevel);
+extern struct trap *mkportal(struct level *lev, xchar x, xchar y,
+                             struct level *dest);
 extern void place_lregion(struct level *lev, xchar, xchar, xchar, xchar, xchar,
                           xchar, xchar, xchar, xchar, d_level *);
 extern void water_friction(schar *, schar *);

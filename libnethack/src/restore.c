@@ -984,8 +984,7 @@ restore_traps(struct memfile *mf)
 
         trap->tx = mread8(mf);
         trap->ty = mread8(mf);
-        trap->dst.dnum = mread8(mf);
-        trap->dst.dlevel = mread8(mf);
+        trap->dest = restore_levptr(mf);
         trap->launch.x = mread8(mf);
         trap->launch.y = mread8(mf);
 
@@ -1199,7 +1198,7 @@ getlev(struct memfile *mf, struct level *lev, boolean ghostly)
                             break;
                     if (!ttmp)
                         panic("getlev: need portal but none found");
-                    assign_level(&ttmp->dst, &ltmp);
+                    ttmp->dest = levels[ledger_no(&ltmp)];
                 }
                 break;
             }

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-05 */
+/* Last modified by Sean Hunt, 2014-11-17 */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -293,12 +293,8 @@ lg_place_portal(struct level *lev, const char *dest, struct zone zn) {
 
     struct coord c = zn_rand(zn);
 
-    struct trap *ttmp = maketrap(lev, c.x, c.y, MAGIC_PORTAL);
-    if (!ttmp) {
-        impossible("portal placement failed");
-        return;
-    }
-    ttmp->dst = sp->dlevel;
+    if (!mkportal(lev, c.x, c.y, levels[ledger_no(&sp->dlevel)]))
+        impossible("unable to place portal");
 }
 
 /* levelgen_dsl.c */
