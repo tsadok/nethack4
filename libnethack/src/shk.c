@@ -162,7 +162,7 @@ void
 shkgone(struct monst *mtmp)
 {
     struct eshk *eshk = ESHK(mtmp);
-    struct level *shoplev = levels[ledger_no(&eshk->shoplevel)];
+    struct level *shoplev = eshk->shoplevel;
 
     if (!shoplev->generated) {
         impossible("Shopkeeper's home level not generated!");
@@ -183,7 +183,7 @@ shkgone(struct monst *mtmp)
             for (otmp = shoplev->objects[sx][sy]; otmp; otmp = otmp->nexthere)
                 otmp->no_charge = 0;
 
-    if (on_level(&eshk->shoplevel, &mtmp->dlevel->z)) {
+    if (mtmp->dlevel == shoplev) {
         /* Make sure bill is set only when the dead shk is the resident shk. */
         if ((p = strchr(u.ushops, eshk->shoproom)) != 0) {
             setpaid(mtmp);
@@ -199,7 +199,7 @@ shkgone(struct monst *mtmp)
 void
 set_residency(struct monst *shkp, boolean zero_out)
 {
-    if (on_level(&(ESHK(shkp)->shoplevel), &shkp->dlevel->z))
+    if (ESHK(shkp)->shoplevel == shkp->dlevel)
         shkp->dlevel->rooms[ESHK(shkp)->shoproom - ROOMOFFSET].resident =
             (zero_out) ? NULL : shkp;
 }
@@ -213,32 +213,17 @@ replshk(struct monst *mtmp, struct monst *mtmp2)
     }
 }
 
-void
-saveshk(struct memfile *mf, struct monst *shkp, struct level *lev)
-{
-    if (lev)
-        mwrite8(mf, !!(on_level(&(CONST_ESHK(shkp)->shoplevel), &lev->z)));
-    else
-        /* Monster is migrating. Just write something, since this isn't a bones
-         * anyway. */
-        mwrite8(mf, 0);
-}
-
 /* do shopkeeper specific structure munging -dlc */
 void
-restshk(struct memfile *mf, struct monst *shkp, boolean ghostly,
-        struct level *lev)
+fixup_shk(struct monst *shkp, boolean ghostly, struct level *lev)
 {
     struct eshk *eshkp = ESHK(shkp);
 
     /* shoplevel can change as dungeons move around */
-    boolean same_lev = mread8(mf);
     if (ghostly) {
-        if (same_lev)
-            assign_level(&eshkp->shoplevel, &level->z);
-        else
-            assign_level(&eshkp->shoplevel,
-                         &(d_level){.dnum = -1, .dlevel = -1});
+        /* we are relying here on the fact that, during cleanup, any shopkeepers
+         * not on their home levels were removed. */
+        eshkp->shoplevel = lev;
 
         if (ANGRY(shkp) && strncmpi(eshkp->customer, u.uplname, PL_NSIZ))
             pacify_shk(shkp);
@@ -684,10 +669,9 @@ shopper_financial_report(void)
 int
 inhishop(struct monst *mtmp)
 {
-    return (strchr
-            (in_rooms(mtmp->dlevel, mtmp->mx, mtmp->my, SHOPBASE),
-             ESHK(mtmp)->shoproom) &&
-            on_level(&(ESHK(mtmp)->shoplevel), &mtmp->dlevel->z));
+    return (strchr(in_rooms(mtmp->dlevel, mtmp->mx, mtmp->my, SHOPBASE),
+                   ESHK(mtmp)->shoproom) &&
+            ESHK(mtmp)->shoplevel == mtmp->dlevel);
 }
 
 struct monst *
@@ -978,7 +962,7 @@ make_happy_shk(struct monst *shkp, boolean silentkops)
         boolean vanished = canseemon(shkp);
 
         const char *shk_nam = mon_nam(shkp);
-        if (on_level(&eshkp->shoplevel, &shkp->dlevel->z)) {
+        if (eshkp->shoplevel == shkp->dlevel) {
             home_shk(shkp, FALSE);
             /* didn't disappear if shk can still be seen */
             if (canseemon(shkp))
@@ -991,8 +975,8 @@ make_happy_shk(struct monst *shkp, boolean silentkops)
                going farther down rather than up */
             mdrop_special_objs(shkp);
             /* arrive near shop's door */
-            migrate_to_level(shkp, levels[ledger_no(&eshkp->shoplevel)],
-                             MIGR_APPROX_XY, &eshkp->shd);
+            migrate_to_level(shkp, eshkp->shoplevel, MIGR_APPROX_XY,
+                             &eshkp->shd);
         }
         if (vanished)
             pline("Satisfied, %s suddenly disappears!", shk_nam);
@@ -1556,7 +1540,7 @@ paybill(int croaked)
         mtmp2 = mtmp->nmon;
         if (mtmp != resident) {
             /* for bones: we don't want a shopless shk around */
-            if (!on_level(&(ESHK(mtmp)->shoplevel), &mtmp->dlevel->z))
+            if (ESHK(mtmp)->shoplevel != mtmp->dlevel)
                 mongone(mtmp);
             else {
                 numsk++;
@@ -2924,7 +2908,7 @@ remove_damage(struct monst *shkp, boolean croaked)
     boolean saw_floor = FALSE;
     boolean saw_untrap = FALSE;
     uchar saw_walls = 0;
-    struct level *lev = levels[ledger_no(&ESHK(shkp)->shoplevel)];
+    struct level *lev = ESHK(shkp)->shoplevel;
     
     if (!lev->generated) {
         impossible("Shopkeeper has no home level to repair!");

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-30 */
+/* Last modified by Sean Hunt, 2014-11-17 */
 /* Copyright (c) Izchak Miller, Steve Linhart, 1989.              */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -127,7 +127,7 @@ histemple_at(struct monst *priest, xchar x, xchar y)
 {
     return ((boolean)
             ((CONST_EPRI(priest)->shroom == *in_rooms(level, x, y, TEMPLE)) &&
-             on_level(&(CONST_EPRI(priest)->shrlevel), &level->z)));
+             CONST_EPRI(priest)->shrlevel == level));
 }
 
 /*
@@ -218,7 +218,7 @@ priestini(struct level *lev, struct mkroom *sroom, int sx, int sy,
         EPRI(priest)->shralign = Amask2align(lev->locations[sx][sy].altarmask);
         EPRI(priest)->shrpos.x = sx;
         EPRI(priest)->shrpos.y = sy;
-        assign_level(&(EPRI(priest)->shrlevel), &lev->z);
+        EPRI(priest)->shrlevel = lev;
         priest->mtrapseen = ~0; /* traps are known */
         priest->mpeaceful = 1;
         priest->ispriest = 1;
@@ -735,37 +735,8 @@ clearpriests(void)
     for (mtmp = level->monlist; mtmp; mtmp = mtmp2) {
         mtmp2 = mtmp->nmon;
         if (!DEADMONSTER(mtmp) && mtmp->ispriest &&
-            !on_level(&(CONST_EPRI(mtmp)->shrlevel), &level->z))
+            CONST_EPRI(mtmp)->shrlevel != level)
             mongone(mtmp);
-    }
-}
-
-void
-savepriest(struct memfile *mf, struct monst *mtmp, struct level *lev)
-{
-    if (lev)
-        mwrite8(mf, !!(on_level(&(CONST_EPRI(mtmp)->shrlevel), &lev->z)));
-    else
-        /* Monster is migrating. Just write something, since this isn't a bones
-         * anyway. */
-        mwrite8(mf, 0);
-}
-
-/* munge priest-specific structure when restoring -dlc */
-void
-restpriest(struct memfile *mf, struct monst *mtmp, boolean ghostly,
-           struct level *lev)
-{
-    /* If the priest came from a different shrine level, update that now. */
-    boolean same_lev = mread8(mf);
-
-    struct d_level *dlev = &(EPRI(mtmp)->shrlevel);
-
-    if (ghostly) {
-        if (same_lev)
-            assign_level(dlev, &lev->z);
-        else
-            assign_level(dlev, &(d_level){.dnum = -1, .dlevel = -1});
     }
 }
 

@@ -2027,8 +2027,7 @@ restore_mon(struct memfile *mf)
         EPRI(mon)->shroom = mread8(mf);
         EPRI(mon)->shrpos.x = mread8(mf);
         EPRI(mon)->shrpos.y = mread8(mf);
-        EPRI(mon)->shrlevel.dnum = mread8(mf);
-        EPRI(mon)->shrlevel.dlevel = mread8(mf);
+        EPRI(mon)->shrlevel = restore_levptr(mf);
         break;
 
     case MX_EMIN:
@@ -2063,8 +2062,7 @@ restore_mon(struct memfile *mf)
         shk->shoptype = mread16(mf);
         shk->billct = mread16(mf);
         shk->visitct = mread16(mf);
-        shk->shoplevel.dnum = mread8(mf);
-        shk->shoplevel.dlevel = mread8(mf);
+        shk->shoplevel = restore_levptr(mf);
         shk->shoproom = mread8(mf);
         shk->following = mread8(mf);
         shk->surcharge = mread8(mf);
@@ -2082,8 +2080,7 @@ restore_mon(struct memfile *mf)
         EGD(mon)->gdy = mread8(mf);
         EGD(mon)->ogx = mread8(mf);
         EGD(mon)->ogy = mread8(mf);
-        EGD(mon)->gdlevel.dnum = mread8(mf);
-        EGD(mon)->gdlevel.dlevel = mread8(mf);
+        EGD(mon)->gdlevel = restore_levptr(mf);
         EGD(mon)->warncnt = mread8(mf);
         EGD(mon)->gddone = mread8(mf);
         for (i = 0; i < FCSIZ; i++)
@@ -2252,8 +2249,7 @@ save_mon(struct memfile *mf, const struct monst *mon)
         mwrite8(mf, CONST_EPRI(mon)->shroom);
         mwrite8(mf, CONST_EPRI(mon)->shrpos.x);
         mwrite8(mf, CONST_EPRI(mon)->shrpos.y);
-        mwrite8(mf, CONST_EPRI(mon)->shrlevel.dnum);
-        mwrite8(mf, CONST_EPRI(mon)->shrlevel.dlevel);
+        save_levptr(mf, CONST_EPRI(mon)->shrlevel);
         break;
 
     case MX_EMIN:
@@ -2288,8 +2284,7 @@ save_mon(struct memfile *mf, const struct monst *mon)
         mwrite16(mf, shk->shoptype);
         mwrite16(mf, shk->billct);
         mwrite16(mf, shk->visitct);
-        mwrite8(mf, shk->shoplevel.dnum);
-        mwrite8(mf, shk->shoplevel.dlevel);
+        save_levptr(mf, shk->shoplevel);
         mwrite8(mf, shk->shoproom);
         mwrite8(mf, shk->following);
         mwrite8(mf, shk->surcharge);
@@ -2307,8 +2302,7 @@ save_mon(struct memfile *mf, const struct monst *mon)
         mwrite8(mf, CONST_EGD(mon)->gdy);
         mwrite8(mf, CONST_EGD(mon)->ogx);
         mwrite8(mf, CONST_EGD(mon)->ogy);
-        mwrite8(mf, CONST_EGD(mon)->gdlevel.dnum);
-        mwrite8(mf, CONST_EGD(mon)->gdlevel.dlevel);
+        save_levptr(mf, CONST_EGD(mon)->gdlevel);
         mwrite8(mf, CONST_EGD(mon)->warncnt);
         mwrite8(mf, CONST_EGD(mon)->gddone);
         for (i = 0; i < FCSIZ; i++)

@@ -832,11 +832,6 @@ savemonchn(struct memfile *mf, struct level *lev, struct monst *mtmp)
         if (mtmp->minvent)
             saveobjchn(mf, mtmp->minvent);
 
-        if (mtmp->isshk)
-            saveshk(mf, mtmp, lev);
-        if (mtmp->ispriest)
-            savepriest(mf, mtmp, lev);
-
         mtmp = mtmp2;
     }
 }

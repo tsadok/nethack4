@@ -280,9 +280,7 @@ restmonchn(struct memfile *mf, struct level *lev, boolean ghostly)
         }
 
         if (mtmp->isshk)
-            restshk(mf, mtmp, ghostly, lev);
-        if (mtmp->ispriest)
-            restpriest(mf, mtmp, ghostly, lev);
+            fixup_shk(mtmp, ghostly, lev);
 
         mtmp2 = mtmp;
     }

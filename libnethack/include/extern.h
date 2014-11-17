@@ -1395,10 +1395,6 @@ extern boolean in_your_sanctuary(struct monst *, xchar, xchar);
 extern void ghod_hitsu(struct monst *);
 extern void angry_priest(void);
 extern void clearpriests(void);
-extern void savepriest(struct memfile *mf, struct monst *mtmp,
-                       struct level *lev);
-extern void restpriest(struct memfile *mf, struct monst *mtmp, boolean ghostly,
-                       struct level *lev);
 
 /* ### quest.c ### */
 
@@ -1516,9 +1512,7 @@ extern const char *shkname(const struct monst *);
 extern void shkgone(struct monst *);
 extern void set_residency(struct monst *, boolean);
 extern void replshk(struct monst *, struct monst *);
-extern void saveshk(struct memfile *mf, struct monst *shkp, struct level *lev);
-extern void restshk(struct memfile *mf, struct monst *shkp, boolean ghostly,
-                    struct level *lev);
+extern void fixup_shk(struct monst *shkp, boolean ghostly, struct level *lev);
 extern char inside_shop(struct level *lev, xchar x, xchar y);
 extern void u_left_shop(char *, boolean);
 extern void remote_burglary(xchar, xchar);
