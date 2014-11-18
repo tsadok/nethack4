@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-11-17 */
+/* Last modified by Sean Hunt, 2014-11-18 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -17,7 +17,8 @@ static int extend_spine(int[3][3], int, int, int);
 static boolean okay(struct level *lev, int x, int y, int dir);
 static void maze0xy(coord *);
 static boolean put_lregion_here(struct level *lev, xchar, xchar, xchar, xchar,
-                                xchar, xchar, xchar, boolean, d_level *);
+                                xchar, xchar, xchar, boolean,
+                                struct level *dest);
 static void move(int *, int *, int);
 static boolean bad_location(struct level *lev, xchar x, xchar y, xchar lx,
                             xchar ly, xchar hx, xchar hy);
@@ -230,7 +231,7 @@ bad_location(struct level * lev, xchar x, xchar y, xchar lx, xchar ly, xchar hx,
 void
 place_lregion(struct level *lev, xchar lx, xchar ly, xchar hx, xchar hy,
               xchar nlx, xchar nly, xchar nhx, xchar nhy, xchar rtype,
-              d_level * dest_lvl)
+              struct level *dest)
 {
     int trycnt;
     boolean oneshot;
@@ -258,7 +259,7 @@ place_lregion(struct level *lev, xchar lx, xchar ly, xchar hx, xchar hy,
         x = rn1((hx - lx) + 1, lx);
         y = rn1((hy - ly) + 1, ly);
         if (put_lregion_here
-            (lev, x, y, nlx, nly, nhx, nhy, rtype, oneshot, dest_lvl))
+            (lev, x, y, nlx, nly, nhx, nhy, rtype, oneshot, dest))
             return;
     }
 
@@ -267,7 +268,7 @@ place_lregion(struct level *lev, xchar lx, xchar ly, xchar hx, xchar hy,
     for (x = lx; x <= hx; x++)
         for (y = ly; y <= hy; y++)
             if (put_lregion_here
-                (lev, x, y, nlx, nly, nhx, nhy, rtype, oneshot, dest_lvl))
+                (lev, x, y, nlx, nly, nhx, nhy, rtype, oneshot, dest))
                 return;
 
     impossible("Couldn't place lregion type %d!", rtype);
@@ -276,7 +277,7 @@ place_lregion(struct level *lev, xchar lx, xchar ly, xchar hx, xchar hy,
 static boolean
 put_lregion_here(struct level *lev, xchar x, xchar y, xchar nlx, xchar nly,
                  xchar nhx, xchar nhy, xchar rtype, boolean oneshot,
-                 d_level * dest_lvl)
+                 struct level * dest)
 {
     if (bad_location(lev, x, y, nlx, nly, nhx, nhy)) {
         if (!oneshot) {
@@ -308,7 +309,7 @@ put_lregion_here(struct level *lev, xchar x, xchar y, xchar nlx, xchar nly,
         u_on_newpos(x, y);
         break;
     case LR_PORTAL:
-        mkportal(lev, x, y, levels[ledger_no(dest_lvl)]);
+        mkportal(lev, x, y, dest);
         break;
     case LR_DOWNSTAIR:
     case LR_UPSTAIR:
@@ -326,7 +327,7 @@ makemaz(struct level *lev, const char *s)
 {
     int x, y;
     char protofile[20];
-    s_level *sp = Is_special(&lev->z);
+    s_level *sp = Is_special(lev);
     coord mm;
 
     if (*s) {

@@ -459,7 +459,7 @@ extern void insert_branch(branch *, boolean);
 extern void init_dungeons(void);
 extern struct level *sp_lev(enum special_level sl);
 extern s_level *find_level(const char *);
-extern s_level *Is_special(const d_level *);
+extern s_level *Is_special(const struct level *lev);
 extern branch *Is_branchlev(const struct level *lev);
 extern xchar ledger_no(const d_level *);
 extern xchar maxledgerno(void);
@@ -977,7 +977,7 @@ extern void bound_digging(struct level *lev);
 extern struct trap *mkportal(struct level *lev, xchar x, xchar y,
                              struct level *dest);
 extern void place_lregion(struct level *lev, xchar, xchar, xchar, xchar, xchar,
-                          xchar, xchar, xchar, xchar, d_level *);
+                          xchar, xchar, xchar, xchar, struct level *dest);
 extern void water_friction(schar *, schar *);
 extern const char *a_waterbody(xchar, xchar);
 extern const char *waterbody_name(xchar, xchar);

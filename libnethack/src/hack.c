@@ -2185,7 +2185,7 @@ in_rooms(struct level *lev, xchar x, xchar y, int typewanted)
 boolean
 in_town(int x, int y)
 {
-    s_level *slev = Is_special(&level->z);
+    s_level *slev = Is_special(level);
     struct mkroom *sroom;
     boolean has_subrooms = FALSE;
 

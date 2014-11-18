@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-30 */
+/* Last modified by Sean Hunt, 2014-11-18 */
 /*      Copyright (c) 1989 by Jean-Christophe Collet */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -2697,7 +2697,7 @@ void
 fixup_special(struct level *lev)
 {
     lev_region *r = lregions;
-    struct d_level lvl;
+    struct level *dest = NULL;
     int x, y;
     struct mkroom *croom;
     boolean added_branch = FALSE;
@@ -2711,7 +2711,7 @@ fixup_special(struct level *lev)
         case LR_PORTAL: {
                 s_level *sp = find_level(r->rname.str);
 
-                lvl = sp->dlevel;
+                dest = sp->lev;
             }
 
             /* fall into... */
@@ -2720,7 +2720,7 @@ fixup_special(struct level *lev)
         place_it:
             place_lregion(lev, r->inarea.x1, r->inarea.y1, r->inarea.x2,
                           r->inarea.y2, r->delarea.x1, r->delarea.y1,
-                          r->delarea.x2, r->delarea.y2, r->rtype, &lvl);
+                          r->delarea.x2, r->delarea.y2, r->rtype, dest);
             break;
 
         case LR_TELE:

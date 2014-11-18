@@ -47,9 +47,9 @@ static int correct_branch_type(struct tmpbranch *);
 static branch *add_branch(int, int, struct proto_dungeon *);
 static void add_level(s_level *);
 static void init_level(int, int, struct proto_dungeon *);
-static int possible_places(int, boolean *, struct proto_dungeon *);
+static int possible_places(int, int, boolean *, struct proto_dungeon *);
 static xchar pick_level(boolean *, int);
-static boolean place_level(int, struct proto_dungeon *);
+static boolean place_level(int, int, struct proto_dungeon *);
 static const char *br_string(int);
 static void print_branch(struct nh_menulist *menu, int dnum, int lower_bound,
                          int upper_bound, boolean bymenu,
@@ -162,7 +162,7 @@ savelevchn(struct memfile *mf)
 
     for (tmplev = sp_levchn; tmplev; tmplev = tmplev->next) {
         save_d_flags(mf, tmplev->flags);
-        save_dlevel(mf, tmplev->dlevel);
+        save_levptr(mf, tmplev->lev);
         mwrite(mf, tmplev->proto, sizeof (tmplev->proto));
         mwrite8(mf, tmplev->boneid);
         mwrite8(mf, tmplev->rndlevs);
@@ -290,7 +290,7 @@ restlevchn(struct memfile *mf)
     for (; cnt > 0; cnt--) {
         tmplev = malloc(sizeof (s_level));
         tmplev->flags = restore_d_flags(mf);
-        restore_dlevel(mf, &tmplev->dlevel);
+        tmplev->lev = restore_levptr(mf);
         mread(mf, tmplev->proto, sizeof (tmplev->proto));
         tmplev->boneid = mread8(mf);
         tmplev->rndlevs = mread8(mf);
@@ -446,7 +446,7 @@ level_range(xchar dgn, int base, int rrand, int chain, struct proto_dungeon *pd,
         if (!levtmp)
             panic("level_range: empty chain level!");
 
-        base += levtmp->dlevel.dlevel;
+        base += levtmp->lev->z.dlevel;
     } else {    /* absolute in the dungeon */
         /* from end of dungeon */
         if (base < 0)
@@ -610,8 +610,8 @@ add_level(s_level * new_lev)
 
     prev = NULL;
     for (curr = sp_levchn; curr; curr = curr->next) {
-        if (curr->dlevel.dnum == new_lev->dlevel.dnum &&
-            curr->dlevel.dlevel > new_lev->dlevel.dlevel)
+        if (curr->lev->z.dnum == new_lev->lev->z.dnum &&
+            curr->lev->z.dlevel > new_lev->lev->z.dlevel)
             break;
         prev = curr;
     }
@@ -641,10 +641,8 @@ init_level(int dgn, int proto_index, struct proto_dungeon *pd)
     /* load new level with data */
     strcpy(new_level->proto, tlevel->name);
     new_level->boneid = tlevel->boneschar;
-    new_level->dlevel.dnum = dgn;
-    new_level->dlevel.dlevel = 0;       /* for now */
-
-    new_level->flags.town = ! !(tlevel->flags & TOWN);
+    new_level->lev = NULL;
+new_level->flags.town = ! !(tlevel->flags & TOWN);
     new_level->flags.hellish = ! !(tlevel->flags & HELLISH);
     new_level->flags.maze_like = ! !(tlevel->flags & MAZELIKE);
     new_level->flags.rogue_like = ! !(tlevel->flags & ROGUELIKE);
@@ -658,29 +656,28 @@ init_level(int dgn, int proto_index, struct proto_dungeon *pd)
 }
 
 static int
-possible_places(int idx,        /* prototype index */
+possible_places(int dgn,
+                int idx,        /* prototype index */
                 boolean * map,  /* array MAXLEVEL+1 in length */
                 struct proto_dungeon *pd)
 {
     int i, start, count;
-    s_level *lev = pd->final_lev[idx];
 
     /* init level possibilities */
     for (i = 0; i <= MAXLEVEL; i++)
         map[i] = FALSE;
 
     /* get base and range and set those entried to true */
-    count =
-        level_range(lev->dlevel.dnum, pd->tmplevel[idx].lev.base,
-                    pd->tmplevel[idx].lev.rand, pd->tmplevel[idx].chain, pd,
-                    &start);
+    count = level_range(dgn, pd->tmplevel[idx].lev.base,
+                        pd->tmplevel[idx].lev.rand, pd->tmplevel[idx].chain, pd,
+                        &start);
     for (i = start; i < start + count; i++)
         map[i] = TRUE;
 
     /* mark off already placed levels */
     for (i = pd->start; i < idx; i++) {
-        if (pd->final_lev[i] && map[pd->final_lev[i]->dlevel.dlevel]) {
-            map[pd->final_lev[i]->dlevel.dlevel] = FALSE;
+        if (pd->final_lev[i] && map[pd->final_lev[i]->lev->z.dlevel]) {
+            map[pd->final_lev[i]->lev->z.dlevel] = FALSE;
             --count;
         }
     }
@@ -711,7 +708,7 @@ pick_level(boolean * map,       /* an array MAXLEVEL+1 in size */
  * been exausted, return false.
  */
 static boolean
-place_level(int proto_index, struct proto_dungeon *pd)
+place_level(int dgn, int proto_index, struct proto_dungeon *pd)
 {
     boolean map[MAXLEVEL + 1];  /* valid levels are 1..MAXLEVEL inclusive */
     s_level *lev;
@@ -724,16 +721,20 @@ place_level(int proto_index, struct proto_dungeon *pd)
 
     /* No level created for this prototype, goto next. */
     if (!lev)
-        return place_level(proto_index + 1, pd);
+        return place_level(dgn, proto_index + 1, pd);
 
-    npossible = possible_places(proto_index, map, pd);
+    npossible = possible_places(dgn, proto_index, map, pd);
 
     for (; npossible; --npossible) {
-        lev->dlevel.dlevel = pick_level(map, rn2(npossible));
-        if (place_level(proto_index + 1, pd))
+        lev->lev =
+            levels[ledger_no(&(struct d_level)
+                               {.dnum = dgn,
+                               .dlevel = pick_level(map, rn2(npossible))})];
+
+        if (place_level(dgn, proto_index + 1, pd))
             return TRUE;
 
-        map[lev->dlevel.dlevel] = FALSE;        /* this choice didn't work */
+        map[lev->lev->z.dlevel] = FALSE;        /* this choice didn't work */
     }
     return FALSE;
 }
@@ -933,7 +934,7 @@ init_dungeons(void)
          * routine will attempt all possible combinations before giving
          * up.
          */
-        if (!place_level(pd.start, &pd))
+        if (!place_level(i, pd.start, &pd))
             panic("init_dungeon:  couldn't place levels");
 
         for (; pd.start < pd.n_levs; pd.start++)
@@ -967,7 +968,7 @@ init_dungeons(void)
 
         x = find_level(level_map[i]);
         if (x) {
-            dungeon_topology.special_levels[i] = levels[ledger_no(&x->dlevel)];
+            dungeon_topology.special_levels[i] = x->lev;
             if (!strncmp(level_map[i], "x-", 2)) {
                 /* This is where the name substitution on the levels of the
                    quest dungeon occur. */
@@ -1027,12 +1028,12 @@ init_dungeons(void)
 
     /* one special fixup for dummy surface level */
     if ((x = find_level("dummy")) != 0) {
-        i = x->dlevel.dnum;
+        i = x->lev->z.dnum;
         /* the code above puts earth one level above dungeon level #1, making
            the dummy level overlay level 1; but the whole reason for having the 
            dummy level is to make earth have depth -1 instead of 0, so adjust
            the start point to shift endgame up */
-        if (dunlevs_in_dungeon(&x->dlevel) > 1 - dungeons[i].depth_start)
+        if (dunlevs_in_dungeon(&x->lev->z) > 1 - dungeons[i].depth_start)
             dungeons[i].depth_start -= 1;
         /* TO DO: strip "dummy" out all the way here, so that it's hidden from
            <ctrl/O> feedback. */
@@ -1155,12 +1156,12 @@ on_level(const d_level * lev1, const d_level * lev2)
 
 /* is this level referenced in the special level chain? */
 s_level *
-Is_special(const d_level * lev)
+Is_special(const struct level *lev)
 {
     s_level *levtmp;
 
     for (levtmp = sp_levchn; levtmp; levtmp = levtmp->next)
-        if (on_level(lev, &levtmp->dlevel))
+        if (lev == levtmp->lev)
             return levtmp;
 
     return NULL;
@@ -1532,7 +1533,7 @@ assign_rnd_level(d_level * dest, const d_level * src, int range)
 int
 induced_align(const struct level *lev, int pct)
 {
-    s_level *slev = Is_special(&lev->z);
+    s_level *slev = Is_special(lev);
     aligntyp al;
 
     if (slev && slev->flags.align)
@@ -1742,27 +1743,27 @@ print_dungeon(boolean bymenu, schar * rlev, xchar * rdgn)
          * this dungeon.
          */
         for (slev = sp_levchn, last_level = 0; slev; slev = slev->next) {
-            if (slev->dlevel.dnum != i)
+            if (slev->lev->z.dnum != i)
                 continue;
 
             /* print any branches before this level */
-            print_branch(&menu, i, last_level, slev->dlevel.dlevel, bymenu,
+            print_branch(&menu, i, last_level, slev->lev->z.dlevel, bymenu,
                          &lchoices);
 
-            buf = msgprintf("   %s: %d", slev->proto, depth(&slev->dlevel));
-            if (on_level(&slev->dlevel, &sp_lev(sl_castle)->z))
+            buf = msgprintf("   %s: %d", slev->proto, depth(&slev->lev->z));
+            if (slev->lev == sp_lev(sl_castle))
                 buf = msgprintf("%s (tune %s)", buf, tune);
             if (bymenu) {
                 /* If other floating branches are added, this will need to
                    change */
                 if (i != sp_lev(sl_fort_ludios)->z.dnum) {
-                    lchoices.lev[lchoices.idx] = slev->dlevel.dlevel;
+                    lchoices.lev[lchoices.idx] = slev->lev->z.dlevel;
                     lchoices.dgn[lchoices.idx] = i;
                 } else {
-                    lchoices.lev[lchoices.idx] = depth(&slev->dlevel);
+                    lchoices.lev[lchoices.idx] = depth(&slev->lev->z);
                     lchoices.dgn[lchoices.idx] = 0;
                 }
-                lchoices.playerlev[lchoices.idx] = depth(&slev->dlevel);
+                lchoices.playerlev[lchoices.idx] = depth(&slev->lev->z);
 
                 add_menuitem(&menu, lchoices.idx + 1, buf, lchoices.menuletter,
                              FALSE);
@@ -1776,7 +1777,7 @@ print_dungeon(boolean bymenu, schar * rlev, xchar * rdgn)
             } else
                 add_menutext(&menu, buf);
 
-            last_level = slev->dlevel.dlevel;
+            last_level = slev->lev->z.dlevel;
         }
         /* print branches after the last special level */
         print_branch(&menu, i, last_level, MAXLEVEL, bymenu, &lchoices);

@@ -559,7 +559,7 @@ makelevel(struct level *lev)
     int room_threshold;
 
     {
-        s_level *slevnum = Is_special(&lev->z);
+        s_level *slevnum = Is_special(lev);
 
         /* check for special levels */
         if (slevnum && lev != sp_lev(sl_rogue)) {
@@ -580,7 +580,7 @@ makelevel(struct level *lev)
 
             snprintf(fillname, SIZE(fillname), "%s-fil", urole.filecode);
             strcat(fillname,
-                   (lev->z.dlevel < loc_levnum->dlevel.dlevel) ? "a" : "b");
+                   (lev->z.dlevel < loc_levnum->lev->z.dlevel) ? "a" : "b");
             makemaz(lev, fillname);
             return;
         } else if (In_hell(lev) ||
@@ -816,7 +816,7 @@ mineralize(struct level *lev)
     /* determine if it is even allowed; almost all special levels are excluded
        */
     if (In_hell(lev) || In_V_tower(lev) || lev == sp_lev(sl_rogue) ||
-        lev->flags.arboreal || ((sp = Is_special(&lev->z)) != 0 &&
+        lev->flags.arboreal || ((sp = Is_special(lev)) != 0 &&
                                 lev != sp_lev(sl_oracle)
                                 && (!In_mines(lev) || sp->flags.town)
         ))

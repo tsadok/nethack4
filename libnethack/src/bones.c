@@ -19,7 +19,7 @@ make_bones_id(char *buf, struct level *lev)
 
     sprintf(buf, "%c%s", dungeons[lev->z.dnum].boneid,
             In_quest(lev) ? urole.filecode : "0");
-    if ((sptr = Is_special(&lev->z)) != 0)
+    if ((sptr = Is_special(lev)) != 0)
         sprintf(buf + 2, ".%c", sptr->boneid);
     else
         sprintf(buf + 2, ".%d", lev->z.dlevel);
@@ -33,7 +33,7 @@ no_bones_level(struct level *lev)
 {
     s_level *sptr;
 
-    return (boolean) (((sptr = Is_special(&lev->z)) != 0 && !sptr->boneid)
+    return (boolean) (((sptr = Is_special(lev)) != 0 && !sptr->boneid)
                       || !dungeons[lev->z.dnum].boneid
                       /* no bones on the last or multiway branch levels */
                       /* in any dungeon (level 1 isn't multiway).  */
