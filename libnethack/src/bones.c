@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-02 */
+/* Last modified by Sean Hunt, 2014-12-06 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985,1993. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -404,7 +404,7 @@ getbones(struct level *lev)
     if (rn2(3)  /* only once in three times do we find bones */
         &&!wizard)
         goto fail;
-    if (no_bones_level(levnum))
+    if (no_bones_level(lev))
         goto fail;
 
     make_bones_id(bonesid, lev);

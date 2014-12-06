@@ -636,7 +636,7 @@ migrate_to_level(struct monst *mtmp, xchar tolev,       /* destination level */
     new_lev.dlevel = ledger_to_dlev((xchar) tolev);
 
     /* set migration data */
-    xyflags = (depth(&new_lev) < depth(&level->)); /* 1 => up */
+    xyflags = (depth(&new_lev) < depth(&level->z)); /* 1 => up */
     if (In_W_tower(mtmp->mx, mtmp->my, level))
         xyflags |= 2;
     mtmp->wormno = num_segs;
