@@ -29,7 +29,7 @@ goodpos(struct level *lev, int x, int y, struct monst *mtmp, unsigned gpflags)
 
     /* in many cases, we're trying to create a new monster, which can't go on
        top of the player or any existing monster. however, occasionally we are
-       relocating engravings or objects, which could be co-located and thus get 
+       relocating engravings or objects, which could be co-located and thus get
        restricted a bit too much. oh well. */
     if (mtmp != &youmonst && x == u.ux && y == u.uy &&
         (!u.usteed || mtmp != u.usteed) && !(gpflags & MM_IGNOREMONST))
@@ -39,13 +39,13 @@ goodpos(struct level *lev, int x, int y, struct monst *mtmp, unsigned gpflags)
         struct monst *mtmp2 = (gpflags & MM_IGNOREMONST) ?
             NULL : m_at(lev, x, y);
 
-        /* Be careful with long worms.  A monster may be placed back in its own 
+        /* Be careful with long worms.  A monster may be placed back in its own
            location.  Normally, if m_at() returns the same monster that we're
            trying to place, the monster is being placed in its own location.
            However, that is not correct for worm segments, because all the
            segments of the worm return the same m_at(). Actually we overdo the
            check a little bit--a worm can't be placed in its own location,
-           period.  If we just checked for mtmp->mx != x || mtmp->my != y, we'd 
+           period.  If we just checked for mtmp->mx != x || mtmp->my != y, we'd
            miss the case where we're called to place the worm segment and the
            worm's head is at x,y. */
         if (mtmp2 && (mtmp2 != mtmp || mtmp->wormno))
@@ -117,7 +117,7 @@ enexto_core(coord * cc, struct level *lev, xchar xx, xchar yy,
     good_ptr = good;
     range = 1;
 
-    /* 
+    /*
      * Walk around the border of the square with center (xx,yy) and
      * radius range.  Stop when we find at least one valid position.
      */
@@ -240,10 +240,10 @@ teleds(int nux, int nuy, boolean allow_drag)
        move the ball, then always "drag" whether or not allow_drag is true,
        because we are calling that function, not to drag, but to move the
        chain.  *However* there are some dumb special cases: 0 0 _X move east
-       -----> X_ @ @ These are permissible if teleporting, but not if dragging. 
-       As a result, drag_ball() needs to know about allow_drag and might end up 
+       -----> X_ @ @ These are permissible if teleporting, but not if dragging.
+       As a result, drag_ball() needs to know about allow_drag and might end up
        dragging the ball anyway.  Also, drag_ball() might find that dragging
-       the ball is completely impossible (ball in range but there's rock in the 
+       the ball is completely impossible (ball in range but there's rock in the
        way), in which case it teleports the ball on its own. */
     if (ball_active) {
         if (!carried(uball) && distmin(nux, nuy, uball->ox, uball->oy) <= 2)
@@ -251,7 +251,7 @@ teleds(int nux, int nuy, boolean allow_drag)
         else {
             /* have to move the ball */
             if (!allow_drag || distmin(u.ux, u.uy, nux, nuy) > 1) {
-                /* we should not have dist > 1 and allow_drag at the same time, 
+                /* we should not have dist > 1 and allow_drag at the same time,
                    but just in case, we must then revert to teleport. */
                 allow_drag = FALSE;
                 unplacebc();
@@ -312,7 +312,7 @@ teleds(int nux, int nuy, boolean allow_drag)
         u.usteed->my = nuy;
     }
 
-    /* 
+    /*
      *  Make sure the hero disappears from the old location.  This will
      *  not happen if she is teleported within sight of her previous
      *  location.  Force a full vision recalculation because the hero
@@ -546,8 +546,8 @@ level_tele(void)
 void
 level_tele_impl(boolean wizard_tele)
 {
-    int newlev;
-    d_level newlevel;
+    int newlev = 0;
+    struct level *newlevel = NULL;
     const char *escape_by_flying = 0;   /* when surviving dest of -N */
     boolean force_dest = FALSE;
     const char *buf, *killer = NULL;
@@ -582,13 +582,8 @@ level_tele_impl(boolean wizard_tele)
             }
 
             if (wizard_tele && !strcmp(buf, "?")) {
-                schar destlev = 0;
-                xchar destdnum = 0;
-
-                if ((newlev = (int)print_dungeon(TRUE, &destlev, &destdnum))) {
-                    newlevel.dnum = destdnum;
-                    newlevel.dlevel = destlev;
-                    if (newlevel.dnum == dungeon_topology.d_endgame_dnum &&
+                if ((newlevel = print_dungeon(TRUE))) {
+                    if (newlevel->dgn == dungeon_topology.endgame &&
                         !In_endgame(level)) {
                         const char *dest = "Destination is earth level";
                         if (!Uhave_amulet) {
@@ -600,19 +595,19 @@ level_tele_impl(boolean wizard_tele)
                                 dest = msgcat(dest, " with the amulet");
                             }
                         }
-                        assign_level(&newlevel, &sp_lev(sl_earth)->z);
+                        newlevel = sp_lev(sl_earth);
                         pline("%s.", dest);
                     }
-                    force_dest = TRUE;
+                    goto do_jump;
                 } else
                     return;
             } else if ((newlev = lev_by_name(buf)) == 0)
                 newlev = atoi(buf);
-        } while (!newlev && !digit(buf[0]) && (buf[0] != '-' || !digit(buf[1]))
-                 && trycnt < 10);
+        } while (!newlev && !digit(buf[0]) &&
+                 (buf[0] != '-' || !digit(buf[1])) && trycnt < 10);
 
         /* no dungeon escape via this route */
-        if (newlev == 0) {
+        if (!newlev) {
             if (trycnt >= 10)
                 goto random_levtport;
             if (ynq("Go to Nowhere.  Are you sure?") != 'y')
@@ -639,12 +634,12 @@ level_tele_impl(boolean wizard_tele)
         }
         /* if in Quest, the player sees "Home 1", etc., on the status line,
            instead of the logical depth of the level.  controlled level
-           teleport request is likely to be relativized to the status line, and 
+           teleport request is likely to be relativized to the status line, and
            consequently it should be incremented to the value of the logical
-           depth of the target level. we let negative values requests fall into 
+           depth of the target level. we let negative values requests fall into
            the "heaven" loop. */
         if (In_quest(level) && newlev > 0)
-            newlev = newlev + dungeons[level->z.dnum].depth_start - 1;
+            newlev = newlev + level->dgn->depth_start - 1;
     } else {    /* involuntary level tele */
     random_levtport: ;
         struct level *dest = random_teleport_level();
@@ -652,7 +647,7 @@ level_tele_impl(boolean wizard_tele)
             pline("You shudder for a moment.");
             return;
         }
-        newlev = depth(&dest->z);
+        newlev = depth(dest);
     }
 
     if (!next_to_u()) {
@@ -661,16 +656,14 @@ level_tele_impl(boolean wizard_tele)
     }
 
     if (In_endgame(level)) {    /* must already be wizard */
-        int llimit = dunlevs_in_dungeon(&level->z);
+        int llimit = level->dgn->num_dunlevs;
 
         if (newlev >= 0 || newlev <= -llimit) {
             pline("You can't get there from here.");
             return;
         }
-        newlevel.dnum = level->z.dnum;
-        newlevel.dlevel = llimit + newlev;
-        schedule_goto(levels[ledger_no(&newlevel)], FALSE, FALSE, 0, NULL,
-                      NULL);
+        schedule_goto(level_in_dungeon(level->dgn, llimit + newlev), FALSE,
+                      FALSE, 0, NULL, NULL);
         return;
     }
 
@@ -707,6 +700,8 @@ level_tele_impl(boolean wizard_tele)
     }
 
     if (killer) {       /* the chosen destination was not survivable */
+        /* LEVELSFIXME: Escaping */
+#if 0
         d_level lsav;
 
         /* set specific death location; this also suppresses bones */
@@ -718,39 +713,37 @@ level_tele_impl(boolean wizard_tele)
            explore|debug mode); the hero has now left the dungeon... */
         escape_by_flying = "find yourself back on the surface";
         level->z = lsav;    /* restore level->z so escape code works */
+#endif
     }
 
     /* calls done(ESCAPED) if newlevel==0 */
     if (escape_by_flying) {
         pline("You %s.", escape_by_flying);
         done(ESCAPED, "teleported to safety");
-    } else if (level->z.dnum == sp_lev(sl_medusa)->z.dnum &&
-               newlev >=
-               dungeons[level->z.dnum].depth_start + dunlevs_in_dungeon(&level->z)) {
+    } else if (level->dgn == dungeon_topology.main_dungeon &&
+               newlev >= level->dgn->depth_start + level->dgn->num_dunlevs) {
         if (!(wizard_tele && force_dest))
-            assign_level(&newlevel, &sp_lev(sl_valley)->z);
+            newlevel = sp_lev(sl_valley);
     } else {
         /* if invocation did not yet occur, teleporting into the last level of
            Gehennom is forbidden. */
         if (!wizard_tele)
             if (Inhell && !u.uevent.invoked &&
                 newlev >=
-                (dungeons[level->z.dnum].depth_start + dunlevs_in_dungeon(&level->z) -
-                 1)) {
-                newlev =
-                    dungeons[level->z.dnum].depth_start +
-                    dunlevs_in_dungeon(&level->z) - 2;
+                (level->dgn->depth_start + level->dgn->num_dunlevs - 1)) {
+                newlev = level->dgn->depth_start + level->dgn->num_dunlevs - 2;
                 pline("Sorry...");
             }
         /* no teleporting out of quest dungeon */
-        if (In_quest(level) && newlev < depth(&sp_lev(sl_quest_start)->z))
-            newlev = depth(&sp_lev(sl_quest_start)->z);
+        if (In_quest(level) && newlev < depth(sp_lev(sl_quest_start)))
+            newlev = depth(sp_lev(sl_quest_start));
         /* the player thinks of levels purely in logical terms, so we must
            translate newlev to a number relative to the current dungeon. */
         if (!(wizard_tele && force_dest))
-            assign_level(&newlevel, &get_level(newlev)->z);
+            newlevel = get_level(newlev);
     }
-    schedule_goto(levels[ledger_no(&newlevel)], FALSE, FALSE, 0, NULL, NULL);
+do_jump:
+    schedule_goto(newlevel, FALSE, FALSE, 0, NULL, NULL);
     /* in case player just read a scroll and is about to be asked to call it
        something, we can't defer until the end of the turn */
     if (!flags.mon_moving)
@@ -769,7 +762,7 @@ domagicportal(struct trap *ttmp)
     pline("You activated a magic portal!");
 
     /* prevent the poor shnook, whose amulet was stolen while in the endgame,
-       from accidently triggering the portal to the next level, and thus losing 
+       from accidently triggering the portal to the next level, and thus losing
        the game */
     if (In_endgame(level) && !Uhave_amulet) {
         pline("You feel dizzy for a moment, but nothing happens...");
@@ -829,7 +822,7 @@ rloc_pos_ok(int x, int y,       /* coordinates of candidate location */
 
     if (!goodpos(level, x, y, mtmp, 0))
         return FALSE;
-    /* 
+    /*
      * Check for restricted areas present in some special levels.
      *
      * `xx' is current column; if 0, then `yy' will contain flag bits
@@ -942,7 +935,7 @@ rloc(struct monst *mtmp,        /* mx==COLNO implies migrating monster arrival *
         else
             x = level->dnladder.sx, y = level->dnladder.sy;
         /* if the wiz teleports away to heal, try the up staircase, to block
-           the player's escaping before he's healed (deliberately use `goodpos' 
+           the player's escaping before he's healed (deliberately use `goodpos'
            rather than `rloc_pos_ok' here) */
         if (goodpos(level, x, y, mtmp, 0))
             goto found_xy;
@@ -1162,7 +1155,7 @@ rloco(struct obj *obj)
 struct level *
 random_teleport_level(void)
 {
-    int nlev, max_lev, min_lev, cur_lev = level->z.dlevel;
+    int nlev, max_lev, min_lev, cur_lev = level->dlevel;
 
     if (!rn2(5) || level == sp_lev(sl_fort_ludios))
         return NULL;
@@ -1172,20 +1165,20 @@ random_teleport_level(void)
 
     /* What I really want to do is as follows: -- If in a dungeon that goes
        down, the new level is to be restricted to [top of parent, bottom of
-       current dungeon] -- If in a dungeon that goes up, the new level is to be 
+       current dungeon] -- If in a dungeon that goes up, the new level is to be
        restricted to [top of current dungeon, bottom of parent] -- If in a
-       quest dungeon or similar dungeon entered by portals, the new level is to 
-       be restricted to [top of current dungeon, bottom of current dungeon] The 
+       quest dungeon or similar dungeon entered by portals, the new level is to
+       be restricted to [top of current dungeon, bottom of current dungeon] The
        current behavior is not as sophisticated as that ideal, but is still
-       better what we used to do, which was like this for players but different 
-       for monsters for no obvious reason.  Currently, we must explicitly check 
+       better what we used to do, which was like this for players but different
+       for monsters for no obvious reason.  Currently, we must explicitly check
        for special dungeons.  We check for Knox above; endgame is handled in
        the caller due to its different message ("disoriented"). --KAA 3.4.2:
        explicitly handle quest here too, to fix the problem of monsters
        sometimes level teleporting out of it into main dungeon. Also prevent
        monsters reaching the Sanctum prior to invocation. */
     min_lev = 1;
-    max_lev = dunlevs_in_dungeon(&level->z);
+    max_lev = level->dgn->num_dunlevs;
     /* can't reach the Sanctum if the invocation hasn't been performed */
     if (Inhell && !u.uevent.invoked)
         max_lev -= 1;
@@ -1213,8 +1206,7 @@ random_teleport_level(void)
     if (nlev == cur_lev)
         return NULL;
 
-    return levels[ledger_no(&(struct d_level){.dnum = level->z.dnum,
-                                              .dlevel = nlev})];
+    return level_in_dungeon(level->dgn, nlev);
 }
 
 /* you teleport a monster (via wand, spell, or poly'd q.mechanic attack);
@@ -1246,20 +1238,19 @@ u_teleport_mon(struct monst * mtmp, boolean give_feedback)
  * furthest-reached level.
  */
 struct level *
-portal_target(xchar dnum)
+portal_target(struct dungeon *dgn)
 {
-    if (In_endgame(level) || dnum == dungeon_topology.d_endgame_dnum || 
-        dnum == level->z.dnum)
+    if (In_endgame(level) || dgn == dungeon_topology.endgame ||
+        dgn == level->dgn)
         return NULL;
 
-    d_level dlev;
-    dlev.dnum = dnum;
-    if (dungeons[dnum].depth_start >= depth(&level->z))
-        dlev.dlevel = dungeons[dnum].entry_lev;
+    int dlevel;
+    if (dgn->depth_start >= depth(level))
+        dlevel = dgn->entry_lev;
     else
-        dlev.dlevel = dungeons[dnum].dunlev_ureached;
-    
-    return levels[ledger_no(&dlev)];
+        dlevel = dgn->dunlev_ureached;
+
+    return level_in_dungeon(dgn, dlevel);
 }
 
 /*teleport.c*/

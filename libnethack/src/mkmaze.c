@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-11-18 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -335,19 +335,19 @@ makemaz(struct level *lev, const char *s)
             snprintf(protofile, SIZE(protofile), "%s-%d", s, rnd((int)sp->rndlevs));
         else
             strcpy(protofile, s);
-    } else if (*(dungeons[lev->z.dnum].proto)) {
-        if (dunlevs_in_dungeon(&lev->z) > 1) {
+    } else if (*(lev->dgn->proto)) {
+        if (lev->dgn->num_dunlevs > 1) {
             if (sp && sp->rndlevs)
-                snprintf(protofile, SIZE(protofile), "%s%d-%d", dungeons[lev->z.dnum].proto,
-                        dunlev(lev), rnd((int)sp->rndlevs));
+                snprintf(protofile, SIZE(protofile), "%s%d-%d", lev->dgn->proto,
+                        lev->dlevel, rnd((int)sp->rndlevs));
             else
-                snprintf(protofile, SIZE(protofile), "%s%d", dungeons[lev->z.dnum].proto,
-                        dunlev(lev));
+                snprintf(protofile, SIZE(protofile), "%s%d", lev->dgn->proto,
+                        lev->dlevel);
         } else if (sp && sp->rndlevs) {
-            snprintf(protofile, SIZE(protofile), "%s-%d", dungeons[lev->z.dnum].proto,
+            snprintf(protofile, SIZE(protofile), "%s-%d", lev->dgn->proto,
                     rnd((int)sp->rndlevs));
         } else
-            strcpy(protofile, dungeons[lev->z.dnum].proto);
+            strcpy(protofile, lev->dgn->proto);
 
     } else
         strcpy(protofile, "");

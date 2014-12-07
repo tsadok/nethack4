@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-11-18 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -209,11 +209,11 @@ mkshobj_at(const struct shclass *shp, struct level *lev, int sx, int sy)
     int atype;
     const struct permonst *ptr;
 
-    if (rn2(100) < depth(&lev->z) && !MON_AT(lev, sx, sy) &&
+    if (rn2(100) < depth(lev) && !MON_AT(lev, sx, sy) &&
         (ptr = mkclass(lev, S_MIMIC, 0)) &&
         (mtmp = makemon(ptr, lev, sx, sy, NO_MM_FLAGS)) != 0) {
         /* note: makemon will set the mimic symbol to a shop item */
-        if (rn2(10) >= depth(&lev->z)) {
+        if (rn2(10) >= depth(lev)) {
             mtmp->m_ap_type = M_AP_OBJECT;
             mtmp->mappearance = STRANGE_OBJECT;
         }
@@ -248,7 +248,7 @@ nameshk(struct monst *shk, const char *const *nlp, struct level *lev)
            than depth to keep mine town distinct. */
         int nseed = ((unsigned)u.ubirthday / 257U);
 
-        name_wanted = ledger_no(&lev->z) + (nseed % 13) - (nseed % 5);
+        name_wanted = level_ledger(lev) + (nseed % 13) - (nseed % 5);
         if (name_wanted < 0)
             name_wanted += (13 + 5);
         shk->female = name_wanted & 1;

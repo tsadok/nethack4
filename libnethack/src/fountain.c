@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-30 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright Scott R. Turner, srt@ucla, 10/27/86                  */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -480,7 +480,7 @@ dipfountain(struct obj *obj)
             break;
         SET_FOUNTAIN_LOOTED(u.ux, u.uy);
         mkgold((long)
-               (rnd((dunlevs_in_dungeon(&level->z) - dunlev(level) + 1) * 2) + 5),
+               (rnd((level->dgn->num_dunlevs - level->dlevel + 1) * 2) + 5),
                level, u.ux, u.uy);
         if (!Blind)
             pline("Far below you, you see coins glistening in the water.");

@@ -1388,7 +1388,7 @@ align_shift(const struct level *lev, short mndx)
     int alshift;
     const s_level *slev = Is_special(lev);
 
-    switch ((slev) ? slev->flags.align : dungeons[lev->z.dnum].flags.align) {
+    switch ((slev) ? slev->flags.align : lev->dgn->flags.align) {
     default:   /* just in case */
     case AM_NONE:
         alshift = 0;

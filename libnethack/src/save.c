@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -102,7 +102,7 @@ savegame(struct memfile *mf)
 
     save_dungeon(mf);
 
-    save_dlevel(mf, level->z);
+    save_levptr(mf, level);
 
     savegamestate(mf);
 
@@ -608,11 +608,11 @@ save_coords(struct memfile *mf, const coord *c, int n)
 
 
 void
-savelev(struct memfile *mf, xchar levnum)
+savelev(struct memfile *mf, struct level *lev)
 {
     int x, y;
     unsigned int lflags;
-    struct level *lev = levels[levnum];
+    xchar ledger = level_ledger(lev);
 
     /* The purge_monsters count refers to monsters on the current level. */
     if (lev->flags.purge_monsters) {
@@ -624,7 +624,7 @@ savelev(struct memfile *mf, xchar levnum)
     }
 
     mfmagic_set(mf, LEVEL_MAGIC);
-    mtag(mf, levnum, MTAG_LEVEL);
+    mtag(mf, ledger, MTAG_LEVEL);
     mwrite8(mf, lev->generated);
 
     if (!lev->generated)
@@ -632,14 +632,14 @@ savelev(struct memfile *mf, xchar levnum)
 
     mwrite(mf, lev->levname, sizeof (lev->levname));
 
-    mtag(mf, levnum, MTAG_LOCATIONS);
+    mtag(mf, ledger, MTAG_LOCATIONS);
     for (x = 0; x < COLNO; x++)                       /* savemap: ignore */
         for (y = 0; y < ROWNO; y++)                   /* savemap: ignore */
             save_location(mf, &lev->locations[x][y]); /* savemap: 106176 */
 
     mwrite32(mf, lev->lastmoves);
 
-    mtag(mf, levnum, MTAG_STAIRWAYS);
+    mtag(mf, ledger, MTAG_STAIRWAYS);
     save_stairway(mf, lev->upstair);
     save_stairway(mf, lev->dnstair);
     save_stairway(mf, lev->upladder);
@@ -648,7 +648,7 @@ savelev(struct memfile *mf, xchar levnum)
     save_dest_area(mf, lev->updest);
     save_dest_area(mf, lev->dndest);
 
-    mtag(mf, levnum, MTAG_LFLAGS);
+    mtag(mf, ledger, MTAG_LFLAGS);
     lflags = (lev->flags.noteleport << 22) |
         (lev->flags.hardfloor << 21) | (lev->flags.nommap << 20) |
         (lev->flags.hero_memory << 19) | (lev->flags.shortsighted << 18) |
@@ -724,7 +724,7 @@ savedamage(struct memfile *mf, struct level *lev)
     struct damage *damageptr;
     unsigned int xl = 0;
 
-    mtag(mf, ledger_no(&lev->z), MTAG_DAMAGE);
+    mtag(mf, level_ledger(lev), MTAG_DAMAGE);
 
     for (damageptr = lev->damagelist; damageptr; damageptr = damageptr->next)
         xl++;
@@ -852,7 +852,7 @@ savetrapchn(struct memfile *mf, struct trap *trap, struct level *lev)
     for (; trap; trap = trap->ntrap) {
         /* To distinguish traps from each other in tags, we use x/y/z coords */
         mtag(mf,
-             ledger_no(&lev->z) + ((int)trap->tx << 8) + ((int)trap->ty << 16),
+             level_ledger(lev) + ((int)trap->tx << 8) + ((int)trap->ty << 16),
              MTAG_TRAP);
         mwrite8(mf, trap->tx);
         mwrite8(mf, trap->ty);

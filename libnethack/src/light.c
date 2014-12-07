@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-17 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Dean Luick, 1994                                       */
 /* NetHack may be freely redistributed.  See license for details.       */
 
@@ -272,7 +272,7 @@ save_light_sources(struct memfile *mf, struct level *lev, int range)
 {
     int count, actual;
 
-    mtag(mf, 2 * (int)ledger_no(&lev->z) + range, MTAG_LIGHTS);
+    mtag(mf, 2 * (int)level_ledger(lev) + range, MTAG_LIGHTS);
     count = maybe_write_ls(mf, lev, range, FALSE);
     mwrite32(mf, count);
 

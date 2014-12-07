@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (C) 1990 by Ken Arromdee                              */
 /* NetHack may be freely redistributed.  See license for details.  */
 
@@ -320,7 +320,7 @@ find_defensive(struct monst *mtmp, struct musable *m)
             !is_floater(mtmp->data))
             m->has_defense = MUSE_DOWNSTAIRS;
         if (x == lev->upstair.sx && y == lev->upstair.sy &&
-            ledger_no(&level->z) != 1)
+            level_ledger(lev) != 1)
             /* Unfair to let the monsters leave the dungeon with the Amulet
                (or go to the endlevel since you also need it, to get there) */
             m->has_defense = MUSE_UPSTAIRS;
@@ -751,7 +751,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
            when they leave up the up stairs. Monsters with amulets would reach
            the endlevel, which we cannot allow since that would leave the
            player stranded. */
-        if (ledger_no(&level->z) == 1) {
+        if (is_entry_lev(level)) {
             if (mon_has_special(mtmp))
                 return 0;
             if (vismon)
@@ -761,7 +761,7 @@ use_defensive(struct monst *mtmp, struct musable *m)
         }
         m_flee(mtmp);
         if (Inhell && mon_has_amulet(mtmp) && !rn2(4) &&
-            (dunlev(level) < dunlevs_in_dungeon(&level->z) - 3)) {
+            (level->dlevel < level->dgn->num_dunlevs - 3)) {
             if (vismon)
                 pline("As %s climbs the stairs, a mysterious force momentarily "
                       "surrounds %s...", mon_nam(mtmp), mhim(mtmp));
@@ -802,14 +802,12 @@ use_defensive(struct monst *mtmp, struct musable *m)
             if (vismon)
                 pline("%s escapes upstairs!", Monnam(mtmp));
             if (Inhell) {
-                migrate_to_level(mtmp, ledger_no(&level->sstairs.tolev->z),
-                                 MIGR_RANDOM, NULL);
+                migrate_to_level(mtmp, level->sstairs.tolev, MIGR_RANDOM, NULL);
                 return 2;
             }
         } else if (vismon)
             pline("%s escapes downstairs!", Monnam(mtmp));
-        migrate_to_level(mtmp, ledger_no(&level->sstairs.tolev->z),
-                         MIGR_SSTAIRS, NULL);
+        migrate_to_level(mtmp, level->sstairs.tolev, MIGR_SSTAIRS, NULL);
         return 2;
     case MUSE_TELEPORT_TRAP:
         m_flee(mtmp);
@@ -1671,7 +1669,7 @@ use_misc(struct monst *mtmp, struct musable *m)
         mquaffmsg(mtmp, otmp);
         if (otmp->cursed) {
             if (Can_rise_up(mtmp->mx, mtmp->my, level)) {
-                int tolev = depth(&level->z) - 1;
+                int tolev = depth(level) - 1;
                 struct level *dest = get_level(tolev);
 
                 /* insurance against future changes... */

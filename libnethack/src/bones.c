@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985,1993. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -17,12 +17,12 @@ make_bones_id(char *buf, struct level *lev)
 {
     s_level *sptr;
 
-    sprintf(buf, "%c%s", dungeons[lev->z.dnum].boneid,
+    sprintf(buf, "%c%s", lev->dgn->boneid,
             In_quest(lev) ? urole.filecode : "0");
     if ((sptr = Is_special(lev)) != 0)
         sprintf(buf + 2, ".%c", sptr->boneid);
     else
-        sprintf(buf + 2, ".%d", lev->z.dlevel);
+        sprintf(buf + 2, ".%d", lev->dlevel);
 
     return buf;
 }
@@ -34,17 +34,17 @@ no_bones_level(struct level *lev)
     s_level *sptr;
 
     return (boolean) (((sptr = Is_special(lev)) != 0 && !sptr->boneid)
-                      || !dungeons[lev->z.dnum].boneid
+                      || !lev->dgn->boneid
                       /* no bones on the last or multiway branch levels */
                       /* in any dungeon (level 1 isn't multiway).  */
                       || Is_botlevel(lev)
-                      || (Is_branchlev(lev) && lev->z.dlevel > 1)
+                      || (Is_branchlev(lev) && lev->dlevel > 1)
                       /* no bones in the invocation level */
                       || (In_hell(lev) &&
-                          lev->z.dlevel == dunlevs_in_dungeon(&lev->z) - 1)
+                          lev->dlevel == lev->dgn->num_dunlevs - 1)
                       /* no bones on the first level */
                       /* TODO: remove hardcoding in dungeon rewrite */
-                      || (lev->z.dnum == 0 && lev->z.dlevel == 1)
+                      || (lev->dgn == &dungeons[0] && lev->dlevel == 1)
         );
 }
 
@@ -184,8 +184,6 @@ can_make_bones(struct level *lev)
 {
     struct trap *ttmp;
 
-    if (ledger_no(&lev->z) < 0 || ledger_no(&lev->z) > maxledgerno())
-        return FALSE;
     if (no_bones_level(lev))
         return FALSE;   /* no bones for specific levels */
     if (Engulfed) {
@@ -200,10 +198,10 @@ can_make_bones(struct level *lev)
 
     turnstate.generating_bones = TRUE;
     /* fewer ghosts on low levels */
-    int rn2chance = rn2(1 + (depth(&lev->z) >> 2));
+    int rn2chance = rn2(1 + (depth(lev) >> 2));
     turnstate.generating_bones = FALSE;
 
-    if (depth(&lev->z) <= 0 || /* bulletproofing for endgame */
+    if (depth(lev) <= 0 || /* bulletproofing for endgame */
         (!rn2chance && !wizard))
         return FALSE;
     /* don't let multiple restarts generate multiple copies of objects in bones 
@@ -376,7 +374,7 @@ make_bones:
     mwrite(&mf, bonesid, (unsigned)c);  /* DD.nnn */
     savefruitchn(&mf);
     update_mlstmv();    /* update monsters for eventual restoration */
-    savelev(&mf, ledger_no(&level->z));
+    savelev(&mf, level);
 
     store_mf(fd, &mf);  /* also frees mf */
 

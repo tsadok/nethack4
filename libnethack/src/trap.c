@@ -369,7 +369,7 @@ fall_through(boolean td)
     if (level == sp_lev(sl_castle))
         dest = sp_lev(sl_valley);
     else
-        while (dest->z.dlevel < dunlevs_in_dungeon(&dest->z)) {
+        while (dest->dlevel < dest->dgn->num_dunlevs) {
             dest = level_below(dest);
             if (rn2(4))
                 break;
@@ -2879,7 +2879,7 @@ water_damage(struct obj * obj, const char *ostr, boolean force)
     } else {
         return erode_obj(obj, ostr, ERODE_RUST, FALSE, FALSE) ? 2 : 0;
     }
-    
+
     return 0;
 }
 

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-11-21 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) 1996 by Jean-Christophe Collet  */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -506,7 +506,7 @@ save_regions(struct memfile *mf, struct level *lev)
     struct region *r;
 
     mfmagic_set(mf, REGION_MAGIC);
-    mtag(mf, ledger_no(&lev->z), MTAG_REGION);
+    mtag(mf, level_ledger(lev), MTAG_REGION);
     mwrite32(mf, save_encode_32(moves, moves));        /* timestamp */
     mwrite32(mf, lev->n_regions);
 

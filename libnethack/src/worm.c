@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-05-24 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -470,7 +470,7 @@ save_worm(struct memfile *mf, struct level *lev)
     for (i = 1; i < MAX_NUM_WORMS; i++) {
         for (count = 0, curr = lev->wtails[i]; curr; curr = curr->nseg)
             count++;
-        mtag(mf, (int)ledger_no(&lev->z) * MAX_NUM_WORMS + i, MTAG_WORMS);
+        mtag(mf, (int)level_ledger(lev) * MAX_NUM_WORMS + i, MTAG_WORMS);
         /* Save number of segments */
         mwrite32(mf, count);
         /* Save segment locations of the monster. */

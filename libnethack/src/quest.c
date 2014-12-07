@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-11-18 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright 1991, M. Stephenson */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -32,8 +32,8 @@ on_start(const struct level * orig_lev)
     if (!Qstat(first_start)) {
         qt_pager(QT_FIRSTTIME);
         Qstat(first_start) = TRUE;
-    } else if ((orig_lev->z.dnum != level->z.dnum) ||
-               (orig_lev->z.dlevel < level->z.dlevel)) {
+    } else if ((orig_lev->dgn != level->dgn) ||
+               (orig_lev->dlevel < level->dlevel)) {
         if (Qstat(not_ready) <= 2)
             qt_pager(QT_NEXTTIME);
         else
@@ -47,7 +47,7 @@ on_locate(const struct level * orig_lev)
     if (!Qstat(first_locate)) {
         qt_pager(QT_FIRSTLOCATE);
         Qstat(first_locate) = TRUE;
-    } else if (orig_lev->z.dlevel < level->z.dlevel && !Qstat(killed_nemesis))
+    } else if (orig_lev->dlevel < level->dlevel && !Qstat(killed_nemesis))
         qt_pager(QT_NEXTLOCATE);
 }
 
@@ -69,14 +69,14 @@ on_goal(void)
 void
 onquest(const struct level *orig_lev)
 {
-    if (u.uevent.qcompleted || on_level(&orig_lev->z, &level->z))
+    if (u.uevent.qcompleted || orig_lev == level)
         return;
     if (!Is_special(level))
         return;
 
     if (level == sp_lev(sl_quest_start))
         on_start(orig_lev);
-    else if (level == sp_lev(sl_quest_locate) && level->z.dlevel > orig_lev->z.dlevel)
+    else if (level == sp_lev(sl_quest_locate) && level->dlevel > orig_lev->dlevel)
         on_locate(orig_lev);
     else if (level == sp_lev(sl_quest_goal))
         on_goal();
@@ -185,7 +185,7 @@ expulsion(boolean seal)
     int portal_flag;
 
     br = dungeon_branch("The Quest");
-    dest = (br->end1->z.dnum == level->z.dnum) ? br->end2 : br->end1;
+    dest = (br->end1->dgn == level->dgn) ? br->end2 : br->end1;
     portal_flag = u.uevent.qexpelled ? 0 :      /* returned via artifact? */
         !seal ? 1 : -1;
     schedule_goto(dest, FALSE, FALSE, portal_flag, NULL, NULL);

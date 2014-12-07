@@ -392,7 +392,7 @@ extern void initedog(struct monst *);
 extern struct monst *make_familiar(struct obj *, xchar, xchar, boolean);
 extern struct monst *makedog(void);
 extern void update_mlstmv(void);
-extern void losedogs(void);
+extern void deliver_all_mons(struct level *lev);
 extern void mon_arrive(struct monst *, boolean);
 extern void mon_catchup_elapsed_time(struct monst *, long);
 extern void keepdogs(boolean);
@@ -449,11 +449,9 @@ extern void dump_catch_menus(boolean);
 extern void free_dungeon(void);
 extern void save_d_flags(struct memfile *mf, d_flags f);
 extern void save_levptr(struct memfile *mf, struct level *lev);
-extern void save_dlevel(struct memfile *mf, d_level d);
 extern void save_dungeon(struct memfile *mf);
 extern d_flags restore_d_flags(struct memfile *mf);
 extern struct level *restore_levptr(struct memfile *mf);
-extern void restore_dlevel(struct memfile *mf, d_level *d);
 extern void restore_dungeon(struct memfile *mf);
 extern void insert_branch(branch *, boolean);
 extern void init_dungeons(void);
@@ -461,15 +459,12 @@ extern struct level *sp_lev(enum special_level sl);
 extern s_level *find_level(const char *);
 extern s_level *Is_special(const struct level *lev);
 extern branch *Is_branchlev(const struct level *lev);
-extern xchar ledger_no(const d_level *);
+extern struct level *level_in_dungeon(const struct dungeon *dgn, int dlevel);
+extern xchar level_ledger(const struct level *lev);
+extern xchar dungeon_ledger(const struct dungeon *dgn);
 extern xchar maxledgerno(void);
-extern schar depth(const d_level *);
-extern xchar dunlev(const struct level *lev);
-extern xchar dunlevs_in_dungeon(const d_level *dlev);
-extern xchar ledger_to_dnum(xchar);
-extern xchar ledger_to_dlev(xchar);
+extern schar depth(const struct level *lev);
 extern xchar deepest_lev_reached(boolean);
-extern boolean on_level(const d_level *, const d_level *);
 extern struct level *level_above(struct level *lev);
 extern struct level *level_below(struct level *lev);
 extern void next_level(boolean);
@@ -488,17 +483,16 @@ extern boolean In_quest(const struct level *lev);
 extern boolean In_mines(const struct level *lev);
 extern branch *dungeon_branch(const char *);
 extern boolean at_dgn_entrance(const struct level *lev, const char *s);
+extern boolean is_entry_lev(const struct level *lev);
 extern boolean In_hell(const struct level *lev);
 extern boolean In_V_tower(const struct level *lev);
 extern boolean On_W_tower_level(const struct level *lev);
 extern boolean In_W_tower(int, int, const struct level *lev);
-extern void assign_level(d_level * dest, const d_level * src);
-extern void assign_rnd_level(d_level * dest, const d_level * src, int range);
 extern int induced_align(const struct level *lev, int pct);
 extern boolean Invocation_lev(const struct level *lev);
 extern xchar level_difficulty(const struct level *lev);
 extern schar lev_by_name(const char *);
-extern schar print_dungeon(boolean, schar *, xchar *);
+extern struct level *print_dungeon(boolean);
 extern int donamelevel(const struct nh_cmd_arg *);
 extern int dooverview(const struct nh_cmd_arg *);
 
@@ -944,7 +938,7 @@ extern int lminion(void);
 
 /* ### mklev.c ### */
 
-extern struct level *alloc_level(d_level * levnum);
+extern struct level *alloc_level(struct dungeon *dgn, int dlevel);
 extern void sort_rooms(struct level *lev);
 extern void add_room(struct level *lev, int, int, int, int, boolean, schar,
                      boolean);
@@ -1493,7 +1487,7 @@ extern int doconsult(struct monst *);
 
 extern void savegame(struct memfile *mf);
 extern void save_coords(struct memfile *mf, const coord *c, int n);
-extern void savelev(struct memfile *mf, xchar levnum);
+extern void savelev(struct memfile *mf, struct level *lev);
 extern void freelev(xchar levnum);
 extern void savefruitchn(struct memfile *mf);
 extern void freedynamicdata(void);
@@ -1676,7 +1670,7 @@ extern void rloco_pos(struct level *lev, struct obj *obj, int *nx, int *ny);
 extern void rloco(struct obj *);
 extern struct level *random_teleport_level(void);
 extern boolean u_teleport_mon(struct monst *, boolean);
-extern struct level *portal_target(xchar dnum);
+extern struct level *portal_target(struct dungeon *dgn);
 
 /* ### timeout.c ### */
 

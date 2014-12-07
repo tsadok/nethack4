@@ -816,7 +816,7 @@ doup(enum u_interaction_mode uim)
               level->locations[u.ux][u.uy].typ == STAIRS ? "stairs" : "ladder");
         return 1;
     }
-    if (ledger_no(&level->z) == 1) {
+    if (is_entry_lev(level)) {
         if (yn("Beware, there will be no return! Still climb?") != 'y')
             return 0;
     }
@@ -844,7 +844,7 @@ notify_levelchange(const struct level *lev)
         mode = LDM_QUESTLOCATE;
     else if (lev == sp_lev(sl_quest_goal))
         mode = LDM_QUESTGOAL;
-    else if (In_quest(lev) && lev->z.dlevel > sp_lev(sl_quest_locate)->z.dlevel)
+    else if (In_quest(lev) && lev->dlevel > sp_lev(sl_quest_locate)->dlevel)
         mode = LDM_QUESTFILL2;
     else if (In_quest(lev))
         mode = LDM_QUESTFILL1;
@@ -875,8 +875,8 @@ goto_level(struct level *dest, boolean at_stairs, boolean falling,
         return;
     }
 
-    boolean up = (depth(&dest->z) < depth(&level->z)),
-            newdungeon = (level->z.dnum != dest->z.dnum),
+    boolean up = (depth(dest) < depth(level)),
+            newdungeon = (level->dgn != dest->dgn),
             was_in_W_tower = In_W_tower(u.ux, u.uy, level), familiar = FALSE;
     boolean new = FALSE;        /* made a new level? */
     struct monst *mtmp, *mtmp2;
@@ -885,7 +885,7 @@ goto_level(struct level *dest, boolean at_stairs, boolean falling,
     boolean at_trapdoor = ((t_at(level, u.ux, u.uy)) &&
                            (t_at(level, u.ux, u.uy))->ttyp == TRAPDOOR);
 
-    if (newdungeon && dest->z.dnum == dungeon_topology.d_endgame_dnum) {
+    if (newdungeon && dest->dgn == dungeon_topology.endgame) {
         /* 1st Endgame Level !!! */
         if (Uhave_amulet)
             dest = sp_lev(sl_earth);
@@ -900,7 +900,7 @@ goto_level(struct level *dest, boolean at_stairs, boolean falling,
        +1 75.0 75.0 75.0 0 0.0 12.5 25.0 0 6.25 8.33 12.5 -1 8.33 4.17 0.0 -1
        6.25 8.33 12.5 -2 8.33 4.17 0.0 -2 6.25 8.33 0.0 -3 8.33 4.17 0.0 -3
        6.25 0.0 0.0 */
-#if 0 /* Mysterious force will no longer be a thing */
+#if 0 /* LEVELSFIXME: Mysterious force will no longer be a thing */
     if (Inhell && up && Uhave_amulet && !newdungeon && !portal &&
         (level->z.dlevel < dunlevs_in_dungeon(&level->z) - 3)) {
         if (!rn2(4)) {
@@ -971,13 +971,13 @@ goto_level(struct level *dest, boolean at_stairs, boolean falling,
 
     /* If the entry level is the top level, then the dungeon goes down.
        Otherwise it goes up. */
-    if (dungeons[level->z.dnum].entry_lev == 1) {
-        if (dunlev_reached(&level->z) < dunlev(level))
-            dunlev_reached(&level->z) = dunlev(level);
+    if (level->dgn->entry_lev == 1) {
+        if (level->dgn->dunlev_ureached < level->dlevel)
+           level->dgn->dunlev_ureached = level->dlevel;
     } else {
-        if (dunlev_reached(&level->z) > dunlev(level) || 
-            dunlev_reached(&level->z))
-            dunlev_reached(&level->z) = dunlev(level);
+        if (level->dgn->dunlev_ureached > level->dlevel || 
+            level->dgn->dunlev_ureached)
+            level->dgn->dunlev_ureached = level->dlevel;
     }
 
     flush_screen_disable();     /* ensure all map flushes are postponed */
@@ -1126,12 +1126,12 @@ goto_level(struct level *dest, boolean at_stairs, boolean falling,
 
     for (otmp = invent; otmp; otmp = otmp->nobj)
         set_obj_level(level, otmp);
-    losedogs();
+    deliver_all_mons(level);
     kill_genocided_monsters();  /* for those wiped out while in limbo */
     /*
      * Expire all timers that have gone off while away.  Must be
      * after migrating monsters and objects are delivered
-     * (losedogs and obj_delivery).
+     * (deliver_all_mons and obj_delivery).
      */
     run_timers();
 
@@ -1167,8 +1167,10 @@ goto_level(struct level *dest, boolean at_stairs, boolean falling,
     level->locations[u.ux][u.uy].mem_stepped = 1;
 
     /* initial movement of bubbles just before vision_recalc */
+    /* LEVELSFIXME: This is *still* a huge hack and should be caught somewhere
+     * in the level manager's normal hooks */
     if (level == sp_lev(sl_water))
-        movebubbles(level);
+        level->mgr->turn_effects(level);
 
     if (level->flags.forgotten) {
         familiar = TRUE;

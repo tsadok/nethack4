@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-11-18 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /*      Copyright (c) 1989 by Jean-Christophe Collet */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -387,7 +387,7 @@ create_room(struct level * lev, xchar x, xchar y, xchar w, xchar h, xchar xal,
 
     /* is light state random ? */
     if (rlit == -1)
-        rlit = (rnd(1 + abs(depth(&lev->z))) < 11 && rn2(77)) ? TRUE : FALSE;
+        rlit = (rnd(1 + abs(depth(lev))) < 11 && rn2(77)) ? TRUE : FALSE;
 
     /*
      * Here we will try to create a room. If some parameters are
@@ -567,7 +567,7 @@ create_subroom(struct level *lev, struct mkroom *proom, xchar x, xchar y,
     if (rtype == -1)
         rtype = OROOM;
     if (rlit == -1)
-        rlit = (rnd(1 + abs(depth(&lev->z))) < 11 && rn2(77)) ? TRUE : FALSE;
+        rlit = (rnd(1 + abs(depth(lev))) < 11 && rn2(77)) ? TRUE : FALSE;
     add_subroom(lev, proom, proom->lx + x, proom->ly + y, proom->lx + x + w - 1,
                 proom->ly + y + h - 1, rlit, rtype, FALSE);
     return TRUE;
@@ -1485,7 +1485,7 @@ fill_room(struct level *lev, struct mkroom *croom, boolean prefilled)
         case VAULT:
             for (x = croom->lx; x <= croom->hx; x++)
                 for (y = croom->ly; y <= croom->hy; y++)
-                    mkgold((long)rn1(abs(depth(&lev->z)) * 100, 51), lev, x, y);
+                    mkgold((long)rn1(abs(depth(lev)) * 100, 51), lev, x, y);
             break;
         case COURT:
         case ZOO:
@@ -2308,7 +2308,7 @@ load_maze(struct level *lev, dlb * fd)
                 prefilled = FALSE;
 
             if (tmpregion.rlit < 0)
-                tmpregion.rlit = (rnd(1 + abs(depth(&lev->z))) < 11 && rn2(77))
+                tmpregion.rlit = (rnd(1 + abs(depth(lev))) < 11 && rn2(77))
                     ? TRUE : FALSE;
 
             get_location(lev, &tmpregion.x1, &tmpregion.y1, DRY | WET);

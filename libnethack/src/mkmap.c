@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-29 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) J. C. Collet, M. Stephenson and D. Cohrs, 1992   */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -446,7 +446,7 @@ mkmap(struct level *lev, lev_init * init_lev)
     int i;
 
     if (lit < 0)
-        lit = (rnd(1 + abs(depth(&level->z))) < 11 && rn2(77)) ? 1 : 0;
+        lit = (rnd(1 + abs(depth(level))) < 11 && rn2(77)) ? 1 : 0;
 
     new_locations = malloc((WIDTH + 1) * HEIGHT);
 

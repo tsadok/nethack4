@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-30 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -562,9 +562,9 @@ calc_score(int how, boolean show, long umoney)
     /* Exploration. This is based on the ratio of the Sanctum depth to the
        deepest level reached, and is based on the square root of the ratio. */
     category_raw = deepest_lev_reached(FALSE);
-    category_ratio = category_raw * 100.0 / depth(&sp_lev(sl_sanctum)->z);
+    category_ratio = category_raw * 100.0 / depth(sp_lev(sl_sanctum));
     category_points = isqrt(((category_raw - 1) * max_squared) /
-                            (depth(&sp_lev(sl_sanctum)->z) - 1));
+                            (depth(sp_lev(sl_sanctum)) - 1));
     total += category_points;
 
     if (show) {
@@ -848,14 +848,15 @@ display_rip(int how, long umoney, const char *killer)
 
     } else {
         /* did not escape or ascend */
-        if (level->z.dnum == 0 && level->z.dlevel <= 0) {
+        /* LEVELSFIXME: Escaping */
+        if (/*level->z.dnum == 0 && level->z.dlevel <= 0*/ TRUE) {
             /* level teleported out of the dungeon; `how' is DIED, due to
                falling or to "arriving at heaven prematurely" */
             pbuf = msgprintf("You %s beyond the confines of the dungeon",
-                             (level->z.dlevel < 0) ? "passed away" : ends[how]);
+                             (level->dlevel < 0) ? "passed away" : ends[how]);
         } else {
             /* more conventional demise */
-            const char *where = dungeons[level->z.dnum].dname;
+            const char *where = level->dgn->dname;
 
             if (level == sp_lev(sl_astral))
                 where = "The Astral Plane";
@@ -863,7 +864,7 @@ display_rip(int how, long umoney, const char *killer)
             if (!In_endgame(level) && level != sp_lev(sl_fort_ludios))
                 pbuf = msgprintf("%s on dungeon level %d", pbuf,
                                  In_quest(level) ?
-                                 dunlev(level) : depth(&level->z));
+                                 level->dlevel : depth(level));
         }
 
         pbuf = msgprintf("%s with %d point%s,", pbuf, u.urexp, plur(u.urexp));

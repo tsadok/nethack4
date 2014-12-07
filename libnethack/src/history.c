@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-30 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Daniel Thaler, 2011.                             */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -138,8 +138,8 @@ hist_lev_name(const struct level *lev, boolean in_or_on)
     else if (lev == sp_lev(sl_valley))
         hlnbuf = "in The Valley of the Dead";
     else
-        hlnbuf = msgprintf("on level %d of %s", lev->z.dlevel,
-                           dungeons[lev->z.dnum].dname);
+        hlnbuf = msgprintf("on level %d of %s", lev->dlevel,
+                           lev->dgn->dname);
 
     if (!in_or_on)
         hlnbuf += 3;

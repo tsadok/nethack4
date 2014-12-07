@@ -838,9 +838,7 @@ dorecover(struct memfile *mf)
 
     restore_dungeon(mf);
 
-    d_level dlev;
-    restore_dlevel(mf, &dlev);
-    level = levels[ledger_no(&dlev)];
+    level = restore_levptr(mf);
 
     restgamestate(mf, level);
 
@@ -1173,7 +1171,7 @@ getlev(struct memfile *mf, struct level *lev, boolean ghostly)
         freefruitchn(oldfruit), oldfruit = 0;
 
         br = Is_branchlev(lev);
-        if (br && lev->z.dlevel == 1) {
+        if (br && lev->dlevel == 1) {
             struct level *ltmp;
 
             if (lev == br->end1)

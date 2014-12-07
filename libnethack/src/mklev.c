@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -487,7 +487,7 @@ makeniche(struct level *lev, int trap_type)
 static void
 make_niches(struct level *lev)
 {
-    int ct = rnd((lev->nroom >> 1) + 1), dep = depth(&lev->z);
+    int ct = rnd((lev->nroom >> 1) + 1), dep = depth(lev);
 
     boolean ltptr = (!lev->flags.noteleport && dep > 15);
     boolean vamp = (dep > 5 && dep < 25);
@@ -517,14 +517,14 @@ makevtele(struct level *lev)
  * each type initializes what it needs to separately.
  */
 struct level *
-alloc_level(d_level * levnum)
+alloc_level(struct dungeon *dgn, int dlevel)
 {
     struct level *lev = malloc(sizeof (struct level));
 
     memset(lev, 0, sizeof (struct level));
     lev->mgr = NULL;
-    if (levnum)
-        lev->z = *levnum;
+    lev->dgn = dgn;
+    lev->dlevel = dlevel;
     lev->subrooms = &lev->rooms[MAXNROFROOMS + 1];      /* compat */
     lev->rooms[0].hx = -1;
     lev->subrooms[0].hx = -1;
@@ -565,7 +565,7 @@ makelevel(struct level *lev)
         if (slevnum && lev != sp_lev(sl_rogue)) {
             makemaz(lev, slevnum->proto);
             return;
-        } else if (dungeons[lev->z.dnum].proto[0]) {
+        } else if (lev->dgn->proto[0]) {
             makemaz(lev, "");
             return;
         } else if (In_mines(lev)) {
@@ -580,12 +580,12 @@ makelevel(struct level *lev)
 
             snprintf(fillname, SIZE(fillname), "%s-fil", urole.filecode);
             strcat(fillname,
-                   (lev->z.dlevel < loc_levnum->lev->z.dlevel) ? "a" : "b");
+                   (lev->dlevel < loc_levnum->lev->dlevel) ? "a" : "b");
             makemaz(lev, fillname);
             return;
         } else if (In_hell(lev) ||
-                   (rn2(5) && lev->z.dnum == sp_lev(sl_medusa)->z.dnum &&
-                    depth(&lev->z) > depth(&sp_lev(sl_medusa)->z))) {
+                   (rn2(5) && lev->dgn == dungeon_topology.main_dungeon &&
+                    depth(lev) > depth(sp_lev(sl_medusa)))) {
             makemaz(lev, "");
             return;
         }
@@ -614,7 +614,7 @@ makelevel(struct level *lev)
             croom++;
     }
 
-    if (lev->z.dlevel != 1) {
+    if (lev->dlevel != 1) {
         xchar sx, sy;
 
         do {
@@ -658,9 +658,9 @@ makelevel(struct level *lev)
     }
 
     {
-        int u_depth = depth(&lev->z);
+        int u_depth = depth(lev);
 
-        if (u_depth > 1 && u_depth < depth(&sp_lev(sl_medusa)->z) &&
+        if (u_depth > 1 && u_depth < depth(sp_lev(sl_medusa)) &&
             lev->nroom >= room_threshold && rn2(u_depth) < 3)
             mkroom(lev, SHOPBASE);
         else if (u_depth > 4 && !rn2(6))
@@ -731,7 +731,7 @@ skip0:
             mksink(lev, croom);
         if (!rn2(60))
             mkaltar(lev, croom);
-        x = 80 - (depth(&lev->z) * 2);
+        x = 80 - (depth(lev) * 2);
         if (x < 2)
             x = 2;
         if (!rn2(x))
@@ -757,7 +757,7 @@ skip0:
         }
 
         /* maybe make some graffiti */
-        if (!rn2(27 + 3 * abs(depth(&lev->z)))) {
+        if (!rn2(27 + 3 * abs(depth(lev)))) {
             const char *mesg = random_engraving();
 
             if (mesg) {
@@ -823,7 +823,7 @@ mineralize(struct level *lev)
         return;
 
     /* basic level-related probabilities */
-    goldprob = 20 + depth(&lev->z) / 3;
+    goldprob = 20 + depth(lev) / 3;
     gemprob = goldprob / 4;
 
     /* mines have ***MORE*** goodies - otherwise why mine? */
@@ -868,7 +868,7 @@ mineralize(struct level *lev)
                     }
                 }
                 if (rn2(1000) < gemprob) {
-                    for (cnt = rnd(2 + dunlev(lev) / 3); cnt > 0; cnt--)
+                    for (cnt = rnd(2 + lev->dlevel / 3); cnt > 0; cnt--)
                         if ((otmp = mkobj(lev, GEM_CLASS, mkobj_normal)) != 0) {
                             if (otmp->otyp == ROCK) {
                                 dealloc_obj(otmp);      /* discard it */
@@ -1265,8 +1265,8 @@ mkstairs(struct level *lev, xchar x, xchar y, char up, struct mkroom *croom)
      * attempt can happen when a special level is placed at an end and
      * has an up or down stair specified in its description file.
      */
-    if ((dunlev(lev) == 1 && up) ||
-        (dunlev(lev) == dunlevs_in_dungeon(&lev->z) && !up))
+    if ((lev->dlevel == 1 && up) ||
+        (lev->dlevel == lev->dgn->num_dunlevs && !up))
         return;
 
     if (up) {
@@ -1570,11 +1570,11 @@ mk_knox_portal(struct level *lev, xchar x, xchar y)
     if ((*source) || (rn2(3) && !wizard))
         return;
 
-    if (!(lev->z.dnum == sp_lev(sl_medusa)->z.dnum /* in main dungeon */
+    if (!(lev->dgn == dungeon_topology.main_dungeon /* in main dungeon */
           && !at_dgn_entrance(lev, "The Quest")     /* but not Quest's
                                                            entry */
-          &&(u_depth = depth(&lev->z)) > 10     /* beneath 10 */
-          && u_depth < depth(&sp_lev(sl_medusa)->z))) /* above Medusa */
+          &&(u_depth = depth(lev)) > 10     /* beneath 10 */
+          && u_depth < depth(sp_lev(sl_medusa)))) /* above Medusa */
         return;
 
     /* Adjust source to be current level and re-insert branch. */

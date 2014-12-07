@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-11-16 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -422,8 +422,8 @@ fill_topten_entry(struct toptenentry *newtt, int how, const char *killer)
     newtt->points = u.urexp > -1 ?      /* u.urexp stores score once invent is
                                            invalid */
         u.urexp : calc_score(how, FALSE, money_cnt(invent) + hidden_gold());
-    newtt->deathdnum = level->z.dnum;
-    newtt->deathlev = depth(&level->z);
+    newtt->deathdnum = dungeon_ledger(level->dgn);
+    newtt->deathlev = depth(level);
     newtt->maxlvl = deepest_lev_reached(TRUE);
     newtt->hp = u.uhp;
     newtt->maxhp = u.uhpmax;
@@ -601,9 +601,9 @@ tt_oname(struct obj *otmp)
 
 /* append the level name to outbuf */
 static void
-topten_level_name(int dnum, int dlev, char *outbuf)
+topten_level_name(struct dungeon *dgn, int dlev, char *outbuf)
 {
-    if (dnum == dungeon_topology.d_endgame_dnum) {
+    if (dgn == dungeon_topology.endgame) {
         const char *arg, *fmt = "on the Plane of %s";
 
         switch (dlev) {
@@ -629,8 +629,8 @@ topten_level_name(int dnum, int dlev, char *outbuf)
         }
         sprintf(outbuf + strlen(outbuf), fmt, arg);
     } else {
-        sprintf(outbuf + strlen(outbuf), "in %s", dungeons[dnum].dname);
-        if (dungeons[dnum].num_dunlevs > 1)
+        sprintf(outbuf + strlen(outbuf), "in %s", dgn->dname);
+        if (dgn->num_dunlevs > 1)
             sprintf(outbuf + strlen(outbuf), " on level %d", dlev);
     }
 }
@@ -654,8 +654,8 @@ topten_death_description(struct toptenentry *in, char *outbuf)
                 in->maxlvl);
         /* fixup for closing paren in "escaped... with...Amulet)[max..." */
         if ((bp = strchr(outbuf, ')')) != 0)
-            *bp =
-                (in->deathdnum == dungeon_topology.d_endgame_dnum) ? '\0' : ' ';
+            *bp = (in->deathdnum == dungeon_ledger(dungeon_topology.endgame)) ?
+                    '\0' : ' ';
         second_line = FALSE;
     } else if (!strncmp("ascended", in->death, 8)) {
         sprintf(outbuf + strlen(outbuf), "ascended to demigod%s-hood",

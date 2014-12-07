@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-06 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -16,11 +16,6 @@ typedef struct d_flags {        /* dungeon/level type flags */
     unsigned align:3;   /* dungeon alignment. */
     unsigned unused:1;  /* etc... */
 } d_flags;
-
-typedef struct d_level {        /* basic dungeon level element */
-    xchar dnum; /* dungeon number */
-    xchar dlevel;       /* level number */
-} d_level;
 
 typedef struct s_level {        /* special dungeon level element */
     struct s_level *next;
@@ -53,7 +48,7 @@ typedef struct dest_area {      /* non-stairway level change indentifier */
     schar nhx, nhy;     /* opposite corner of invalid area */
 } dest_area;
 
-typedef struct dungeon {        /* basic dungeon identifier */
+struct dungeon {        /* basic dungeon identifier */
     char dname[24];     /* name of the dungeon (eg. "Hell") */
     char proto[15];     /* name of prototype file (eg. "tower") */
     char boneid;        /* character to id dungeon in bones files */
@@ -63,7 +58,7 @@ typedef struct dungeon {        /* basic dungeon identifier */
     xchar dunlev_ureached;      /* how deep you have been in this dungeon */
     int ledger_start,   /* the starting depth in "real" terms */
         depth_start;    /* the starting depth in "logical" terms */
-} dungeon;
+};
 
 /*
  * A branch structure defines the connection between two dungeons.  They
@@ -102,7 +97,7 @@ struct overview_info {
     char shopcount;
     schar shoptype;    /* -1: multiple shops */
     boolean branch, portal;     /* branch, magic portal on this level */
-    struct d_level branch_dst, portal_dst;      /* where to? */
+    struct level *branch_dst, *portal_dst;      /* where to? */
     boolean branch_dst_known, portal_dst_known; /* destination known? */
 };
 
@@ -150,15 +145,12 @@ enum special_level {
 
 extern struct dgn_topology {
     struct level *special_levels[num_special_levels];
-    xchar d_tower_dnum;
-    xchar d_sokoban_dnum;
-    xchar d_mines_dnum, d_quest_dnum;
-    xchar d_endgame_dnum;
+    struct dungeon *main_dungeon, *tower, *sokoban, *quest, *mines, *endgame;
 } dungeon_topology;
 
-# define In_sokoban(x)          ((x)->z.dnum == dungeon_topology.d_sokoban_dnum)
+# define In_sokoban(x)          ((x)->dgn == dungeon_topology.sokoban)
 # define Inhell                 In_hell(level)  /* now gehennom */
-# define In_endgame(x)          ((x)->z.dnum == dungeon_topology.d_endgame_dnum)
+# define In_endgame(x)          ((x)->dgn == dungeon_topology.endgame)
 
 # define within_bounded_area(X,Y,LX,LY,HX,HY)                   \
     ((X) >= (LX) && (X) <= (HX) && (Y) >= (LY) && (Y) <= (HY))

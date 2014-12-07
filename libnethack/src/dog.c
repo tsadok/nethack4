@@ -193,18 +193,20 @@ update_mlstmv(void)
 }
 
 void
-losedogs(void)
+deliver_all_mons(struct level *lev)
 {
     struct monst *mtmp, *mtmp0 = 0, *mtmp2;
 
-    while ((mtmp = turnstate.migrating_pets) != 0) {
-        turnstate.migrating_pets = mtmp->nmon;
-        mon_arrive(mtmp, TRUE);
+    if (level == lev) {
+        while ((mtmp = turnstate.migrating_pets) != 0) {
+            turnstate.migrating_pets = mtmp->nmon;
+            mon_arrive(mtmp, TRUE);
+        }
     }
 
     for (mtmp = migrating_mons; mtmp; mtmp = mtmp2) {
         mtmp2 = mtmp->nmon;
-        if (mtmp->mux == level->z.dnum && mtmp->muy == level->z.dlevel) {
+        if (mtmp->dlevel == lev) {
             if (mtmp == migrating_mons)
                 migrating_mons = mtmp->nmon;
             else
@@ -215,7 +217,7 @@ losedogs(void)
     }
 }
 
-/* called from resurrect() in addition to losedogs() */
+/* called from resurrect() in addition to deliver_all_mons() */
 void
 mon_arrive(struct monst *mtmp, boolean with_you)
 {
@@ -631,12 +633,8 @@ migrate_to_level(struct monst *mtmp, struct level *lev, /* destination level */
     if (mtmp->dlevel == level)
         newsym(mtmp->mx, mtmp->my);
 
-    d_level new_lev;
-    new_lev.dnum = lev->z.dnum;
-    new_lev.dlevel = lev->z.dlevel;
-
     /* set migration data */
-    xyflags = (depth(&new_lev) < depth(&level->z)); /* 1 => up */
+    xyflags = (depth(lev) < depth(level)); /* 1 => up */
     if (In_W_tower(mtmp->mx, mtmp->my, level))
         xyflags |= 2;
     mtmp->wormno = num_segs;
@@ -645,8 +643,7 @@ migrate_to_level(struct monst *mtmp, struct level *lev, /* destination level */
     mtmp->ylocale = cc ? cc->y : mtmp->my;
     mtmp->xyloc = xyloc;
     mtmp->xyflags = xyflags;
-    mtmp->mux = new_lev.dnum;
-    mtmp->muy = new_lev.dlevel;
+    mtmp->dlevel = lev;
     mtmp->mx = COLNO;
     mtmp->my = ROWNO;    /* this implies migration */
 }

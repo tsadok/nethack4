@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-30 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* nh4-scripts: LEVGEN */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -13,6 +13,7 @@
 #pragma clang diagnostic ignored "-Wunused"
 
 static void setup_waterlevel(struct level *lev);
+static void movebubbles(struct level *lev);
 static void save_waterlevel(struct level *lev, struct memfile *mf);
 static void restore_waterlevel(struct level *lev, struct memfile *mf);
 static void free_waterlevel(struct level *lev);
@@ -357,8 +358,7 @@ restore_waterlevel(struct level *lev, struct memfile *mf)
     lev->extra = bi;
 }
 
-/* FIXME: This should not need to be exposed. */
-void
+static void
 movebubbles(struct level *lev)
 {
     struct bubble *b;
@@ -490,7 +490,6 @@ movebubbles(struct level *lev)
     turnstate.vision_full_recalc = TRUE;
 }
 
-/* FIXME: This shouldn't need to be exposed. */
 static void
 setup_waterlevel(struct level *lev)
 {

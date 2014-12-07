@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-30 */
+/* Last modified by Sean Hunt, 2014-12-07 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -149,23 +149,23 @@ describe_level(char *buf)
     int ret = 1;
 
     if (level == sp_lev(sl_fort_ludios))
-        sprintf(buf, "%s", dungeons[level->z.dnum].dname);
+        sprintf(buf, "%s", level->dgn->dname);
     else if (In_quest(level))
-        sprintf(buf, "Home:%d", dunlev(level));
+        sprintf(buf, "Home:%d", level->dlevel);
     else if (In_endgame(level))
         sprintf(buf, level == sp_lev(sl_astral) ? "Astral Plane" : "End Game");
     else if (In_mines(level))
-        sprintf(buf, "Mines:%d", depth(&level->z));
+        sprintf(buf, "Mines:%d", depth(level));
     else if (In_sokoban(level))
-        sprintf(buf, "Sokoban:%d", depth(&level->z));
+        sprintf(buf, "Sokoban:%d", depth(level));
     else if (level == sp_lev(sl_valley))
-        sprintf(buf, "Valley:%d", depth(&level->z));
+        sprintf(buf, "Valley:%d", depth(level));
     else if (In_hell(level))
-        sprintf(buf, "Gehennom:%d", depth(&level->z));
+        sprintf(buf, "Gehennom:%d", depth(level));
     else if (In_V_tower(level))
-        sprintf(buf, "Tower:%d", depth(&level->z));
+        sprintf(buf, "Tower:%d", depth(level));
     else
-        sprintf(buf, "Dungeons:%d", depth(&level->z)), (ret = 0);
+        sprintf(buf, "Dungeons:%d", depth(level)), (ret = 0);
     return ret;
 }
 
@@ -192,7 +192,7 @@ make_player_info(struct nh_player_info *pi)
 
     pi->x = u.ux;
     pi->y = u.uy;
-    pi->z = level->z.dlevel;
+    pi->z = level->dlevel;
 
     if (Upolyd) {
         strncpy(pi->rank, msgtitlecase(mons[u.umonnum].mname),

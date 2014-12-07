@@ -464,7 +464,7 @@ wiz_where(const struct nh_cmd_arg *arg)
 {
     (void) arg;
 
-    print_dungeon(FALSE, NULL, NULL);
+    print_dungeon(FALSE);
 
     return 0;
 }
