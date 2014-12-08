@@ -1,9 +1,10 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-08-28 */
+/* Last modified by Sean Hunt, 2014-12-22 */
 /* Copyright (c) Sean Hunt, 2013. */
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
+#include "zone.h"
 
 boolean
 has_sanctum(struct level *lev, xchar alignmask) {
@@ -37,4 +38,10 @@ no_level_effects(struct level *lev) {
 
 void
 no_level_data(struct level *lev, struct memfile *mf) {
+}
+
+struct zone
+migr_anywhere(struct level *dest, struct level *src, struct monst *mon,
+              enum migration type) {
+    return zn_whole();
 }

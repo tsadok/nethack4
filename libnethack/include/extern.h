@@ -16,6 +16,7 @@
 # include "youprop.h"
 # include "obj.h"
 # include "monattk.h"
+# include "rm.h"
 
 /* hacklib.h now contains extern definitions for hacklib */
 # include "hacklib.h"
@@ -53,6 +54,7 @@ struct tmp_sym;
 struct trap;
 struct version_info;
 struct you;
+struct zone;
 
 /* ### allmain.c ### */
 
@@ -729,6 +731,8 @@ extern boolean has_sanctum(struct level *lev, xchar alignmask);
 extern boolean has_terrain(struct level *lev, schar typ);
 extern void no_level_effects(struct level *lev);
 extern void no_level_data(struct level *lev, struct memfile *mf);
+extern struct zone migr_anywhere(struct level *dest, struct level *src,
+                                 struct monst *mon, enum migration type);
 
 /* ### light.c ### */
 

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-07 */
+/* Last modified by Sean Hunt, 2014-12-22 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -466,20 +466,15 @@ struct wseg {
 struct memfile;
 struct monst;
 struct obj;
+struct zone;
 
 enum migration {
-    migrate_nowhere = -1,
-    migrate_random = 0,
-    migrate_approx_xy,
-    migrate_exact_xy,
-    migrate_stairs_up,
-    migrate_stairs_down,
-    migrate_ladder_up,
-    migrate_ladder_down,
-    migrate_sstairs,
-    migrate_portal,
-    migrate_near_player,
-    migrate_count = migrate_near_player,
+    migr_climb, /* Climbing up/down stairs/ladder */
+    migr_teleport, /* Level teleport/branchport */
+    migr_portal, /* Travel via portal */
+    migr_fall, /* Falling down a hole/trapdoor */
+    migr_harass, /* Rodney harassment */
+    migr_count = migr_harass,
 };
 
 /* Determine how a level handles level teleports. It may block teleports to or
@@ -527,9 +522,25 @@ struct level_manager {
      */
     void (*turn_effects)(struct level* lev);
 
-    /* Called whenever a monster is migrating to the level. Exact API is subject
-     * to change, here. */
-    void (*migrate_mon)(struct level *lev, struct monst* mon, enum migration type);
+    /* Get the zone of valid migration locations for a monster, based on the
+     * type of migration and the source level. This will be called on the
+     * destination's manager.
+     *
+     * On occasion, a migration may pass NULL as the source level. If this is
+     * done, then the level checking the migration should not assume that the
+     * monster has a valid source level or x/y coordinates. It is also generally
+     * used as a signal to the manager that the source level should not be
+     * considered.
+     *
+     * The manager should only include here all the potential *valid* positions,
+     * regardless of what is already there. The surrounding code is responsible
+     * for actually placing the monster, such as placing it by a staircase or
+     * portal, and/or moving existing monsters out of the way. If the
+     * surrounding code is unable to place the monster in the zone specified, a
+     * panic may result.
+     */
+    struct zone (*migration_zone)(struct level *dest, struct level *src,
+                                  struct monst* mon, enum migration type);
 
     /* Called whever an object is migrating to the level.  Exact API is subject
      * to change, here. */

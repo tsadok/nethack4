@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-07 */
+/* Last modified by Sean Hunt, 2014-12-22 */
 /* nh4-scripts: LEVGEN */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -216,9 +216,6 @@ firelevel_pick_mon(const struct level *lev, char class, boolean levgen) {
 
 /*=============================================================================
  * Special waterlevel stuff in endgame (TH).
- *
- * Some of these functions would probably logically belong to some
- * other source files, but they are all so nicely encapsulated here.
  */
 
 enum bub_content {
