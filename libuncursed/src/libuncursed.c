@@ -2570,7 +2570,7 @@ uncursed_rhook_cp437_at(int y, int x)
    system's using UCS-2 for wchar_t, then the compiler will complain that
    we're checking for something impossible. In general, the check is very
    useful, so we disable it just for the next two functions. */
-# pragma GCC diagnostic push "-Wtype-limits"
+# pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wtype-limits"
 #endif
 
@@ -2636,7 +2636,7 @@ uncursed_rhook_utf8_at(int y, int x)
 }
 
 #ifdef __GNUC__
-# pragma GCC diagnostic pop "-Wtype-limits"
+# pragma GCC diagnostic pop
 #endif
 
 /* manual page 3ncurses get_wch */

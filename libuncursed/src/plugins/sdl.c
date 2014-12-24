@@ -1132,6 +1132,8 @@ signal_event_loop(int key)
     ue.timestamp = SDL_GetTicks();
     ue.windowID = 0;
     ue.code = key;
+    ue.data1 = NULL;
+    ue.data2 = NULL;
     SDL_PushEvent(&(union SDL_Event){.user = ue});
 }
 

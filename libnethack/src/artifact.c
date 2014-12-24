@@ -1361,7 +1361,7 @@ arti_invoke(struct obj *obj)
                  * Find the closest level in the given dungeon, open
                  * a use-once portal to that dungeon and go there.
                  */
-                struct level *lev = portal_target(i);
+                struct level *lev = portal_target(&dungeons[i]);
                 if (Uhave_amulet || !lev) {
                     pline("You feel very disoriented for a moment.");
                 } else {

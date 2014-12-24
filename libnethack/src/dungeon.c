@@ -129,8 +129,10 @@ save_branch(struct memfile *mf, const branch * b)
 static void
 save_dungeon_topology(struct memfile *mf)
 {
+    int i;
+
     mtag(mf, 0, MTAG_DUNGEON_TOPOLOGY);
-    for (int i = 0; i < num_special_levels; ++i) {
+    for (i = 0; i < num_special_levels; ++i) {
         struct level *lev = dungeon_topology.special_levels[i];
         mwrite8(mf, lev ? level_ledger(lev) : -1);
     }
@@ -1677,8 +1679,8 @@ print_dungeon(boolean bymenu)
                 continue;
 
             /* print any branches before this level */
-            print_branch(&menu, i, last_level, slev->lev->dlevel, bymenu,
-                         &lchoices);
+            print_branch(&menu, &dungeons[i], last_level, slev->lev->dlevel,
+                         bymenu, &lchoices);
 
             buf = msgprintf("   %s: %d", slev->proto, depth(slev->lev));
             if (slev->lev == sp_lev(sl_castle))
@@ -1703,7 +1705,8 @@ print_dungeon(boolean bymenu)
             last_level = slev->lev->dlevel;
         }
         /* print branches after the last special level */
-        print_branch(&menu, i, last_level, MAXLEVEL, bymenu, &lchoices);
+        print_branch(&menu, &dungeons[i], last_level, MAXLEVEL, bymenu,
+                     &lchoices);
     }
 
     /* Print out floating branches (if any). */
