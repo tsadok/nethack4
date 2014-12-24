@@ -193,97 +193,75 @@ update_mlstmv(void)
 }
 
 void
-deliver_all_mons(struct level *lev)
+deliver_all_mons(void)
 {
-    struct monst *mtmp, *mtmp0 = 0, *mtmp2;
+    struct monst *mon, *prev = NULL, *next;
 
-    if (level == lev) {
-        while ((mtmp = turnstate.migrating_pets) != 0) {
-            turnstate.migrating_pets = mtmp->nmon;
-            mon_arrive(mtmp, TRUE);
-        }
+    for (mon = turnstate.migrating_pets; mon; mon = next) {
+        next = mon->nmon;
+        if (mon_arrive(mon, migr_follow)) {
+            if (!prev)
+                turnstate.migrating_pets = next;
+            else
+                prev->nmon = next;
+        } else
+            prev = mon;
     }
 
-    for (mtmp = migrating_mons; mtmp; mtmp = mtmp2) {
-        mtmp2 = mtmp->nmon;
-        if (mtmp->dlevel == lev) {
-            if (mtmp == migrating_mons)
-                migrating_mons = mtmp->nmon;
+    /* LEVELSFIXME: Because monsters are added to the front of the chain, this
+     * gives a LIFO semantic. Should it be FIFO instead?
+     */
+    for (mon = level->incoming_mons; mon; mon = next) {
+        next = mon->nmon;
+        /* LEVELSFIXME: Preserve the real migration type here. */
+        if (mon_arrive(mon, migr_count + 1)) {
+            if (!prev)
+                level->incoming_mons = next;
             else
-                mtmp0->nmon = mtmp->nmon;
-            mon_arrive(mtmp, FALSE);
+                prev->nmon = next;
         } else
-            mtmp0 = mtmp;
+            prev = mon;
     }
 }
 
-/* called from resurrect() in addition to deliver_all_mons() */
-void
-mon_arrive(struct monst *mtmp, boolean with_you)
+/* Find the appropriate arrival square for an arriving monster and, if found,
+ * move it there. Returns TRUE on success.
+ */
+static boolean
+find_arrival_square(struct monst *mtmp, enum migration migr)
 {
-    struct trap *t;
-    struct obj *otmp;
     xchar xlocale, ylocale, xyloc, xyflags, wander;
-    int num_segs;
-
-    mtmp->dlevel = level;
-    mtmp->nmon = level->monlist;
-    level->monlist = mtmp;
-    if (mtmp->isshk)
-        set_residency(mtmp, FALSE);
-
-    num_segs = mtmp->wormno;
-    /* baby long worms have no tail so don't use is_longworm() */
-    if ((mtmp->data == &mons[PM_LONG_WORM]) &&
-        (mtmp->wormno = get_wormno(mtmp->dlevel)) != 0) {
-        initworm(mtmp, num_segs);
-        /* tail segs are not yet initialized or displayed */
-    } else
-        mtmp->wormno = 0;
-
-    /* some monsters might need to do something special upon arrival _after_
-       the current level has been fully set up; see dochug() */
-    mtmp->mstrategy |= STRAT_ARRIVE;
+    struct trap *t;
 
     xyloc = mtmp->xyloc;
     xyflags = mtmp->xyflags;
     xlocale = mtmp->xlocale;
     ylocale = mtmp->ylocale;
 
-    for (otmp = mtmp->minvent; otmp; otmp = otmp->nobj)
-        set_obj_level(mtmp->dlevel, otmp);
-
+    /* Your steed is not actually placed on the map. */
     if (mtmp == u.usteed)
-        return; /* don't place steed on the map */
-    if (with_you) {
+        return TRUE;
+
+    if (migr == migr_follow || migr == migr_harass) {
         /* When a monster accompanies you, sometimes it will arrive at your
-           intended destination and you'll end up next to that spot.  This code 
-           doesn't control the final outcome; goto_level(do.c) decides who ends 
+           intended destination and you'll end up next to that spot.  This code
+           doesn't control the final outcome; goto_level(do.c) decides who ends
            up at your target spot when there is a monster there too. */
         if (!MON_AT(level, u.ux, u.uy) &&
-            !rn2(mtmp->mtame ? 10 : mtmp->mpeaceful ? 5 : 2))
+            !rn2(mtmp->mtame ? 10 : mtmp->mpeaceful ? 5 : 2)) {
             rloc_to(mtmp, u.ux, u.uy);
-        else
-            mnexto(mtmp);
-        return;
+        } else
+            /* LEVELSFIXME: The Wizard should be allowed to shove a monster out
+             * of the way, if necessary. */
+            return mnexto(mtmp);
     }
-    /* 
-     * The monster arrived on this level independently of the player.
-     * Its coordinate fields were overloaded for use as flags that
-     * specify its final destination.
+
+    /*
+     * Otherwise, the monster arrived on this level independently of the player.
+     * Its coordinate fields were overloaded for use as flags that specify its
+     * final destination.
      */
-
-    if (mtmp->mlstmv < moves - 1L) {
-        /* heal monster for time spent in limbo */
-        long nmv = moves - 1L - mtmp->mlstmv;
-
-        mon_catchup_elapsed_time(mtmp, nmv);
-        mtmp->mlstmv = moves - 1L;
-
-        /* let monster move a bit on new level (see placement code below) */
-        wander = (xchar) min(nmv, 8);
-    } else
-        wander = 0;
+    wander = (xchar) max(min(moves - 1L - mtmp->mlstmv, 8), 0);
 
     switch (xyloc) {
     case MIGR_APPROX_XY:       /* {x,y}locale set above */
@@ -368,38 +346,60 @@ mon_arrive(struct monst *mtmp, boolean with_you)
     /* moved a bit */
     mtmp->mx = COLNO;       /* (already is 0) */
     mtmp->my = xyflags;
-    if (xlocale)
+    if (xlocale) {
         mnearto(mtmp, xlocale, ylocale, FALSE);
-    else {
-        if (!rloc(mtmp, TRUE)) {
-            /* 
-             * Failed to place migrating monster,
-             * probably because the level is full.
-             * Dump the monster's cargo and leave the monster dead.
-             */
-            struct obj *obj;
+        if (mtmp->mx == COLNO)
+            return FALSE;
+    } else if (!rloc(mtmp, TRUE))
+            return FALSE;
 
-            while ((obj = mtmp->minvent) != 0) {
-                obj_extract_self(obj);
-                obj_no_longer_held(obj);
-                if (obj->owornmask & W_MASK(os_wep))
-                    setmnotwielded(mtmp, obj);
-                obj->owornmask = 0L;
-                if (xlocale != COLNO && ylocale != ROWNO)
-                    place_object(obj, level, xlocale, ylocale);
-                else {
-                    rloco(obj);
-                    get_obj_location(obj, &xlocale, &ylocale, 0);
-                }
-            }
-            mkcorpstat(CORPSE, NULL, mtmp->data, level, xlocale, ylocale,
-                       mkobj_no_init);
-            mongone(mtmp);
-        }
+    return TRUE;
+}
+
+/* Have a monster arrive on a level. 'migr' indicates the manner of arrival.
+ * Returns TRUE if the monster was successfully placed; FALSE if the monster was
+ * unable to enter. The caller is responsible for removing the monster from any
+ * monster chains it was in, if the return value is TRUE.
+ */
+boolean
+mon_arrive(struct monst *mtmp, enum migration migr)
+{
+    struct obj *otmp;
+    int num_segs;
+
+    if (!find_arrival_square(mtmp, migr))
+        return FALSE;
+
+    if (mtmp->mlstmv < moves - 1L) {
+        mon_catchup_elapsed_time(mtmp, moves - 1L - mtmp->mlstmv);
+        mtmp->mlstmv = moves - 1L;
     }
 
+    mtmp->dlevel = level;
+    mtmp->nmon = level->monlist;
+    level->monlist = mtmp;
+    if (mtmp->isshk)
+        set_residency(mtmp, FALSE);
+
+    num_segs = mtmp->wormno;
+    /* baby long worms have no tail so don't use is_longworm() */
+    if ((mtmp->data == &mons[PM_LONG_WORM]) &&
+        (mtmp->wormno = get_wormno(mtmp->dlevel)) != 0) {
+        initworm(mtmp, num_segs);
+        /* tail segs are not yet initialized or displayed */
+    } else
+        mtmp->wormno = 0;
+
+    /* some monsters might need to do something special upon arrival _after_
+       the current level has been fully set up; see dochug() */
+    mtmp->mstrategy |= STRAT_ARRIVE;
     mtmp->mux = COLNO;
     mtmp->muy = ROWNO;
+
+    for (otmp = mtmp->minvent; otmp; otmp = otmp->nobj)
+        set_obj_level(mtmp->dlevel, otmp);
+
+    return TRUE;
 }
 
 /* heal monster for time spent elsewhere */
@@ -498,7 +498,7 @@ mon_catchup_elapsed_time(struct monst *mtmp, long nmv)
 }
 
 
-/* called when you move to another level 
+/* called when you move to another level
  * pets_only: true for ascension or final escape */
 void
 keepdogs(boolean pets_only)
@@ -516,7 +516,7 @@ keepdogs(boolean pets_only)
             continue;
         if (((monnear(mtmp, u.ux, u.uy) && levl_follower(mtmp)) ||
              (mtmp == u.usteed) ||
-             /* the wiz will level t-port from anywhere to chase the amulet; if 
+             /* the wiz will level t-port from anywhere to chase the amulet; if
                 you don't have it, will chase you only if in range. -3. */
              (Uhave_amulet && mtmp->iswiz))
             && ((!mtmp->msleeping && mtmp->mcanmove)
@@ -581,7 +581,7 @@ keepdogs(boolean pets_only)
             mtmp->nmon = turnstate.migrating_pets;
             turnstate.migrating_pets = mtmp;
         } else if (mtmp->iswiz) {
-            /* we want to be able to find him when his next resurrection chance 
+            /* we want to be able to find him when his next resurrection chance
                comes up, but have him resume his present location if player
                returns to this level before that time */
             migrate_to_level(mtmp, level, MIGR_EXACT_XY, NULL);
@@ -628,8 +628,8 @@ migrate_to_level(struct monst *mtmp, struct level *lev, /* destination level */
         m_unleash(mtmp, TRUE);
     }
     relmon(mtmp);
-    mtmp->nmon = migrating_mons;
-    migrating_mons = mtmp;
+    mtmp->nmon = lev->incoming_mons;
+    lev->incoming_mons = mtmp;
     if (mtmp->dlevel == level)
         newsym(mtmp->mx, mtmp->my);
 

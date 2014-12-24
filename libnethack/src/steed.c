@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Alex Smith, 2014-05-28 */
+/* Last modified by Sean Hunt, 2014-12-24 */
 /* Copyright (c) Kevin Hugo, 1998-1999. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -588,10 +588,10 @@ dismount_steed(int reason)
             /* Keep player here, move the steed to cc */
             rloc_to(mtmp, cc.x, cc.y);
             /* Player stays put */
-            /* Otherwise, kill the steed */
         } else {
-            killed(mtmp);
-            adjalign(-1);
+            /* Park the steed in the incoming monsters chain. */
+            migrate_to_level(mtmp, level, MIGR_APPROX_XY,
+                             &(struct coord){.x = u.ux, .y = u.uy});
         }
     }
 

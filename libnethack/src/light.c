@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-07 */
+/* Last modified by Sean Hunt, 2014-12-24 */
 /* Copyright (c) Dean Luick, 1994                                       */
 /* NetHack may be freely redistributed.  See license for details.       */
 
@@ -216,7 +216,7 @@ find_mid(struct level *lev, unsigned nid, unsigned fmflags)
             if (!DEADMONSTER(mtmp) && mtmp->m_id == nid)
                 return mtmp;
     if (fmflags & FM_MIGRATE)
-        for (mtmp = migrating_mons; mtmp; mtmp = mtmp->nmon)
+        for (mtmp = lev->incoming_mons; mtmp; mtmp = mtmp->nmon)
             if (mtmp->m_id == nid)
                 return mtmp;
     if (fmflags & FM_MYDOGS)

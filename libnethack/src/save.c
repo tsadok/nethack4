@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-07 */
+/* Last modified by Sean Hunt, 2014-12-24 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -283,7 +283,6 @@ savegamestate(struct memfile *mf)
     save_light_sources(mf, level, RANGE_GLOBAL);
 
     saveobjchn(mf, invent);
-    savemonchn(mf, NULL, migrating_mons);
     save_mvitals(mf);
 
     save_spellbook(mf);
@@ -627,6 +626,8 @@ savelev(struct memfile *mf, struct level *lev)
     mtag(mf, ledger, MTAG_LEVEL);
     mwrite8(mf, lev->generated);
 
+    savemonchn(mf, lev, lev->incoming_mons);
+
     if (!lev->generated)
         return;
 
@@ -686,6 +687,8 @@ freelev(xchar levnum)
 
     if (!lev)
         return;
+
+    free_monchn(lev->incoming_mons);
 
     if (lev->generated) {
         if (lev->mgr)
@@ -940,7 +943,6 @@ freedynamicdata(void)
 
     /* game-state data */
     free_objchn(invent);
-    free_monchn(migrating_mons);
     /* this should normally be NULL between turns, but might not be due to
      * the game ending where pets can follow (e.g. ascension or dungeon escape)
      * or due to panicing. */

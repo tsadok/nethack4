@@ -259,7 +259,7 @@ setpaid(struct monst *shkp)
         thrownobj->unpaid = 0;
     for (mtmp = level->monlist; mtmp; mtmp = mtmp->nmon)
         clear_unpaid(shkp, mtmp->minvent);
-    for (mtmp = migrating_mons; mtmp; mtmp = mtmp->nmon)
+    for (mtmp = level->incoming_mons; mtmp; mtmp = mtmp->nmon)
         clear_unpaid(shkp, mtmp->minvent);
 
     while ((obj = level->billobjs) != 0) {
@@ -1743,9 +1743,10 @@ find_oid(unsigned id)
         return obj;
 
     /* not found yet; check inventory for members of various monst lists */
-    for (mon = migrating_mons; mon; mon = mon->nmon)
-        if ((obj = o_on(id, mon->minvent)))
-            return obj;
+    for (i = 0; i < maxledgerno(); ++i)
+        for (mon = levels[i]->incoming_mons; mon; mon = mon->nmon)
+            if ((obj = o_on(id, mon->minvent)))
+                return obj;
     for (mon = turnstate.migrating_pets; mon; mon = mon->nmon)
         if ((obj = o_on(id, mon->minvent)))
             return obj;

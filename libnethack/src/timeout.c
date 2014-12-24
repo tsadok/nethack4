@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-07 */
+/* Last modified by Sean Hunt, 2014-12-24 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -1199,7 +1199,6 @@ static void insert_timer(struct level *lev, timer_element * gnu);
 static timer_element *remove_timer(timer_element **, short, void *);
 static timer_element *peek_timer(timer_element **, short, const void *);
 static void write_timer(struct memfile *mf, timer_element *);
-static boolean mon_is_local(struct monst *);
 static boolean timer_is_local(timer_element *);
 static int maybe_write_timer(struct memfile *mf, struct level *lev, int range,
                              boolean write_it);
@@ -1549,29 +1548,10 @@ obj_is_local(struct obj *obj)
     case OBJ_CONTAINED:
         return obj_is_local(obj->ocontainer);
     case OBJ_MINVENT:
-        return mon_is_local(obj->ocarry);
+        return TRUE;
     }
     panic("obj_is_local");
     return FALSE;
-}
-
-
-/*
- * Return TRUE if the given monster will stay on the level when the
- * level is saved.
- */
-static boolean
-mon_is_local(struct monst *mon)
-{
-    struct monst *curr;
-
-    for (curr = migrating_mons; curr; curr = curr->nmon)
-        if (curr == mon)
-            return FALSE;
-    for (curr = turnstate.migrating_pets; curr; curr = curr->nmon)
-        if (curr == mon)
-            return FALSE;
-    return TRUE;
 }
 
 

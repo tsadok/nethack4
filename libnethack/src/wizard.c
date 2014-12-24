@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-02 */
+/* Last modified by Sean Hunt, 2014-12-24 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -691,9 +691,10 @@ nasty(struct monst *mcast)
 void
 resurrect(void)
 {
-    struct monst *mtmp, **mmtmp;
+    struct monst *mtmp = NULL, **mmtmp;
     long elapsed;
     const char *verb;
+    int i = 0;
 
     if (!flags.no_of_wizards) {
         /* make a new Wizard */
@@ -703,29 +704,38 @@ resurrect(void)
     } else {
         /* look for a migrating Wizard */
         verb = "elude";
-        mmtmp = &migrating_mons;
-        while ((mtmp = *mmtmp) != 0) {
-            if (mtmp->iswiz &&
-                /* if he has the Amulet, he won't bring it to you */
-                !mon_has_amulet(mtmp) &&
-                (elapsed = moves - mtmp->mlstmv) > 0L) {
-                mon_catchup_elapsed_time(mtmp, elapsed);
-                if (elapsed >= LARGEST_INT)
-                    elapsed = LARGEST_INT - 1;
-                elapsed /= 50L;
-                if (mtmp->msleeping && rn2((int)elapsed + 1))
-                    mtmp->msleeping = 0;
-                if (mtmp->mfrozen == 1) /* would unfreeze on next move */
-                    mtmp->mfrozen = 0, mtmp->mcanmove = 1;
-                if (mtmp->mcanmove && !mtmp->msleeping) {
-                    *mmtmp = mtmp->nmon;
-                    mon_arrive(mtmp, TRUE);
-                    /* note: there might be a second Wizard; if so, he'll have
-                       to wait til the next resurrection */
-                    break;
+        /* LEVELSFIXME: Do we care about the order of processing of levels here?
+         */
+        for (i = 0; i <= maxledgerno(); ++i) {
+            mmtmp = &levels[i]->incoming_mons;
+            while ((mtmp = *mmtmp) != 0) {
+                if (mtmp->iswiz &&
+                    /* if he has the Amulet, he won't bring it to you */
+                    !mon_has_amulet(mtmp) &&
+                    (elapsed = moves - mtmp->mlstmv) > 0L) {
+                    mon_catchup_elapsed_time(mtmp, elapsed);
+                    mtmp->mlstmv = moves;
+                    if (elapsed >= LARGEST_INT)
+                        elapsed = LARGEST_INT - 1;
+                    elapsed /= 50L;
+                    if (mtmp->msleeping && rn2((int)elapsed + 1))
+                        mtmp->msleeping = 0;
+                    if (mtmp->mfrozen == 1) /* would unfreeze on next move */
+                        mtmp->mfrozen = 0, mtmp->mcanmove = 1;
+                    if (mtmp->mcanmove && !mtmp->msleeping) {
+                        if (!mon_arrive(mtmp, migr_harass)) {
+                            *mmtmp = mtmp->nmon;
+                            /* note: there might be a second Wizard; if so,
+                             * he'll have to wait til the next resurrection */
+                        } else {
+                            impossible("Failed to place resurrected wizard");
+                            mtmp = NULL;
+                        }
+                        break;
+                    }
                 }
+                mmtmp = &mtmp->nmon;
             }
-            mmtmp = &mtmp->nmon;
         }
     }
 

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-22 */
+/* Last modified by Sean Hunt, 2014-12-24 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -473,6 +473,7 @@ enum migration {
     migr_teleport, /* Level teleport/branchport */
     migr_portal, /* Travel via portal */
     migr_fall, /* Falling down a hole/trapdoor */
+    migr_follow, /* A pet following the player */
     migr_harass, /* Rodney harassment */
     migr_count = migr_harass,
 };
@@ -622,17 +623,26 @@ struct ls_t;
  * contains a struct level transparently, so as to allow for a slow but
  * sure conversion from one to the other. */
 struct level {
-    struct level_manager *mgr;
-
     struct dungeon *dgn;
     int dlevel;
 
+    /* This holds monsters which would like to enter the level, either because
+     * they are migrating here from another level, or, rarely, they were
+     * shunted out of a full level by something and need to come back.
+     */
+    struct monst *incoming_mons;
+
+    /* This indicates whether or not the level has been successfully generated.
+     * If false, then except for the fields in the anonymous struct above, there
+     * is no guarantee that any field in this struct is valid. It will be set to
+     * true at the completion of level generation. */
     boolean generated;
 
+    struct level_manager *mgr;
     void *extra;
 
     /* This anonymous structure contains the old level structure data, for
-     * migration. */
+     * refactoring. Some of it will probably remain, but some is going away. */
     struct {
         char levname[64];   /* as given by the player via donamelevel */
         struct rm locations[COLNO][ROWNO];

@@ -7,7 +7,7 @@
 #include "lev.h"
 #include <stdint.h>
 
-#include "endgame_gen.h" /* FIXME: do not include */
+#include "endgame_gen.h" /* LEVELSFIXME: do not include */
 
 static void restore_autopickup_rules(struct memfile *mf,
                                      struct nh_autopickup_rules *r);
@@ -422,7 +422,6 @@ restgamestate(struct memfile *mf, struct level *lev)
     restore_timers(mf, lev, RANGE_GLOBAL, FALSE, 0L);
     restore_light_sources(mf, lev);
     restobjchn(mf, lev, FALSE, FALSE, &invent);
-    migrating_mons = restmonchn(mf, lev, FALSE);
     restore_mvitals(mf);
 
     restore_spellbook(mf);
@@ -1065,13 +1064,15 @@ getlev(struct memfile *mf, struct level *lev, boolean ghostly)
 
     lev->generated = mread8(mf);
 
+    lev->incoming_mons = restmonchn(mf, lev, ghostly);
+
     if (ghostly && !lev->generated)
         panic("bones contained unfinished level");
 
     if (!lev->generated)
         return;
 
-    /* FIXME: This is a total kludge. Fix. */
+    /* LEVELSFIXME: This is a total kludge. Find some way to save managers. */
     if (lev == sp_lev(sl_water))
         lev->mgr = &waterlevel_manager;
     if (lev == sp_lev(sl_fire))

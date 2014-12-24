@@ -1412,6 +1412,7 @@ contained(struct nh_menulist *menu, const char *src, long *total_count,
     const char *buf;
     long count = 0, size = 0;
     struct monst *mon;
+    int i;
 
     count_obj(invent, &count, &size, FALSE, TRUE);
     count_obj(level->objlist, &count, &size, FALSE, TRUE);
@@ -1420,8 +1421,9 @@ contained(struct nh_menulist *menu, const char *src, long *total_count,
      */
     for (mon = level->monlist; mon; mon = mon->nmon)
         count_obj(mon->minvent, &count, &size, FALSE, TRUE);
-    for (mon = migrating_mons; mon; mon = mon->nmon)
-        count_obj(mon->minvent, &count, &size, FALSE, TRUE);
+    for (i = 0; i < maxledgerno(); ++i)
+        for (mon = levels[i]->incoming_mons; mon; mon = mon->nmon)
+            count_obj(mon->minvent, &count, &size, FALSE, TRUE);
 
     *total_count += count;
     *total_size += size;
@@ -1458,6 +1460,7 @@ wiz_show_stats(const struct nh_cmd_arg *arg)
     struct nh_menulist menu;
     long total_obj_size = 0, total_obj_count = 0;
     long total_mon_size = 0, total_mon_count = 0;
+    int i;
 
     (void) arg;
 
@@ -1476,8 +1479,10 @@ wiz_show_stats(const struct nh_cmd_arg *arg)
               &total_obj_size);
     mon_invent_chain(&menu, "minvent", level->monlist, &total_obj_count,
                      &total_obj_size);
-    mon_invent_chain(&menu, "migrating minvent", migrating_mons,
-                     &total_obj_count, &total_obj_size);
+    for (i = 0; i <= maxledgerno(); ++i)
+        mon_invent_chain(&menu, msgprintf("incoming minvent, level %d", i),
+                         levels[i]->incoming_mons, &total_obj_count,
+                         &total_obj_size);
 
     contained(&menu, "contained", &total_obj_count, &total_obj_size);
 
@@ -1493,8 +1498,10 @@ wiz_show_stats(const struct nh_cmd_arg *arg)
 
     mon_chain(&menu, "level->monlist", level->monlist, &total_mon_count,
               &total_mon_size);
-    mon_chain(&menu, "migrating", migrating_mons, &total_mon_count,
-              &total_mon_size);
+    for (i = 0; i <= maxledgerno(); ++i)
+        mon_chain(&menu, msgprintf("incoming, level %d", i),
+                         levels[i]->incoming_mons, &total_obj_count,
+                         &total_obj_size);
 
     add_menutext(&menu, separator);
     buf = msgprintf(template, "Total", total_mon_count, total_mon_size);

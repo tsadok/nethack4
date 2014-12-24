@@ -1126,7 +1126,7 @@ goto_level(struct level *dest, boolean at_stairs, boolean falling,
 
     for (otmp = invent; otmp; otmp = otmp->nobj)
         set_obj_level(level, otmp);
-    deliver_all_mons(level);
+    deliver_all_mons();
     kill_genocided_monsters();  /* for those wiped out while in limbo */
     /*
      * Expire all timers that have gone off while away.  Must be

@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-12-07 */
+/* Last modified by Sean Hunt, 2014-12-24 */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -510,18 +510,14 @@ makevtele(struct level *lev)
     makeniche(lev, TELEP_TRAP);
 }
 
-/* Allocate a new level structure and make sure its fields contain sane
- * initial vales.
- * Some of this is only necessary for some types of levels (maze, normal,
- * special) but it's easier to put it all in one place than make sure
- * each type initializes what it needs to separately.
- */
+/* Allocate a new level structure and initialize fields. */
 struct level *
 alloc_level(struct dungeon *dgn, int dlevel)
 {
     struct level *lev = malloc(sizeof (struct level));
 
     memset(lev, 0, sizeof (struct level));
+    lev->incoming_mons = NULL;
     lev->mgr = NULL;
     lev->dgn = dgn;
     lev->dlevel = dlevel;
