@@ -1,5 +1,5 @@
 /* vim:set cin ft=c sw=4 sts=4 ts=8 et ai cino=Ls\:0t0(0 : -*- mode:c;fill-column:80;tab-width:8;c-basic-offset:4;indent-tabs-mode:nil;c-file-style:"k&r" -*-*/
-/* Last modified by Sean Hunt, 2014-10-17 */
+/* Last modified by Sean Hunt, 2014-12-30 */
 /* Copyright (c) Sean Hunt, 2014. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -36,17 +36,20 @@ struct zone {
 };
 
 inline int
-zn_byte_index(struct coord loc) {
+zn_byte_index(struct coord loc)
+{
     return (loc.x + loc.y * COLNO) / CHAR_BIT;
 }
 
 inline int
-zn_bit_index(struct coord loc) {
+zn_bit_index(struct coord loc)
+{
     return (loc.x + loc.y * COLNO) % CHAR_BIT;
 }
 
 inline struct coord
-zn_from_indices(int byte, int bit) {
+zn_from_indices(int byte, int bit)
+{
     int idx = byte * CHAR_BIT + bit;
     return (struct coord){idx % COLNO, idx / COLNO};
 }
@@ -54,12 +57,14 @@ zn_from_indices(int byte, int bit) {
 /**** Basic set-theoretic constructions ****/
 
 inline struct zone
-zn_empty(void) {
+zn_empty(void)
+{
     return (struct zone){{0}};
 }
 
 inline struct zone
-zn_union(struct zone zn1, struct zone zn2) {
+zn_union(struct zone zn1, struct zone zn2)
+{
     struct zone zn;
     int i;
     for (i = 0; i < zone_length; ++i)
@@ -68,7 +73,8 @@ zn_union(struct zone zn1, struct zone zn2) {
 }
 
 inline struct zone
-zn_intersect(struct zone zn1, struct zone zn2) {
+zn_intersect(struct zone zn1, struct zone zn2)
+{
     struct zone zn;
     int i;
     for (i = 0; i < zone_length; ++i)
@@ -77,7 +83,8 @@ zn_intersect(struct zone zn1, struct zone zn2) {
 }
 
 inline struct zone
-zn_subtract(struct zone zn1, struct zone zn2) {
+zn_subtract(struct zone zn1, struct zone zn2)
+{
     struct zone zn;
     int i;
     for (i = 0; i < zone_length; ++i)
@@ -86,7 +93,8 @@ zn_subtract(struct zone zn1, struct zone zn2) {
 }
 
 inline struct zone
-zn_sym_diff(struct zone zn1, struct zone zn2) {
+zn_sym_diff(struct zone zn1, struct zone zn2)
+{
     struct zone zn;
     int i;
     for (i = 0; i < zone_length; ++i)
@@ -97,12 +105,14 @@ zn_sym_diff(struct zone zn1, struct zone zn2) {
 /**** Tests ****/
 
 inline boolean
-zn_contains(struct zone zn, struct coord loc) {
+zn_contains(struct zone zn, struct coord loc)
+{
     return zn.dat[zn_byte_index(loc)] & (1 << zn_bit_index(loc));
 }
 
 inline boolean
-zn_is_empty(struct zone zn) {
+zn_is_empty(struct zone zn)
+{
     int i;
     for (i = 0; i < zone_length - 1; ++i)
         if (zn.dat[i])
@@ -116,7 +126,8 @@ zn_is_empty(struct zone zn) {
 /**** Constructions with single locations ****/
 
 inline struct zone
-zn_add(struct zone zn, struct coord loc) {
+zn_add(struct zone zn, struct coord loc)
+{
     zn.dat[zn_byte_index(loc)] |= 1 << zn_bit_index(loc);
     return zn;
 }
@@ -127,7 +138,8 @@ zn_loc(struct coord loc) {
 }
 
 inline struct zone
-zn_del(struct zone zn, struct coord loc) {
+zn_del(struct zone zn, struct coord loc)
+{
     zn.dat[zn_byte_index(loc)] &= ~(1 << zn_bit_index(loc));
     return zn;
 }
@@ -135,7 +147,8 @@ zn_del(struct zone zn, struct coord loc) {
 /**** Constructions with callbacks ****/
 
 inline struct zone
-zn_add_pred(struct zone zn, zn_pred_fn pred, void *arg) {
+zn_add_pred(struct zone zn, zn_pred_fn pred, void *arg)
+{
     int x, y;
     for (y = 0; y < ROWNO; ++y) {
         for (x = 0; x < COLNO; ++x) {
@@ -148,7 +161,8 @@ zn_add_pred(struct zone zn, zn_pred_fn pred, void *arg) {
 }
 
 inline struct zone
-zn_del_pred(struct zone zn, zn_pred_fn pred, void *arg) {
+zn_del_pred(struct zone zn, zn_pred_fn pred, void *arg)
+{
     int x, y;
     for (y = 0; y < ROWNO; ++y) {
         for (x = 0; x < COLNO; ++x) {
@@ -161,7 +175,8 @@ zn_del_pred(struct zone zn, zn_pred_fn pred, void *arg) {
 }
 
 inline struct zone
-zn_except_pred(struct zone zn, zn_pred_fn pred, void *arg) {
+zn_except_pred(struct zone zn, zn_pred_fn pred, void *arg)
+{
     int x, y;
     for (y = 0; y < ROWNO; ++y) {
         for (x = 0; x < COLNO; ++x) {
@@ -174,14 +189,16 @@ zn_except_pred(struct zone zn, zn_pred_fn pred, void *arg) {
 }
 
 inline struct zone
-zn_pred(zn_pred_fn pred, void *arg) {
+zn_pred(zn_pred_fn pred, void *arg)
+{
     return zn_add_pred(zn_empty(), pred, arg);
 }
 
 /**** Constructions with rectangles ****/
 
 inline struct zone
-zn_add_rect(struct zone zn, struct rect r) {
+zn_add_rect(struct zone zn, struct rect r)
+{
     int y, x;
     /* This loop does the data assignment one byte at a time (not counting
      * overlap at the end of a row and the start of the next for very big
@@ -209,22 +226,26 @@ zn_add_rect(struct zone zn, struct rect r) {
 }
 
 inline struct zone
-zn_rect(struct rect r) {
+zn_rect(struct rect r)
+{
     return zn_add_rect(zn_empty(), r);
 }
 
 inline struct zone
-zn_whole(void) {
+zn_whole(void)
+{
     return zn_rect((struct rect){0, 0, COLNO - 1, ROWNO - 1});
 }
 
 inline struct zone
-zn_del_rect(struct zone zn, struct rect r) {
+zn_del_rect(struct zone zn, struct rect r)
+{
     return zn_subtract(zn, zn_rect(r));
 }
 
 inline struct zone
-zn_except_rect(struct zone zn, struct rect r) {
+zn_except_rect(struct zone zn, struct rect r)
+{
     return zn_intersect(zn, zn_rect(r));
 }
 
@@ -234,7 +255,8 @@ zn_except_rect(struct zone zn, struct rect r) {
  * is performed.
  */
 inline struct zone
-zn_shift(struct zone zn, struct coord delta) {
+zn_shift(struct zone zn, struct coord delta)
+{
     /* When performing shifts, we must truncate to the range possible, or else
      * we may wrap coordinates in the zone to the other side, outside the new
      * zone. */
@@ -274,7 +296,8 @@ zn_shift(struct zone zn, struct coord delta) {
 
 /* FIXME: Move this somewhere better (hack.h?) */
 inline uchar
-count_bits(uchar bits) {
+count_bits(uchar bits)
+{
     bits -= (bits >> 1) & 0x55;
     bits = (bits & 0x33) + ((bits >> 2) & 0x33);
     bits = (bits & 0x0F) + (bits >> 4);
@@ -282,7 +305,8 @@ count_bits(uchar bits) {
 }
 
 inline uchar
-nth_set_bit(uchar bits, uchar n) {
+nth_set_bit(uchar bits, uchar n)
+{
     int i;
     for (i = 0; n || !(bits & 1); ++i, bits >>= 1)
         if (bits & 1)
@@ -290,27 +314,22 @@ nth_set_bit(uchar bits, uchar n) {
     return i;
 }
 
-inline struct coord
-zn_rand(struct zone zn) {
-    int i, count = 0;
-    for (i = 0; i < zone_length; ++i)
-        count += count_bits(zn.dat[i]);
 
-    if (count == 0)
-        return (struct coord){COLNO, ROWNO};
+/* Produces a zone featuring the open circle of radius r, centered at c. This
+ * includes exactly the points of Euclidean distance strictly less than r from
+ * c. */
+extern struct zone zn_open_circle(struct coord center, int radius);
 
-    int n = rn2(count);
-    count = 0;
-    for (i = 0; i < zone_length; ++i) {
-        count += count_bits(zn.dat[i]);
-        if (count > n) {
-            int bit = nth_set_bit(zn.dat[i], count - n - 1);
-            return zn_from_indices(i, bit);
-        }
-    }
+/* Returns a random spot in the zone, or {COLNO, ROWNO} if that isn't possible. */
+extern struct coord zn_rand(struct zone zn);
 
-    impossible ("Did not pick a valid coordinate from zone?");
-    return (struct coord){COLNO, ROWNO};
-}
+/* Return a random location in zn that is as close to c as possible. For this
+ * purpose, "as close as possible" is not truly Euclidean distance; rather, for
+ * each n, all points in the open circle of radius n are considered equidistant.
+ * This definition was chosen to get a nice balance between picking a spot
+ * that's actually close and not showing too much preference for specific
+ * squares. In particular, if c is not available, it chooses equally from all of
+ * the points adjacent to c.  */
+extern struct coord zn_rand_near(struct zone zn, struct coord center);
 
 #endif /* ZONE_H */
