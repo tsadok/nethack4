@@ -276,8 +276,6 @@ struct newgame_options {
     add_menu_txt((m), c, MI_TEXT)
 
 /* Compatibility macros. */
-# define u gamestate.us[0]
-
 # define dungeon_topology       gamestate.topology
 # define oracle_level           (dungeon_topology.d_oracle_level)
 # define bigroom_level          (dungeon_topology.d_bigroom_level)

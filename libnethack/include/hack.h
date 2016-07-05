@@ -119,6 +119,8 @@ extern coord bhitpos;   /* place where throw or zap hits or stops */
 # include "winprocs.h"
 # include "rnd.h"
 
+# define u gamestate.us[0]
+
 # define NO_SPELL         0
 
 /* internal state of distmap; caller allocates so that it can be reused by
