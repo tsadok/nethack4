@@ -11189,6 +11189,7 @@ EOF
             command => [
                 'intcmd:writefile', 'optpath::bpath:_aimake_get_option.c',
                 'optstring:#ifdef_AIMAKE\\_BUILDOS\\_MSWin32 '.
+                '#_include_<windows.h> '.
                 '#_include_<shlobj.h> #endif #include_<string.h> '.
                 'static_struct_o_{ __const_char_*name; __const_char_*value; '.
                 '__int_csidl; #ifdef_AIMAKE\\_BUILDOS\\_MSWin32 '.
